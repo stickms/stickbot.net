@@ -1,12 +1,13 @@
-import { useParams } from "react-router-dom";
+import { useParams } from 'react-router-dom';
+import { Flex, Text } from '@radix-ui/themes';
 
 function SteamProfile() {
   const { steamid } = useParams();
 
   return (
-    <div className="flex justify-center items-center text-3xl min-h-screen">
-      Profile: { steamid }
-    </div>
+    <Flex className='justify-center items-center h-screen'>
+      <Text className='text-3xl'>Profile: {steamid}</Text>
+    </Flex>
   );
 }
 

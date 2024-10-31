@@ -1,8 +1,10 @@
+import { Flex, Text } from '@radix-ui/themes';
+
 function Root() {
   return (
-    <div className="flex justify-center items-center text-3xl min-h-screen">
-      Stickbot.net
-    </div>
+    <Flex className='justify-center items-center h-screen'>
+      <Text className='text-3xl'>Stickbot.net</Text>
+    </Flex>
   );
 }
 

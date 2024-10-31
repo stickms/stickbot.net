@@ -1,17 +1,18 @@
 import { ErrorResponse, useRouteError } from 'react-router-dom';
+import { Flex, Text } from '@radix-ui/themes';
 
 function ErrorPage() {
   const error = useRouteError();
 
   return (
-    <div className="flex justify-center items-center text-3xl min-h-screen">
-      Error - {' '}
-      {
-        (error as ErrorResponse).statusText ||
-        (error as Error).message ||
-        'Unknown Error'
-        }
-    </div>
+    <Flex className='items-center justify-center h-screen flex-col gap-y-4'>
+      <Text className='text-3xl'>Error</Text>
+      <Text className='text-lg'>
+        {(error as ErrorResponse).statusText ||
+          (error as Error).message ||
+          'Unknown Error'}
+      </Text>
+    </Flex>
   );
 }
 
