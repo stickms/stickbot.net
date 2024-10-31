@@ -1,4 +1,4 @@
-import { Avatar, Box, Card, Flex, Spinner, Text } from '@radix-ui/themes';
+import { Avatar, Box, Card, Flex, Link, Spinner, Text } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
 import { SteamProfileSummary } from '../types/steam';
 
@@ -42,17 +42,29 @@ function AlertList({ summary }: {summary: SteamProfileSummary}) {
 }
 
 function QuickLinks({ summary }: {summary: SteamProfileSummary}) {
+  const quicklinks = {
+    'SteamRep': 'https://steamrep.com/profiles/',
+    'SteamID.uk': 'https://steamid.uk/profile/',
+    'Backpack.tf': 'https://backpack.tf/profiles/',
+    'SteamDB': 'https://steamdb.info/calculator/',
+    'Open in Client': 'https://stickbot.net/openprofile/'
+  }
+
   return (
     <Box className='min-w-36 flex-grow'>
       <Box className='w-full'>
         <Text size='2' weight='bold'>Quick Links</Text>
       </Box>
       <Box className='w-full whitespace-pre-line'>
-        <Text size='2'>
-          {
-            summary.steamid
-          }
-        </Text>
+        {
+          Object.entries(quicklinks).map(([k, v]) => {
+            return (
+              <Link key={k} size='2' href={`${v}${summary.steamid}`}>
+                {k}{'\n'}
+              </Link>
+            );
+          })
+        }
       </Box>
     </Box>
   );
