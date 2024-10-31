@@ -1,5 +1,6 @@
-import { Avatar, Box, Card, Flex, Text } from '@radix-ui/themes';
+import { Avatar, Box, Card, Flex, Spinner, Text } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
+import { SteamProfileSummary } from '../types/steam';
 
 type SteamProfileProps = {
   steamid: string;
@@ -24,32 +25,70 @@ function ProfileSection({ title, body }: ProfileSectionProps) {
   );
 }
 
-function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
-  const [ isReady, setIsReady ] = useState<boolean>(false);
+function SteamIdList({ summary }: {summary: SteamProfileSummary}) {
+  return (
+    <Box className='min-w-36 flex-grow'>
+      <Box className='w-full'>
+        <Text size='2' weight='bold'>Steam IDs</Text>
+      </Box>
+      <Box className='w-full whitespace-pre-line'>
+        <Text size='2'>
+          {
+            summary.steamid
+          }
+        </Text>
+      </Box>
+    </Box>
+  );
+}
 
-  const [ steamIds, setSteamIds ] = useState<string>('');
-  const [ alerts, setAlerts ] = useState<string>('');
-  const [ quickLinks, setQuickLinks ] = useState<string>('');
-  const [ sourcebans, setSourcebans ] = useState<string>('');
+function AlertList({ summary }: {summary: SteamProfileSummary}) {
+  return (
+    <Box className='min-w-36 flex-grow'>
+      <Box className='w-full'>
+        <Text size='2' weight='bold'>Steam IDs</Text>
+      </Box>
+      <Box className='w-full whitespace-pre-line'>
+        <Text size='2'>
+          {
+            summary.steamid
+          }
+        </Text>
+      </Box>
+    </Box>
+  );
+}
+
+function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
+  const [ summary, setSummary ] = useState<SteamProfileSummary>();
+
   const [ isError, setIsError ] = useState<boolean>(false);
 
+  const [ quickLinks, setQuickLinks ] = useState<string>('');
+  const [ sourcebans, setSourcebans ] = useState<string>('');
+
   useEffect(() => {
-    fetch(`https://localhost:3000/api/lookup/${steamid}`, { signal: AbortSignal.timeout(500) })
+    fetch(`http://localhost:3000/api/lookup/${steamid}`, { signal: AbortSignal.timeout(500) })
       .then((resp) => {
         resp.json().then((json) => {
-          console.log(json);
-          setIsReady(true);
-        }).catch(() => {
+          if (json['error']) {
+            setIsError(true);
+          } else {
+            setSummary(json as SteamProfileSummary);
+          }
+        }).catch((error) => {
           setIsError(true);
+          console.log(error);
         }).finally(() => {
           setDisabled(false);
         });
       })
-      .catch(() => {
+      .catch((error) => {
         setIsError(true);
         setDisabled(false);
+        console.log(error);
       });
-  }, [steamid, setDisabled]);
+  }, [ steamid, setDisabled ]);
 
   if (isError) {
     return (
@@ -59,10 +98,10 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
         </Text>
       </Card>
     );
-  } else if (!isReady) {
+  } else if (!summary) {
     <Card className='mx-4 mb-4 max-w-[80vw] min-h-[300px] w-[600px]'>
       <Text>
-        Loading profile...
+        <Spinner size='3' /> Loading profile...
       </Text>
     </Card>
   } else {
@@ -73,12 +112,12 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
           <Box>
             <Box className='w-full'>
               <Text size='3' weight='bold'>
-                Profile Name - {steamid}
+                {summary.personaname}
               </Text>
             </Box>
             <Flex className='gap-5 flex-wrap'>
-              <ProfileSection title='Steam IDs' body={steamIds} />
-              <ProfileSection title='Alerts' body={alerts} />
+              <SteamIdList summary={summary} />
+              <AlertList summary={summary} />
               <ProfileSection title='Quick Links' body={quickLinks} />
               <ProfileSection title='Sourcebans' body={sourcebans} />
             </Flex>

@@ -17,9 +17,13 @@ lookup_route.get('/lookup/:steamid', async (c) => {
   }).toString();
 
   const resp = await fetch(url);
-  const summary: SteamProfileSummary = await resp.json();
+  const json = await resp.json();
 
-  return c.json(summary);
+  if (!json['response']?.['players']?.[0]) {
+    return c.json({ 'error': 'Could not find profile' });
+  }
+
+  return c.json(json['response']?.['players']?.[0]);
 });
 
 export default lookup_route;
