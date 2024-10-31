@@ -89,31 +89,31 @@ function Sourcebans({ summary }: {summary: SteamProfileSummary}) {
 
 function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
   const [ summary, setSummary ] = useState<SteamProfileSummary>();
-  const [ isError, setIsError ] = useState<string>();
+  const [ error, setError ] = useState<string>();
 
   useEffect(() => {
     fetch(`http://localhost:3000/api/lookup/${steamid}`, { signal: AbortSignal.timeout(500) })
       .then((resp) => {
         resp.json().then((json) => {
           if (json['error']) {
-            setIsError(json['error']);
+            setError(json['error']);
           } else {
             console.log(json);
             setSummary(json as SteamProfileSummary);
           }
         }).catch((error) => {
-          setIsError(error);
+          setError(error);
         }).finally(() => {
           setDisabled(false);
         });
       })
       .catch((error) => {
-        setIsError(error);
+        setError(error);
         setDisabled(false);
       });
   }, [ steamid, setDisabled ]);
 
-  if (isError) {
+  if (error) {
     return (
       <Card className='mx-4 mb-4 max-w-[80vw] min-h-[300px] w-[600px]'>
         <Box className='w-full'>
@@ -122,14 +122,16 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
           </Text>
         </Box>
           <Text size='3'>
-            {isError}
+            {error}
           </Text>
       </Card>
     );
   } else if (!summary) {
     <Card className='mx-4 mb-4 max-w-[80vw] min-h-[300px] w-[600px]'>
       <Text>
-        <Spinner size='3' /> Loading profile...
+        <Spinner size='3'>
+          Loading profile...
+        </Spinner>
       </Text>
     </Card>
   } else {
