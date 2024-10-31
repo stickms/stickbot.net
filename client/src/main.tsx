@@ -5,7 +5,7 @@ import { Theme } from '@radix-ui/themes';
 
 import Root from './routes/root.tsx';
 import ErrorPage from './error-page.tsx';
-import SteamProfile from './routes/steam-profile.tsx';
+import ProfileLookup from './routes/profile-lookup.tsx';
 
 import '@radix-ui/themes/styles.css';
 import './index.css';
@@ -17,15 +17,20 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />
   },
   {
-    path: '/profile/:steamid',
-    element: <SteamProfile />,
+    path: '/profile',
+    element: <ProfileLookup />,
     errorElement: <ErrorPage />
   }
 ]);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <Theme accentColor='crimson' grayColor='sand' radius='large' scaling='95%'>
+    <Theme
+      accentColor='crimson'
+      appearance='dark'
+      grayColor='sand'
+      radius='large'
+    >
       <RouterProvider router={router} />
     </Theme>
   </StrictMode>
