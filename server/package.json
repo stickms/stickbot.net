@@ -1,0 +1,20 @@
+{
+  "name": "server",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -b",
+    "prettier": "prettier --write \"src/**/*.{js,ts,jsx,tsx}\" --config \"../.prettierrc.json\""
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.4",
+    "dotenv": "^16.4.5",
+    "hono": "^4.6.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.17",
+    "prettier": "3.3.3",
+    "tsx": "^4.7.1",
+    "typescript": "^5.6.3"
+  }
+}

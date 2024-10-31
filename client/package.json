@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint --fix \"src/**/*.{js,ts,jsx,tsx}\"",
     "preview": "vite preview",
-    "prettier": "prettier --write \"src/**/*.{js,ts,jsx,tsx}\" --config \".prettierrc.json\""
+    "prettier": "prettier --write \"src/**/*.{js,ts,jsx,tsx}\" --config \"../.prettierrc.json\""
   },
   "dependencies": {
     "@radix-ui/themes": "^3.1.4",
