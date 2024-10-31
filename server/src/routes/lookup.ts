@@ -10,20 +10,40 @@ const url_endpoint = 'https://api.steampowered.com/ISteamUser/';
 lookup_route.get('/lookup/:steamid', async (c) => {
   const steamid = c.req.param('steamid');
 
-  const url = new URL(url_endpoint + 'GetPlayerSummaries/v2/');
-  url.search = new URLSearchParams({
+  const sum_url = new URL(url_endpoint + 'GetPlayerSummaries/v2/');
+  const ban_url = new URL(url_endpoint + 'GetPlayerBans/v1/');
+
+  const params = new URLSearchParams({
     key: STEAM_API_KEY,
     steamids: steamid
   }).toString();
 
-  const resp = await fetch(url);
-  const json = await resp.json();
+  sum_url.search = params;
+  ban_url.search = params;
 
-  if (!json['response']?.['players']?.[0]) {
-    return c.json({ 'error': 'Could not find profile' });
+  const results = await Promise.all([ 
+    await fetch(sum_url), 
+    await fetch(ban_url)
+  ]);
+  
+  if (results.some((r) => !r.ok)) {
+    return c.json({ 'error': 'Could not reach Steam API' });
   }
 
-  return c.json(json['response']?.['players']?.[0]);
+  const jsons = [ await results[0].json(), await results[1].json() ];
+
+  if (!jsons[0]['response']?.['players']?.[0]) {
+    return c.json({ 'error': 'Could not find profile summary' });
+  }
+
+  if (!jsons[1]['players']?.[0]) {
+    return c.json({ 'error': 'Could not find profile ban data' });
+  }
+
+  return c.json({ 
+    ...jsons[0]['response']['players'][0], 
+    ...jsons[1]['players'][0] 
+  });
 });
 
 export default lookup_route;

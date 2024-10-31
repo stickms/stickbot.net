@@ -1,4 +1,5 @@
 export type SteamProfileSummary = {
+  // GetPlayerSummary
   steamid: string;
   communityvisibilitystate: number;
   profilestate: number;
@@ -20,4 +21,12 @@ export type SteamProfileSummary = {
   gameid?: string;
   gameextrainfo?: string;
   gameserverip?: string;
+
+  // GetPlayerBans
+  CommunityBanned: boolean;
+  VACBanned: boolean;
+  NumberOfVACBans: number;
+  DaysSinceLastBan: number;
+  NumberOfGameBans: number;
+  EconomyBan: string;
 };

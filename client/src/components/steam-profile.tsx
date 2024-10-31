@@ -77,37 +77,41 @@ function Sourcebans({ summary }: {summary: SteamProfileSummary}) {
 
 function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
   const [ summary, setSummary ] = useState<SteamProfileSummary>();
-  const [ isError, setIsError ] = useState<boolean>(false);
+  const [ isError, setIsError ] = useState<string>();
 
   useEffect(() => {
     fetch(`http://localhost:3000/api/lookup/${steamid}`, { signal: AbortSignal.timeout(500) })
       .then((resp) => {
         resp.json().then((json) => {
           if (json['error']) {
-            setIsError(true);
+            setIsError(json['error']);
           } else {
+            console.log(json);
             setSummary(json as SteamProfileSummary);
           }
         }).catch((error) => {
-          setIsError(true);
-          console.log(error);
+          setIsError(error);
         }).finally(() => {
           setDisabled(false);
         });
       })
       .catch((error) => {
-        setIsError(true);
+        setIsError(error);
         setDisabled(false);
-        console.log(error);
       });
   }, [ steamid, setDisabled ]);
 
   if (isError) {
     return (
       <Card className='mx-4 mb-4 max-w-[80vw] min-h-[300px] w-[600px]'>
-        <Text color='ruby' weight='bold'>
-          Error
-        </Text>
+        <Box className='w-full'>
+          <Text size='3' weight='bold' color='ruby'>
+            Error
+          </Text>
+        </Box>
+          <Text size='3'>
+            {isError}
+          </Text>
       </Card>
     );
   } else if (!summary) {
