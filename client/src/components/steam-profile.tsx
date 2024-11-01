@@ -98,7 +98,6 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
           if (json['error']) {
             setError(json['error']);
           } else {
-            console.log(json);
             setSummary(json as SteamProfileSummary);
           }
         }).catch((error) => {
@@ -121,18 +120,18 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
             Error
           </Text>
         </Box>
-          <Text size='3'>
-            {error}
-          </Text>
+        <Text size='3'>
+          {error.toString()}
+        </Text>
       </Card>
     );
   } else if (!summary) {
     <Card className='mx-4 mb-4 max-w-[80vw] min-h-[300px] w-[600px]'>
-      <Text>
-        <Spinner size='3'>
-          Loading profile...
-        </Spinner>
-      </Text>
+      <Spinner size='3'>
+        <Text>
+            Loading profile...
+        </Text>
+      </Spinner>
     </Card>
   } else {
     return (

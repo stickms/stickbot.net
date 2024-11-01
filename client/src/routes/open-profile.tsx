@@ -6,7 +6,7 @@ function OpenProfile() {
   const { id } = useParams();
 
   useEffect(() => {
-    window.location.href = `steam://openurl/https://steamcommunity.com/profiles/${id}`
+    window.location.href = `steam://openurl/https://steamcommunity.com/profiles/${id}`;
   }, [ id ]);
 
   return (
