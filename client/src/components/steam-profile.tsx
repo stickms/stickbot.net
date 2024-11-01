@@ -1,6 +1,7 @@
 import { Avatar, Box, Card, Flex, Link, Spinner, Text } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
 import { SteamProfileSummary } from '../types/steam';
+import { API_ENDPOINT } from '../env';
 
 type SteamProfileProps = {
   steamid: string;
@@ -92,7 +93,9 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
   const [ error, setError ] = useState<string>();
 
   useEffect(() => {
-    fetch(`http://localhost:3000/api/lookup/${steamid}`, { signal: AbortSignal.timeout(500) })
+    fetch(`${API_ENDPOINT}/lookup/${steamid}`, {
+        signal: AbortSignal.timeout(500)
+      })
       .then((resp) => {
         resp.json().then((json) => {
           if (json['error']) {

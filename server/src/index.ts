@@ -2,21 +2,22 @@ import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import lookup_route from './routes/lookup.js';
 import { cors } from 'hono/cors';
+import { API_ORIGIN } from './env.js';
 
 const app = new Hono();
 
-app.use('/api/*', cors({
-    origin: [ 'http://localhost:5173', 'https://stickbot.net' ],
+app.use('*', cors({
+    origin: API_ORIGIN,
     allowHeaders: ['Origin', 'Content-Type', 'Authorization'],
     allowMethods: ['GET'],
     credentials: true
   })
 );
 
-app.route('/api/', lookup_route);
+app.route('/', lookup_route);
 
 const port = 3000;
-console.log(`Server is running on http://localhost:${port}`);
+console.log(`Server is running on port ${port}`);
 
 serve({
   fetch: app.fetch,

@@ -5,5 +5,4 @@ dotenv.config({
   path: path.join(import.meta.dirname, '..', '.env')
 });
 
-export const API_ORIGIN: string = process.env.API_ORIGIN!;
-export const STEAM_API_KEY: string = process.env.STEAM_API_KEY!;
+export const API_ENDPOINT: string = process.env.API_ENDPOINT!;
