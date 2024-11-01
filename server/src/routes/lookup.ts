@@ -22,8 +22,8 @@ lookup_route.get('/lookup/:steamid', async (c) => {
   ban_url.search = params;
 
   const results = await Promise.all([ 
-    await fetch(sum_url, { signal: AbortSignal.timeout(500) }), 
-    await fetch(ban_url, { signal: AbortSignal.timeout(500) })
+    await fetch(sum_url, { signal: AbortSignal.timeout(1000) }), 
+    await fetch(ban_url, { signal: AbortSignal.timeout(1000) })
   ]);
   
   if (results.some((r) => !r.ok)) {

@@ -26,17 +26,54 @@ function SteamIdList({ summary }: {summary: SteamProfileSummary}) {
 }
 
 function AlertList({ summary }: {summary: SteamProfileSummary}) {
+  const alertlist: string[] = [];
+
+  const plural = (num: number, label: string) => {
+    return `${num} ${label}${num == 1 ? '' : 's'}`;
+  };
+
+  const banlist = [
+    {
+      label: `❌ ${plural(summary.NumberOfVACBans, 'VAC Ban')}`,
+      valid: summary.NumberOfVACBans > 0
+    },
+    {
+      label: `❌ ${plural(summary.NumberOfGameBans, 'Game Ban')}`,
+      valid: summary.NumberOfGameBans > 0
+    },
+    {
+      label: '❌ Community Ban',
+      valid: summary.CommunityBanned
+    },
+    {
+      label: '❌ Trade Ban',
+      valid: summary.EconomyBan == 'banned'
+    }
+  ]
+    .filter((x) => x.valid)
+    .map((x) => x.label);
+
+  alertlist.push(...banlist);
+
+  if (!alertlist.length) {
+    alertlist.push('✅ None');
+  }
+
   return (
     <Box className='min-w-36 flex-grow'>
       <Box className='w-full'>
         <Text size='2' weight='bold'>Alerts</Text>
       </Box>
       <Box className='w-full whitespace-pre-line'>
-        <Text size='2'>
-          {
-            summary.steamid
-          }
-        </Text>
+        {
+          alertlist.map((alert) => {
+            return (
+              <Text key={alert} size='2'>
+                {alert}{'\n'}
+              </Text>
+            );
+          })
+        }
       </Box>
     </Box>
   );
@@ -94,7 +131,7 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
 
   useEffect(() => {
     fetch(`${API_ENDPOINT}/lookup/${steamid}`, {
-        signal: AbortSignal.timeout(500)
+        signal: AbortSignal.timeout(1000)
       })
       .then((resp) => {
         resp.json().then((json) => {
