@@ -1,0 +1,32 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      steamid:
+        specifier: ^2.1.0
+        version: 2.1.0
+    devDependencies:
+      '@types/steamid':
+        specifier: ^2.0.3
+        version: 2.0.3
+
+packages:
+
+  '@types/steamid@2.0.3':
+    resolution: {integrity: sha512-ozNMQViUYLU+NBN4v7X0bV1O8uTL1bA+WvfHtt9IKcydS4tyYKH7w1vq+xcPGWGL0PRhGtY7C1Zhaeyj2IsETw==}
+
+  steamid@2.1.0:
+    resolution: {integrity: sha512-ndt1cvuuSC+i8fcxVsmeyRlgGsR1QsoAuIXz+eabj8/Y4GIWE2+mgHA7Hys61JDHOxttfWtXHtN2m5TNYTlORg==}
+    engines: {node: '>=12.0.0'}
+
+snapshots:
+
+  '@types/steamid@2.0.3': {}
+
+  steamid@2.1.0: {}

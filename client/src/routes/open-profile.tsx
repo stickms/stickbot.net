@@ -7,7 +7,7 @@ function OpenProfile() {
 
   useEffect(() => {
     window.location.href = `steam://openurl/https://steamcommunity.com/profiles/${id}`;
-  }, [ id ]);
+  }, [id]);
 
   return (
     <Flex className='items-center justify-center h-screen flex-col gap-y-4'>

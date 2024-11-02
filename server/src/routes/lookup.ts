@@ -21,16 +21,20 @@ lookup_route.get('/lookup/:steamid', async (c) => {
   sum_url.search = params;
   ban_url.search = params;
 
-  const results = await Promise.all([ 
-    await fetch(sum_url, { signal: AbortSignal.timeout(1000) }), 
-    await fetch(ban_url, { signal: AbortSignal.timeout(1000) })
+  const results = await Promise.all([
+    await fetch(sum_url, {
+      signal: AbortSignal.timeout(1000)
+    }),
+    await fetch(ban_url, {
+      signal: AbortSignal.timeout(1000)
+    })
   ]);
-  
+
   if (results.some((r) => !r.ok)) {
     return c.json({ 'error': 'Could not reach Steam API' });
   }
 
-  const jsons = [ await results[0].json(), await results[1].json() ];
+  const jsons = [await results[0].json(), await results[1].json()];
 
   if (!jsons[0]['response']?.['players']?.[0]) {
     return c.json({ 'error': 'Could not find profile summary' });
@@ -40,9 +44,43 @@ lookup_route.get('/lookup/:steamid', async (c) => {
     return c.json({ 'error': 'Could not find profile ban data' });
   }
 
-  return c.json({ 
+  return c.json({
+    'sourcebans': [],
     ...jsons[1]['players'][0],
     ...jsons[0]['response']['players'][0]
+  });
+});
+
+lookup_route.get('/resolve/:vanityurl', async (c) => {
+  const vanityurl = c.req.param('vanityurl');
+
+  const res_url = new URL(url_endpoint + 'ResolveVanityURL/v1/');
+
+  const params = new URLSearchParams({
+    key: STEAM_API_KEY,
+    vanityurl: vanityurl
+  }).toString();
+
+  res_url.search = params;
+
+  const result = await fetch(res_url, { signal: AbortSignal.timeout(1000) });
+  if (!result.ok) {
+    return c.json({ 'error': 'Could not reach Steam API' });
+  }
+
+  const json = await result.json();
+  if (!json['response']) {
+    return c.json({ 'error': 'Error resolving Vanity URL' });
+  }
+
+  return c.json({
+    ...json['response']
+  });
+});
+
+lookup_route.get('/sourcebans/:steamid', async (c) => {
+  return c.json({
+    'sourcebans': []
   });
 });
 

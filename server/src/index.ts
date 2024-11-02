@@ -7,7 +7,9 @@ import { HTTPException } from 'hono/http-exception';
 
 const app = new Hono();
 
-app.use('*', cors({
+app.use(
+  '*',
+  cors({
     origin: API_ORIGIN,
     allowHeaders: ['Origin', 'Content-Type', 'Authorization'],
     allowMethods: ['GET'],

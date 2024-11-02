@@ -29,4 +29,10 @@ export type SteamProfileSummary = {
   DaysSinceLastBan: number;
   NumberOfGameBans: number;
   EconomyBan: string;
+
+  // Sourcebans
+  sourcebans: {
+    url: string;
+    reason: string;
+  }[];
 };
