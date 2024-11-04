@@ -203,45 +203,45 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
       .finally(() => setDisabled(false));
   }, [steamid, setDisabled]);
 
-  if (error) {
-    return (
-      <Card className='mx-4 mb-4 max-w-[80vw] min-h-[300px] w-[600px]'>
+  return (
+    <Card className='mb-2 min-h-[300px] w-[calc(100%-32px)]'>
+      { error && (<>
         <Box className='w-full'>
           <Text size='3' weight='bold' color='ruby'>
             Error
           </Text>
         </Box>
-        <Text size='3'>{error.toString()}</Text>
-      </Card>
-    );
-  } else if (!summary) {
-    <Card className='mx-4 mb-4 max-w-[80vw] min-h-[300px] w-[600px]'>
-      <Spinner size='3'>
-        <Text>Loading profile...</Text>
-      </Spinner>
-    </Card>;
-  } else {
-    return (
-      <Card className='mx-4 mb-4 max-w-[80vw] min-h-[300px] w-[600px]'>
-        <Flex className='gap-3 items-start'>
-          <Avatar src={summary.avatarfull} fallback='T' />
-          <Box>
-            <Box className='w-full'>
-              <Text size='3' weight='bold'>
-                {summary.personaname}
-              </Text>
+      <Text size='3'>{error.toString()}</Text>
+      </>)}
+
+      { !error && !summary && (
+        <Spinner size='3'>
+          <Text>Loading profile...</Text>
+        </Spinner>
+      )}
+
+      {
+        !error && summary && (
+          <Flex className='gap-3 items-start'>
+            <Avatar src={summary.avatarfull} fallback='T' />
+            <Box>
+              <Box className='w-full'>
+                <Text size='3' weight='bold'>
+                  {summary.personaname}
+                </Text>
+              </Box>
+              <Flex className='gap-5 flex-wrap'>
+                <SteamIdList summary={summary} />
+                <AlertList summary={summary} />
+                <QuickLinks summary={summary} />
+                <Sourcebans summary={summary} />
+              </Flex>
             </Box>
-            <Flex className='gap-5 flex-wrap'>
-              <SteamIdList summary={summary} />
-              <AlertList summary={summary} />
-              <QuickLinks summary={summary} />
-              <Sourcebans summary={summary} />
-            </Flex>
-          </Box>
-        </Flex>
-      </Card>
-    );
-  }
+          </Flex>
+        )
+      }
+    </Card>
+  )
 }
 
 export default SteamProfile;
