@@ -135,15 +135,14 @@ function QuickLinks({ summary }: { summary: SteamProfileSummary }) {
 }
 
 function Sourcebans({ summary }: { summary: SteamProfileSummary }) {
-  const sourcebans: string[] = Object.entries(summary.sourcebans).map(
+  const sourcebans: { link: string, label: string}[] = summary.sourcebans ? Object.entries(summary.sourcebans).map(
     ([url, reason]) => {
-      return `${url} - ${reason}`;
+      return {
+        link: url,
+        label: `${url} - ${reason}`
+      };
     }
-  );
-
-  if (!sourcebans.length) {
-    sourcebans.push('✅ None');
-  }
+  ): [];
 
   return (
     <Box className='min-w-36 flex-grow'>
@@ -153,14 +152,23 @@ function Sourcebans({ summary }: { summary: SteamProfileSummary }) {
         </Text>
       </Box>
       <Box className='w-full whitespace-pre-line'>
-        {sourcebans.map((s) => {
-          return (
-            <Text key={s} size='2'>
-              {s}
-              {'\n'}
+        {
+          sourcebans.length == 0 && (
+            <Text size='2'>
+              ✅ None
             </Text>
-          );
-        })}
+          )
+        }
+        {
+          sourcebans.length > 0 && sourcebans.map((s, index) => {
+            return (
+              <Link key={`${s.link}_${index}`} href={s.link} size='2'>
+                {s.label}
+                {'\n'}
+              </Link>
+            );
+          })
+        }
       </Box>
     </Box>
   );
@@ -184,9 +192,9 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
       const steam = new SteamID(vanity_json?.['steamid'] ?? steamid);
 
       const summary = await fetch(
-        `${API_ENDPOINT}/lookup/${steam.getSteamID64()}`,
+        `${API_ENDPOINT}/lookup/${steam.getSteamID64()}?sourcebans=1`,
         {
-          signal: AbortSignal.timeout(1000)
+          signal: AbortSignal.timeout(25000)
         }
       );
 

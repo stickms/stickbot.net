@@ -34,5 +34,5 @@ export type SteamProfileSummary = {
   sourcebans: {
     url: string;
     reason: string;
-  }[];
+  }[] | undefined;
 };

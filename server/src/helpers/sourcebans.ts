@@ -47,12 +47,10 @@ class Sourcebans {
       });
     });
 
-    const fulfilled = <T>(
-      p: PromiseSettledResult<T>
-    ): p is PromiseFulfilledResult<T> => p.status === 'fulfilled';
-
     return (await Promise.allSettled(gets))
-      .filter(fulfilled)
+      .filter((p) => {
+        return p.status === 'fulfilled';
+      })
       .map((x) => x.value);
   }
 
