@@ -4,6 +4,7 @@ import { cors } from 'hono/cors';
 import { API_PORT } from './env.js';
 
 import lookup_route from './routes/lookup.js';
+import Sourcebans from './helpers/sourcebans.js';
 
 const app = new Hono();
 

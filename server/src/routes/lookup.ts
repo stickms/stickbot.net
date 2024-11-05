@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { STEAM_API_KEY } from '../env.js';
 import { URL, URLSearchParams } from 'url';
 import type { SteamProfileSummary } from '../types.js';
+import Sourcebans from '../helpers/sourcebans.js';
 
 const lookup_route = new Hono();
 
@@ -9,6 +10,7 @@ const url_endpoint = 'https://api.steampowered.com/ISteamUser/';
 
 lookup_route.get('/lookup/:steamid', async (c) => {
   const steamid = c.req.param('steamid');
+  const sourcebans = c.req.query('sourcebans');
 
   const sum_url = new URL(url_endpoint + 'GetPlayerSummaries/v2/');
   const ban_url = new URL(url_endpoint + 'GetPlayerBans/v1/');
@@ -34,7 +36,11 @@ lookup_route.get('/lookup/:steamid', async (c) => {
     return c.json({ 'error': 'Could not reach Steam API' });
   }
 
-  const jsons = [await results[0].json(), await results[1].json()];
+  const jsons = [ await results[0].json(), await results[1].json() ];
+
+  if (sourcebans) {
+    jsons.push(await Sourcebans.get(steamid));
+  }
 
   if (!jsons[0]['response']?.['players']?.[0]) {
     return c.json({ 'error': 'Could not find profile summary' });
@@ -44,11 +50,16 @@ lookup_route.get('/lookup/:steamid', async (c) => {
     return c.json({ 'error': 'Could not find profile ban data' });
   }
 
-  return c.json({
-    'sourcebans': [],
+  const resp = {
     ...jsons[1]['players'][0],
     ...jsons[0]['response']['players'][0]
-  });
+  }
+
+  if (sourcebans) {
+    resp['sourcebans'] = jsons[2];
+  }
+
+  return c.json(resp);
 });
 
 lookup_route.get('/resolve/:vanityurl', async (c) => {
@@ -79,8 +90,12 @@ lookup_route.get('/resolve/:vanityurl', async (c) => {
 });
 
 lookup_route.get('/sourcebans/:steamid', async (c) => {
+  const steamid = c.req.param('steamid');
+
+  const sourcebans = await Sourcebans.get(steamid);
+
   return c.json({
-    'sourcebans': []
+    'sourcebans': sourcebans
   });
 });
 

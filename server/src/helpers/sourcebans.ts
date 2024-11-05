@@ -13,15 +13,16 @@ class Sourcebans {
   ): Promise<{ url: string; reason: string }[]> {
     const sourcebans: { url: string; reason: string }[] = [];
 
-    (await this.getWebData(steamid))
-      .forEach(async (data) => {
-        const parsed = this.parseWebHTML(steamid, data.url, await data.text());
+    const web_data = await this.getWebData(steamid);
 
-        if (parsed?.length) {
-          sourcebans.push(...parsed);
-        }
-      });
+    for (const data of web_data) {
+      const parsed = await this.parseWebHTML(steamid, data);
 
+      if (parsed.length) {
+        sourcebans.push(...parsed);
+      }
+    }
+    
     return sourcebans;
   }
 
@@ -34,6 +35,7 @@ class Sourcebans {
       let url = entry + this.SOURCEBAN_EXT;
       
       if (entry === 'https://www.skial.com/sourcebans/') {
+        // SteamID3 (skial only for now)
         url += `[U:1:${accountid}]`;
       } else {
         // SteamID2 but with regex
@@ -54,15 +56,11 @@ class Sourcebans {
       .map((x) => x.value);
   }
 
-  private static parseWebHTML(
+  private static async parseWebHTML(
     steamid: string,
-    url: string,
-    body: string
-  ): { url: string; reason: string }[] {
-    const dom = HTMLParse(body);
-    if (!dom) {
-      [];
-    }
+    data: Response
+  ): Promise<{ url: string; reason: string }[]> {
+    const dom = HTMLParse(await data.text());
 
     let divs = dom.querySelectorAll('div.opener').length
       ? dom.querySelectorAll('div.opener')
@@ -94,7 +92,7 @@ class Sourcebans {
 
         return 'Unknown Reason';
       });
-
+    
     // If we can't find that div, we probably have a "Fluent Design" Theme
     if (!divs.length) {
       divs = dom.querySelectorAll('div.collapse_content');
@@ -121,10 +119,9 @@ class Sourcebans {
     }
 
     return reasons
-      .filter((x) => x)
       .map((reason) => {
         return {
-          url: url,
+          url: data.url,
           reason: reason
         };
       });
