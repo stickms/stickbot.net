@@ -4,8 +4,45 @@ class Sourcebans {
   private static SOURCEBAN_EXT = 'index.php?p=banlist&advType=steam&advSearch=';
 
   private static SOURCEBAN_URLS = [
+    'http://thefurrypound.org/sourcebans/',
+    'https://lazypurple.com/sourcebans/',
     'https://www.skial.com/sourcebans/',
-    'https://lazypurple.com/sourcebans/'
+    'https://sappho.io/bans/',
+    'https://bans.blackwonder.tf/',
+    'https://bans.wonderland.tf/',
+    'https://sourcebans.gflclan.com/',
+    'https://bans.elite-hunterz.info/',
+    'https://coldcommunity.com/sourcebans/',
+    'https://outbreak-community.com/sourcebans/',
+    'http://gavlemg.org/sourcebans/',
+    'https://adultgamerscommunity.com/sourcebans/',
+    'https://tf2-casual-fun.de/sourcebans/',
+    'https://triggerhappygamers.com/sourcebans/',
+    'https://sourcebans.gamerzhost.de/sb154/',
+    'https://disc-ff.site.nfoservers.com/sourcebanstf2/',
+    'https://bans.snksrv.com/',
+    'https://facebans.com/',
+    'https://firepoweredgaming.com/sourcebanspp/',
+    'https://bans.cutiepie.tf/',
+    'https://bans.flux.tf/',
+    'https://sg-gaming.net/bans/',
+    'https://bans.pubs.tf/',
+    'https://petrol.tf/sb/',
+    'https://sb.vaultf4.com/',
+    'https://bans.tf2trade.com/',
+    'https://bans.harpoongaming.com/',
+    'https://dmfrenzy.com/bans/',
+    'https://spectre.gg/bans/',
+    'https://astramania.ro/sban2/',
+    'https://www.mestrogaming.net/secureplay/',
+    'https://infinityteamcsgo.com/sourcebans/',
+    'https://www.psihijatrija-csgo.xyz/',
+    'https://sourcebans.acekill.pl/',
+    'http://sixth.site.nfoservers.com/SourceBans/',
+    'https://karma-gaming.net/sourcebans/',
+    'https://sb.ugc-gaming.net/',
+    'https://bans.svdosbrothers.com/',
+    'https://bans.panda-community.com/'
   ];
 
   static async get(
@@ -26,6 +63,22 @@ class Sourcebans {
     return sourcebans;
   }
 
+  private static async fetchTimeout(url: string, timeout = 1000): Promise<Response> {
+    return new Promise<Response>((resolve, reject) => {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
+  
+        fetch(url, { signal: controller.signal })
+          .then((response) => resolve(response))
+          .catch((error) => reject(error))
+          .finally(() => clearTimeout(timeoutId));
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
   private static async getWebData(
     steamid: string
   ): Promise<Response[]> {
@@ -42,9 +95,7 @@ class Sourcebans {
         url += `STEAM__:${accountid & 1}:${Math.floor(accountid / 2)}`;
       }
 
-      return fetch(url, {
-        signal: AbortSignal.timeout(2500)
-      });
+      return this.fetchTimeout(url, 2500);
     });
 
     return (await Promise.allSettled(gets))

@@ -135,11 +135,11 @@ function QuickLinks({ summary }: { summary: SteamProfileSummary }) {
 }
 
 function Sourcebans({ summary }: { summary: SteamProfileSummary }) {
-  const sourcebans: { link: string, label: string}[] = summary.sourcebans ? Object.entries(summary.sourcebans).map(
-    ([url, reason]) => {
+  const sourcebans: { link: string, label: string}[] = summary.sourcebans ? summary.sourcebans.map(
+    (s) => {
       return {
-        link: url,
-        label: `${url} - ${reason}`
+        link: s.url,
+        label: `${s.url.split('/')[2]} - ${s.reason}`
       };
     }
   ): [];
@@ -174,15 +174,31 @@ function Sourcebans({ summary }: { summary: SteamProfileSummary }) {
   );
 }
 
+async function fetchTimeout(url: string, timeout = 1000): Promise<Response> {
+  return new Promise<Response>((resolve, reject) => {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+      fetch(url, { signal: controller.signal })
+        .then((response) => resolve(response))
+        .catch((error) => reject(error))
+        .finally(() => clearTimeout(timeoutId));
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
 function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
   const [summary, setSummary] = useState<SteamProfileSummary>();
   const [error, setError] = useState<string>();
 
   useEffect(() => {
-    const getPlayerData = async () => {
-      const vanity = await fetch(`${API_ENDPOINT}/resolve/${steamid}`, {
-        signal: AbortSignal.timeout(1000)
-      });
+    const getPlayerData = async (): Promise<SteamProfileSummary> => {
+      const vanity = await fetchTimeout(
+        `${API_ENDPOINT}/resolve/${steamid}`
+      );
 
       const vanity_json = await vanity.json();
       if (vanity_json['error']) {
@@ -191,11 +207,9 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
 
       const steam = new SteamID(vanity_json?.['steamid'] ?? steamid);
 
-      const summary = await fetch(
-        `${API_ENDPOINT}/lookup/${steam.getSteamID64()}?sourcebans=1`,
-        {
-          signal: AbortSignal.timeout(25000)
-        }
+      const summary = await fetchTimeout(
+        `${API_ENDPOINT}/lookup/${steam.getSteamID64()}?sourcebans=true`, 
+        5_000
       );
 
       const summary_json = await summary.json();
@@ -203,13 +217,14 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
         throw new Error(summary_json['error']);
       }
 
-      setSummary(summary_json as SteamProfileSummary);
+      return summary_json;
     };
 
     getPlayerData()
+      .then((summ) => setSummary(summ))
       .catch((error) => setError(error))
       .finally(() => setDisabled(false));
-  }, [steamid, setDisabled]);
+  }, [ steamid, setDisabled ]);
 
   return (
     <Card className='mb-2 min-h-[300px] w-[calc(100%-32px)]'>
