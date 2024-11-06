@@ -49,7 +49,7 @@ function ProfileLookup() {
       <Flex className='items-center justify-center'>
         <ScrollArea
           scrollbars='vertical'
-          className='w-auto max-w-[80vw] max-h-[40vh] pt-2'
+          className='w-[700px] max-w-[80vw] max-h-[40vh] pt-2'
         >
           <Flex className='items-center justify-center flex-col'>
             {profiles.map((p, i) => (

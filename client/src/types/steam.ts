@@ -31,8 +31,10 @@ export type SteamProfileSummary = {
   EconomyBan: string;
 
   // Sourcebans
-  sourcebans: {
-    url: string;
-    reason: string;
-  }[] | undefined;
+  sourcebans: Sourceban[] | undefined;
 };
+
+export type Sourceban = {
+  url: string;
+  reason: string;
+}

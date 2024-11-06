@@ -1,6 +1,6 @@
 import { Avatar, Box, Card, Flex, Link, Spinner, Text } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
-import { SteamProfileSummary } from '../types/steam';
+import { Sourceban, SteamProfileSummary } from '../types/steam';
 import { API_ENDPOINT } from '../env';
 import SteamID from 'steamid';
 
@@ -134,16 +134,7 @@ function QuickLinks({ summary }: { summary: SteamProfileSummary }) {
   );
 }
 
-function Sourcebans({ summary }: { summary: SteamProfileSummary }) {
-  const sourcebans: { link: string, label: string}[] = summary.sourcebans ? summary.sourcebans.map(
-    (s) => {
-      return {
-        link: s.url,
-        label: `${s.url.split('/')[2]} - ${s.reason}`
-      };
-    }
-  ): [];
-
+function Sourcebans({ sourcebans }: { sourcebans: Sourceban[] | undefined }) {
   return (
     <Box className='min-w-36 flex-grow'>
       <Box className='w-full'>
@@ -153,20 +144,25 @@ function Sourcebans({ summary }: { summary: SteamProfileSummary }) {
       </Box>
       <Box className='w-full whitespace-pre-line'>
         {
-          sourcebans.length == 0 && (
+          !sourcebans && (
+            <Spinner size='3'/>
+          )
+        }
+        {
+          sourcebans && sourcebans.length == 0 && (
             <Text size='2'>
               ✅ None
             </Text>
           )
         }
         {
-          sourcebans.length > 0 && sourcebans.map((s, index) => {
+          sourcebans && sourcebans.length > 0 && sourcebans.map((s, index) => {
             return (
-              <Link key={`${s.link}_${index}`} href={s.link} size='2'>
-                {s.label}
+              <Link key={index} href={s.url} size='2'>
+                {`${s.url.split('/')[2]} - ${s.reason}`}
                 {'\n'}
               </Link>
-            );
+            )
           })
         }
       </Box>
@@ -191,8 +187,9 @@ async function fetchTimeout(url: string, timeout = 1000): Promise<Response> {
 }
 
 function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
-  const [summary, setSummary] = useState<SteamProfileSummary>();
-  const [error, setError] = useState<string>();
+  const [ summary, setSummary ] = useState<SteamProfileSummary>();
+  const [ sourcebans, setSourcebans ] = useState<Sourceban[]>();
+  const [ error, setError ] = useState<string>();
 
   useEffect(() => {
     const getPlayerData = async (): Promise<SteamProfileSummary> => {
@@ -208,14 +205,21 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
       const steam = new SteamID(vanity_json?.['steamid'] ?? steamid);
 
       const summary = await fetchTimeout(
-        `${API_ENDPOINT}/lookup/${steam.getSteamID64()}?sourcebans=true`, 
-        5_000
+        `${API_ENDPOINT}/lookup/${steam.getSteamID64()}`
       );
 
       const summary_json = await summary.json();
       if (summary_json['error']) {
         throw new Error(summary_json['error']);
       }
+
+      fetchTimeout(
+        `${API_ENDPOINT}/sourcebans/${steam.getSteamID64()}`,
+        5_000
+      ).then(async (resp) => {
+        const bans_json = await resp.json();
+        setSourcebans(bans_json['sourcebans'])
+      });
 
       return summary_json;
     };
@@ -257,7 +261,7 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
                 <SteamIdList summary={summary} />
                 <AlertList summary={summary} />
                 <QuickLinks summary={summary} />
-                <Sourcebans summary={summary} />
+                <Sourcebans sourcebans={sourcebans} />
               </Flex>
             </Box>
           </Flex>
