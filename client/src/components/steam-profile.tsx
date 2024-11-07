@@ -193,9 +193,8 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
       }
 
       fetch(`${API_ENDPOINT}/sourcebans/${steam}`)
-        .then(async (resp) => {
-          const bans_json = await resp.json();
-          setSourcebans(bans_json['sourcebans']);
+        .then((resp) => {
+          resp.json().then((json) => setSourcebans(json['sourcebans']));
         })
         .catch((error) => setSourcebansError(`${error}`));
 
