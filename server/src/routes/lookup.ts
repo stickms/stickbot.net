@@ -35,7 +35,7 @@ lookup_route.get('/lookup/:steamid', async (c) => {
     return c.json({ 'error': 'Could not reach Steam API' });
   }
 
-  const jsons = [ await results[0].json(), await results[1].json() ];
+  const jsons = [await results[0].json(), await results[1].json()];
 
   if (!jsons[0]['response']?.['players']?.[0]) {
     return c.json({ 'error': 'Could not find profile summary' });
@@ -48,7 +48,7 @@ lookup_route.get('/lookup/:steamid', async (c) => {
   const resp = {
     ...jsons[1]['players'][0],
     ...jsons[0]['response']['players'][0]
-  }
+  };
 
   return c.json(resp);
 });

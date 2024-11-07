@@ -2,7 +2,7 @@ import { Avatar, Box, Card, Flex, Link, Spinner, Text } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
 import { Sourceban, SteamProfileSummary } from '../types/steam';
 import { API_ENDPOINT } from '../env';
-import SteamID from 'steamid';
+import { parseSteamID } from '../helpers/steamid';
 
 type SteamProfileProps = {
   steamid: string;
@@ -10,12 +10,12 @@ type SteamProfileProps = {
 };
 
 function SteamIdList({ summary }: { summary: SteamProfileSummary }) {
-  const steam = new SteamID(summary.steamid);
+  const accountid = Number(BigInt(summary.steamid) & BigInt(0xffffffff));
 
   const idlist = [
-    steam.getSteamID64(),
-    steam.getSteam3RenderedID(),
-    steam.getSteam2RenderedID(true)
+    summary.steamid, // Steam ID 64
+    `[U:1:${accountid}]`, // Steam ID 3
+    `STEAM_1:${accountid & 1}:${accountid / 2}` // Steam ID 2
   ];
 
   if (summary.profileurl.includes('/id/')) {
@@ -167,22 +167,6 @@ function Sourcebans({
   );
 }
 
-async function fetchTimeout(url: string, timeout = 1000): Promise<Response> {
-  return new Promise<Response>((resolve, reject) => {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), timeout);
-
-      fetch(url, { signal: controller.signal })
-        .then((response) => resolve(response))
-        .catch((error) => reject(error))
-        .finally(() => clearTimeout(timeoutId));
-    } catch (error) {
-      reject(error);
-    }
-  });
-}
-
 function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
   const [summary, setSummary] = useState<SteamProfileSummary>();
   const [sourcebans, setSourcebans] = useState<Sourceban[]>();
@@ -192,25 +176,23 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
 
   useEffect(() => {
     const getPlayerData = async (): Promise<SteamProfileSummary> => {
-      const vanity = await fetchTimeout(`${API_ENDPOINT}/resolve/${steamid}`);
+      const vanity = await fetch(`${API_ENDPOINT}/resolve/${steamid}`);
 
       const vanity_json = await vanity.json();
       if (vanity_json['error']) {
         throw new Error(vanity_json['error']);
       }
 
-      const steam = new SteamID(vanity_json?.['steamid'] ?? steamid);
+      const steam = parseSteamID(vanity_json?.['steamid'] ?? steamid);
 
-      const summary = await fetchTimeout(
-        `${API_ENDPOINT}/lookup/${steam.getSteamID64()}`
-      );
+      const summary = await fetch(`${API_ENDPOINT}/lookup/${steam}`);
 
       const summary_json = await summary.json();
       if (summary_json['error']) {
         throw new Error(summary_json['error']);
       }
 
-      fetchTimeout(`${API_ENDPOINT}/sourcebans/${steam.getSteamID64()}`, 5_000)
+      fetch(`${API_ENDPOINT}/sourcebans/${steam}`)
         .then(async (resp) => {
           const bans_json = await resp.json();
           setSourcebans(bans_json['sourcebans']);

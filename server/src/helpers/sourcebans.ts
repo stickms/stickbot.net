@@ -59,16 +59,19 @@ class Sourcebans {
         sourcebans.push(...parsed);
       }
     }
-    
+
     return sourcebans;
   }
 
-  private static async fetchTimeout(url: string, timeout = 1000): Promise<Response> {
+  private static async fetchTimeout(
+    url: string,
+    timeout = 1000
+  ): Promise<Response> {
     return new Promise<Response>((resolve, reject) => {
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), timeout);
-  
+
         fetch(url, { signal: controller.signal })
           .then((response) => resolve(response))
           .catch((error) => reject(error))
@@ -79,23 +82,21 @@ class Sourcebans {
     });
   }
 
-  private static async getWebData(
-    steamid: string
-  ): Promise<Response[]> {
-    const accountid = Number(BigInt(steamid) & BigInt(0xFFFFFFFF));
+  private static async getWebData(steamid: string): Promise<Response[]> {
+    const accountid = Number(BigInt(steamid) & BigInt(0xffffffff));
 
     const gets = this.SOURCEBAN_URLS.map((entry) => {
       let url = entry + this.SOURCEBAN_EXT;
-      
+
       if (entry === 'https://www.skial.com/sourcebans/') {
         // SteamID3 (skial only for now)
         url += `[U:1:${accountid}]`;
       } else {
         // SteamID2 but with regex
-        url += `STEAM__:${accountid & 1}:${Math.floor(accountid / 2)}`;
+        url += `STEAM__:${accountid & 1}:${accountid / 2}`;
       }
 
-      return this.fetchTimeout(url, 2500);
+      return this.fetchTimeout(url, 2000);
     });
 
     return (await Promise.allSettled(gets))
@@ -118,12 +119,12 @@ class Sourcebans {
     let reasons: string[] = divs
       .filter((div) => {
         return div.getElementsByTagName('td').some((td) => {
-          const accountid = Number(BigInt(steamid) & BigInt(0xFFFFFFFF));
+          const accountid = Number(BigInt(steamid) & BigInt(0xffffffff));
           const steamid2 = `STEAM_[01]:${accountid & 1}:${Math.floor(accountid / 2)}`;
 
           const regex1 = new RegExp(steamid);
           const regex2 = new RegExp(`^${steamid2}$`);
-          
+
           return (
             (td.innerText === 'Steam Community' &&
               regex1.test(td.nextElementSibling?.innerText ?? '')) ||
@@ -141,7 +142,7 @@ class Sourcebans {
 
         return 'Unknown Reason';
       });
-    
+
     // If we can't find that div, we probably have a "Fluent Design" Theme
     if (!divs.length) {
       divs = dom.querySelectorAll('div.collapse_content');
@@ -167,13 +168,12 @@ class Sourcebans {
         });
     }
 
-    return reasons
-      .map((reason) => {
-        return {
-          url: data.url,
-          reason: reason
-        };
-      });
+    return reasons.map((reason) => {
+      return {
+        url: data.url,
+        reason: reason
+      };
+    });
   }
 }
 
