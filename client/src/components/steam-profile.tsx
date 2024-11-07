@@ -134,7 +134,7 @@ function QuickLinks({ summary }: { summary: SteamProfileSummary }) {
   );
 }
 
-function Sourcebans({ sourcebans }: { sourcebans: Sourceban[] | undefined }) {
+function Sourcebans({ sourcebans, error }: { sourcebans: Sourceban[] | undefined, error: string | undefined  }) {
   return (
     <Box className='min-w-36 flex-grow'>
       <Box className='w-full'>
@@ -144,8 +144,15 @@ function Sourcebans({ sourcebans }: { sourcebans: Sourceban[] | undefined }) {
       </Box>
       <Box className='w-full whitespace-pre-line'>
         {
-          !sourcebans && (
+          !sourcebans && !error && (
             <Spinner size='3'/>
+          )
+        }
+        {
+          error && (
+            <Text size='2'>
+              ❌ Error: {error.toString()}
+            </Text>
           )
         }
         {
@@ -189,7 +196,9 @@ async function fetchTimeout(url: string, timeout = 1000): Promise<Response> {
 function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
   const [ summary, setSummary ] = useState<SteamProfileSummary>();
   const [ sourcebans, setSourcebans ] = useState<Sourceban[]>();
+
   const [ error, setError ] = useState<string>();
+  const [ sourcebansError, setSourcebansError ] = useState<string>();
 
   useEffect(() => {
     const getPlayerData = async (): Promise<SteamProfileSummary> => {
@@ -219,7 +228,7 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
       ).then(async (resp) => {
         const bans_json = await resp.json();
         setSourcebans(bans_json['sourcebans'])
-      });
+      }).catch((error) => setSourcebansError(`${error}`));
 
       return summary_json;
     };
@@ -235,7 +244,7 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
       { error && (<>
         <Box className='w-full'>
           <Text size='3' weight='bold' color='ruby'>
-            Error
+            ❌ Error
           </Text>
         </Box>
       <Text size='3'>{error.toString()}</Text>
@@ -261,7 +270,7 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
                 <SteamIdList summary={summary} />
                 <AlertList summary={summary} />
                 <QuickLinks summary={summary} />
-                <Sourcebans sourcebans={sourcebans} />
+                <Sourcebans sourcebans={sourcebans} error={sourcebansError} />
               </Flex>
             </Box>
           </Flex>

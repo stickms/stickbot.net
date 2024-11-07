@@ -10,7 +10,6 @@ const url_endpoint = 'https://api.steampowered.com/ISteamUser/';
 
 lookup_route.get('/lookup/:steamid', async (c) => {
   const steamid = c.req.param('steamid');
-  const sourcebans = c.req.query('sourcebans');
 
   const sum_url = new URL(url_endpoint + 'GetPlayerSummaries/v2/');
   const ban_url = new URL(url_endpoint + 'GetPlayerBans/v1/');
@@ -38,10 +37,6 @@ lookup_route.get('/lookup/:steamid', async (c) => {
 
   const jsons = [ await results[0].json(), await results[1].json() ];
 
-  if (sourcebans) {
-    jsons.push(await Sourcebans.get(steamid));
-  }
-
   if (!jsons[0]['response']?.['players']?.[0]) {
     return c.json({ 'error': 'Could not find profile summary' });
   }
@@ -53,10 +48,6 @@ lookup_route.get('/lookup/:steamid', async (c) => {
   const resp = {
     ...jsons[1]['players'][0],
     ...jsons[0]['response']['players'][0]
-  }
-
-  if (sourcebans) {
-    resp['sourcebans'] = jsons[2];
   }
 
   return c.json(resp);
