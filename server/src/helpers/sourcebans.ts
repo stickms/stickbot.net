@@ -93,7 +93,7 @@ class Sourcebans {
         url += `[U:1:${accountid}]`;
       } else {
         // SteamID2 but with regex
-        url += `STEAM__:${accountid & 1}:${accountid / 2}`;
+        url += `STEAM__:${accountid & 1}:${Math.floor(accountid / 2)}`;
       }
 
       return this.fetchTimeout(url, 2000);

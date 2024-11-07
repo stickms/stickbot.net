@@ -1,7 +1,6 @@
 import { Hono } from 'hono';
 import { STEAM_API_KEY } from '../env.js';
 import { URL, URLSearchParams } from 'url';
-import type { SteamProfileSummary } from '../types.js';
 import Sourcebans from '../helpers/sourcebans.js';
 
 const lookup_route = new Hono();
