@@ -156,7 +156,13 @@ function Sourcebans({
           sourcebans.length > 0 &&
           sourcebans.map((s, index) => {
             return (
-              <Link key={index} href={s.url} size='2'>
+              <Link 
+                key={index} 
+                size='2' 
+                href={s.url} 
+                target='_blank' 
+                rel='noopener noreferrer'
+              >
                 {`${s.url.split('/')[2]} - ${s.reason}`}
                 {'\n'}
               </Link>
@@ -179,11 +185,8 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
       const vanity = await fetch(`${API_ENDPOINT}/resolve/${steamid}`);
 
       const vanity_json = await vanity.json();
-      if (vanity_json['error']) {
-        throw new Error(vanity_json['error']);
-      }
 
-      const steam = parseSteamID(vanity_json?.['steamid'] ?? steamid);
+      const steam = parseSteamID(vanity_json['steamid'] ?? steamid);
 
       const summary = await fetch(`${API_ENDPOINT}/lookup/${steam}`);
 
@@ -221,9 +224,7 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
       )}
 
       {!error && !summary && (
-        <Spinner size='3'>
-          <Text>Loading profile...</Text>
-        </Spinner>
+        <Spinner size='3' />
       )}
 
       {!error && summary && (
