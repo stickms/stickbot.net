@@ -1,4 +1,11 @@
-import { Flex, Grid, IconButton, Link, ScrollArea, TextField } from '@radix-ui/themes';
+import {
+  Flex,
+  Grid,
+  IconButton,
+  Link,
+  ScrollArea,
+  TextField
+} from '@radix-ui/themes';
 import { useState } from 'react';
 import SteamProfile from '../components/steam-profile';
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
@@ -16,7 +23,7 @@ function ProfileLookup() {
     setProfiles((prev) => [query, ...prev]);
     setQuery('');
     setDisabled(true);
-  }
+  };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -28,7 +35,13 @@ function ProfileLookup() {
   return (
     <Grid className='grid-rows-2 grid-cols-1 w-screen h-screen'>
       <Flex className='items-center justify-center flex-col gap-y-24 mt-[20vh]'>
-        <Link href='.' color='gray' highContrast underline='hover' className='text-3xl text-center'>
+        <Link
+          href='.'
+          color='gray'
+          highContrast
+          underline='hover'
+          className='text-3xl text-center'
+        >
           Steam Profile Lookup
         </Link>
         <TextField.Root

@@ -134,7 +134,13 @@ function QuickLinks({ summary }: { summary: SteamProfileSummary }) {
   );
 }
 
-function Sourcebans({ sourcebans, error }: { sourcebans: Sourceban[] | undefined, error: string | undefined  }) {
+function Sourcebans({
+  sourcebans,
+  error
+}: {
+  sourcebans: Sourceban[] | undefined;
+  error: string | undefined;
+}) {
   return (
     <Box className='min-w-36 flex-grow'>
       <Box className='w-full'>
@@ -143,35 +149,19 @@ function Sourcebans({ sourcebans, error }: { sourcebans: Sourceban[] | undefined
         </Text>
       </Box>
       <Box className='w-full whitespace-pre-line'>
-        {
-          !sourcebans && !error && (
-            <Spinner size='3'/>
-          )
-        }
-        {
-          error && (
-            <Text size='2'>
-              ❌ Error: {error.toString()}
-            </Text>
-          )
-        }
-        {
-          sourcebans && sourcebans.length == 0 && (
-            <Text size='2'>
-              ✅ None
-            </Text>
-          )
-        }
-        {
-          sourcebans && sourcebans.length > 0 && sourcebans.map((s, index) => {
+        {!sourcebans && !error && <Spinner size='3' />}
+        {error && <Text size='2'>❌ Error: {error.toString()}</Text>}
+        {sourcebans && sourcebans.length == 0 && <Text size='2'>✅ None</Text>}
+        {sourcebans &&
+          sourcebans.length > 0 &&
+          sourcebans.map((s, index) => {
             return (
               <Link key={index} href={s.url} size='2'>
                 {`${s.url.split('/')[2]} - ${s.reason}`}
                 {'\n'}
               </Link>
-            )
-          })
-        }
+            );
+          })}
       </Box>
     </Box>
   );
@@ -194,17 +184,15 @@ async function fetchTimeout(url: string, timeout = 1000): Promise<Response> {
 }
 
 function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
-  const [ summary, setSummary ] = useState<SteamProfileSummary>();
-  const [ sourcebans, setSourcebans ] = useState<Sourceban[]>();
+  const [summary, setSummary] = useState<SteamProfileSummary>();
+  const [sourcebans, setSourcebans] = useState<Sourceban[]>();
 
-  const [ error, setError ] = useState<string>();
-  const [ sourcebansError, setSourcebansError ] = useState<string>();
+  const [error, setError] = useState<string>();
+  const [sourcebansError, setSourcebansError] = useState<string>();
 
   useEffect(() => {
     const getPlayerData = async (): Promise<SteamProfileSummary> => {
-      const vanity = await fetchTimeout(
-        `${API_ENDPOINT}/resolve/${steamid}`
-      );
+      const vanity = await fetchTimeout(`${API_ENDPOINT}/resolve/${steamid}`);
 
       const vanity_json = await vanity.json();
       if (vanity_json['error']) {
@@ -222,13 +210,12 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
         throw new Error(summary_json['error']);
       }
 
-      fetchTimeout(
-        `${API_ENDPOINT}/sourcebans/${steam.getSteamID64()}`,
-        5_000
-      ).then(async (resp) => {
-        const bans_json = await resp.json();
-        setSourcebans(bans_json['sourcebans'])
-      }).catch((error) => setSourcebansError(`${error}`));
+      fetchTimeout(`${API_ENDPOINT}/sourcebans/${steam.getSteamID64()}`, 5_000)
+        .then(async (resp) => {
+          const bans_json = await resp.json();
+          setSourcebans(bans_json['sourcebans']);
+        })
+        .catch((error) => setSourcebansError(`${error}`));
 
       return summary_json;
     };
@@ -237,47 +224,47 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
       .then((summ) => setSummary(summ))
       .catch((error) => setError(error))
       .finally(() => setDisabled(false));
-  }, [ steamid, setDisabled ]);
+  }, [steamid, setDisabled]);
 
   return (
     <Card className='mb-2 min-h-[300px] w-[calc(100%-32px)]'>
-      { error && (<>
-        <Box className='w-full'>
-          <Text size='3' weight='bold' color='ruby'>
-            ❌ Error
-          </Text>
-        </Box>
-      <Text size='3'>{error.toString()}</Text>
-      </>)}
+      {error && (
+        <>
+          <Box className='w-full'>
+            <Text size='3' weight='bold' color='ruby'>
+              ❌ Error
+            </Text>
+          </Box>
+          <Text size='3'>{error.toString()}</Text>
+        </>
+      )}
 
-      { !error && !summary && (
+      {!error && !summary && (
         <Spinner size='3'>
           <Text>Loading profile...</Text>
         </Spinner>
       )}
 
-      {
-        !error && summary && (
-          <Flex className='gap-3 items-start'>
-            <Avatar src={summary.avatarfull} fallback='T' />
-            <Box>
-              <Box className='w-full'>
-                <Text size='3' weight='bold'>
-                  {summary.personaname}
-                </Text>
-              </Box>
-              <Flex className='gap-5 flex-wrap'>
-                <SteamIdList summary={summary} />
-                <AlertList summary={summary} />
-                <QuickLinks summary={summary} />
-                <Sourcebans sourcebans={sourcebans} error={sourcebansError} />
-              </Flex>
+      {!error && summary && (
+        <Flex className='gap-3 items-start'>
+          <Avatar src={summary.avatarfull} fallback='T' />
+          <Box>
+            <Box className='w-full'>
+              <Text size='3' weight='bold'>
+                {summary.personaname}
+              </Text>
             </Box>
-          </Flex>
-        )
-      }
+            <Flex className='gap-5 flex-wrap'>
+              <SteamIdList summary={summary} />
+              <AlertList summary={summary} />
+              <QuickLinks summary={summary} />
+              <Sourcebans sourcebans={sourcebans} error={sourcebansError} />
+            </Flex>
+          </Box>
+        </Flex>
+      )}
     </Card>
-  )
+  );
 }
 
 export default SteamProfile;
