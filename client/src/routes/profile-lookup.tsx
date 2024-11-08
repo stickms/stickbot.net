@@ -48,6 +48,7 @@ function ProfileLookup() {
           className='w-96 max-w-[80vw]'
           placeholder='Lookup a Steam Profile...'
           value={query}
+          maxLength={128}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyPress}
           disabled={disabled}

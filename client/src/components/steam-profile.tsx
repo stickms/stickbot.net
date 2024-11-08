@@ -1,4 +1,13 @@
-import { Avatar, Box, Card, Flex, Link, Spinner, Text } from '@radix-ui/themes';
+import {
+  Avatar,
+  Badge,
+  Box,
+  Card,
+  Flex,
+  Link,
+  Spinner,
+  Text
+} from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
 import { Sourceban, SteamProfileSummary } from '../types/steam';
 import { API_ENDPOINT } from '../env';
@@ -15,7 +24,7 @@ function SteamIdList({ summary }: { summary: SteamProfileSummary }) {
   const idlist = [
     summary.steamid, // Steam ID 64
     `[U:1:${accountid}]`, // Steam ID 3
-    `STEAM_1:${accountid & 1}:${accountid / 2}` // Steam ID 2
+    `STEAM_1:${accountid & 1}:${Math.floor(accountid / 2)}` // Steam ID 2
   ];
 
   if (summary.profileurl.includes('/id/')) {
@@ -44,7 +53,7 @@ function SteamIdList({ summary }: { summary: SteamProfileSummary }) {
 }
 
 function AlertList({ summary }: { summary: SteamProfileSummary }) {
-  const alertlist: string[] = [];
+  const alertlist: { color: string; text: string }[] = [];
 
   const plural = (num: number, label: string) => {
     return `${num} ${label}${num == 1 ? '' : 's'}`;
@@ -52,29 +61,37 @@ function AlertList({ summary }: { summary: SteamProfileSummary }) {
 
   const banlist = [
     {
-      label: `❌ ${plural(summary.NumberOfVACBans, 'VAC Ban')}`,
+      label: `${plural(summary.NumberOfVACBans, 'VAC Ban')}`,
       valid: summary.NumberOfVACBans > 0
     },
     {
-      label: `❌ ${plural(summary.NumberOfGameBans, 'Game Ban')}`,
+      label: `${plural(summary.NumberOfGameBans, 'Game Ban')}`,
       valid: summary.NumberOfGameBans > 0
     },
     {
-      label: '❌ Community Ban',
+      label: 'Community Ban',
       valid: summary.CommunityBanned
     },
     {
-      label: '❌ Trade Ban',
+      label: 'Trade Ban',
       valid: summary.EconomyBan == 'banned'
     }
   ]
     .filter((x) => x.valid)
-    .map((x) => x.label);
+    .map((x) => {
+      return {
+        color: 'red',
+        text: x.label
+      };
+    });
 
   alertlist.push(...banlist);
 
   if (!alertlist.length) {
-    alertlist.push('✅ None');
+    alertlist.push({
+      color: 'green',
+      text: 'None'
+    });
   }
 
   return (
@@ -87,10 +104,15 @@ function AlertList({ summary }: { summary: SteamProfileSummary }) {
       <Box className='w-full whitespace-pre-line'>
         {alertlist.map((alert) => {
           return (
-            <Text key={alert} size='2'>
-              {alert}
-              {'\n'}
-            </Text>
+            <Box className='w-full'>
+              <Badge
+                key={alert.text}
+                size='2'
+                color={alert.color as 'red' | 'yellow' | 'green' | 'blue'}
+              >
+                {alert.text}
+              </Badge>
+            </Box>
           );
         })}
       </Box>
@@ -151,16 +173,20 @@ function Sourcebans({
       <Box className='w-full whitespace-pre-line'>
         {!sourcebans && !error && <Spinner size='3' />}
         {error && <Text size='2'>❌ Error: {error.toString()}</Text>}
-        {sourcebans && sourcebans.length == 0 && <Text size='2'>✅ None</Text>}
+        {sourcebans && sourcebans.length == 0 && (
+          <Badge size='2' color='green'>
+            None
+          </Badge>
+        )}
         {sourcebans &&
           sourcebans.length > 0 &&
           sourcebans.map((s, index) => {
             return (
-              <Link 
-                key={index} 
-                size='2' 
-                href={s.url} 
-                target='_blank' 
+              <Link
+                key={index}
+                size='2'
+                href={s.url}
+                target='_blank'
                 rel='noopener noreferrer'
               >
                 {`${s.url.split('/')[2]} - ${s.reason}`}
@@ -182,11 +208,29 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
 
   useEffect(() => {
     const getPlayerData = async (): Promise<SteamProfileSummary> => {
-      const vanity = await fetch(`${API_ENDPOINT}/resolve/${steamid}`);
+      let query = steamid.trim();
+
+      try {
+        const url = new URL(query);
+
+        if (url.hostname === 'steamcommunity.com') {
+          if (
+            url.pathname.startsWith('/profiles/') ||
+            url.pathname.startsWith('/id/')
+          ) {
+            query = url.pathname.split('/')[2];
+          }
+        }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_) {
+        /* empty */
+      }
+
+      const vanity = await fetch(`${API_ENDPOINT}/resolve/${query}`);
 
       const vanity_json = await vanity.json();
 
-      const steam = parseSteamID(vanity_json['steamid'] ?? steamid);
+      const steam = parseSteamID(vanity_json['steamid'] ?? query);
 
       const summary = await fetch(`${API_ENDPOINT}/lookup/${steam}`);
 
@@ -223,9 +267,7 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
         </>
       )}
 
-      {!error && !summary && (
-        <Spinner size='3' />
-      )}
+      {!error && !summary && <Spinner size='3' />}
 
       {!error && summary && (
         <Flex className='gap-3 items-start'>
