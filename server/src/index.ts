@@ -4,11 +4,13 @@ import { cors } from 'hono/cors';
 import { API_PORT } from './env.js';
 
 import lookup_route from './routes/lookup.js';
+import oauth_route from './routes/oauth.js';
 
 const app = new Hono();
 
 app.use('/*', cors());
 app.route('/', lookup_route);
+app.route('/', oauth_route);
 
 app.onError((error, c) => {
   return c.json({ 'error': error.message }, 500);

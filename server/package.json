@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.13.4",
+    "arctic": "^2.3.3",
     "dotenv": "^16.4.5",
     "hono": "^4.6.8",
     "node-html-parser": "^6.1.13"
