@@ -8,6 +8,7 @@ import { sha256 } from '@oslojs/crypto/sha2';
 
 import type { User, Session } from './schema.js';
 import type { Context } from 'hono';
+import { setCookie } from 'hono/cookie';
 
 export function generateSessionToken(): string {
   const bytes = new Uint8Array(20);
@@ -72,33 +73,21 @@ export function setSessionTokenCookie(
   token: string,
   expiresAt: Date
 ): void {
-  if (process.env.NODE_ENV === 'production') {
-    context.header(
-      'Set-Cookie',
-      `session=${token}; HttpOnly; SameSite=Lax; Expires=${expiresAt.toUTCString()}; Path=/; Secure;`,
-      { append: true }
-    );
-  } else {
-    context.header(
-      'Set-Cookie',
-      `session=${token}; HttpOnly; SameSite=Lax; Expires=${expiresAt.toUTCString()}; Path=/`,
-      { append: true }
-    );
-  }
+	setCookie(context, 'session', token, {
+		httpOnly: true,
+		sameSite: 'lax',
+		expires: expiresAt,
+		path: '/',
+		secure: process.env.NODE_ENV === 'production'
+	});
 }
 
 export function deleteSessionTokenCookie(context: Context): void {
-  if (process.env.NODE_ENV === 'production') {
-    context.header(
-      'Set-Cookie',
-      'session=; HttpOnly; SameSite=Lax; Max-Age=0; Path=/; Secure;',
-      { append: true }
-    );
-  } else {
-    context.header(
-      'Set-Cookie',
-      'session=; HttpOnly; SameSite=Lax; Max-Age=0; Path=/',
-      { append: true }
-    );
-  }
+	setCookie(context, 'session', '', {
+		httpOnly: true,
+		sameSite: 'lax',
+		maxAge: 0,
+		path: '/',
+		secure: process.env.NODE_ENV === 'production'
+	});
 }

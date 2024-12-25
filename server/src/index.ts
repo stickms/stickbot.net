@@ -8,7 +8,16 @@ import oauth_route from './routes/oauth.js';
 
 const app = new Hono();
 
-app.use('/*', cors());
+app.use(
+  '/*',
+  cors({
+    origin: (origin) => origin,
+    credentials: true,
+    allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'Authorization'],
+    exposeHeaders: ['Set-Cookie']
+  })
+);
 app.route('/', lookup_route);
 app.route('/', oauth_route);
 

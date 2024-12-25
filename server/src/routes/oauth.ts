@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { Discord, generateState, OAuth2RequestError } from 'arctic';
 import {
+	CLIENT_URL,
   DISCORD_CLIENT_ID,
   DISCORD_CLIENT_SECRET,
   DISCORD_REDIRECT_URI
@@ -8,7 +9,7 @@ import {
 import { getCookie, setCookie } from 'hono/cookie';
 import { db, users } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
-import { createSession, generateSessionToken, setSessionTokenCookie } from '../db/session.js';
+import { createSession, deleteSessionTokenCookie, generateSessionToken, invalidateSession, setSessionTokenCookie, validateSessionToken } from '../db/session.js';
 
 const oauth_route = new Hono();
 
@@ -102,7 +103,7 @@ oauth_route.get('/login/discord/callback', async (c) => {
 		const session = await createSession(sessionToken, userid);
 		setSessionTokenCookie(c, sessionToken, session.expiresAt);
 
-		return c.redirect('http://localhost:5173/profile');
+		return c.redirect(`${CLIENT_URL}/profile`);
   } catch (error) {
     if (error instanceof OAuth2RequestError) {
       // invalid code
@@ -115,6 +116,67 @@ oauth_route.get('/login/discord/callback', async (c) => {
 
     return c.text('An unknown error occurred', 500);
   }
+});
+
+oauth_route.post('/logout/discord', async (c) => {
+	const cookie = getCookie(c);
+	const { user } = await validateSessionToken(cookie['session']);
+
+	if (user) {
+		await discord.revokeToken(user.accessToken);
+	}
+
+	if (cookie['session']) {
+		invalidateSession(cookie['session']);
+	}
+
+	deleteSessionTokenCookie(c);
+
+	return c.json({
+		message: 'success'
+	});
+});
+
+oauth_route.get('/discord_info', async(c) => {
+	const cookie = getCookie(c);
+	const { session, user } = await validateSessionToken(cookie['session']);
+
+	if (!session || !user) {
+		deleteSessionTokenCookie(c);
+		return c.json({message: 'Invalid session'}, 400);
+	}
+
+	let access_token = user.accessToken;
+
+	if (new Date() > user.accessTokenExpiration) {
+		const tokens = await discord.refreshAccessToken(user.refreshToken);
+		access_token = tokens.accessToken();
+
+		await db
+			.update(users)
+			.set({
+				refreshToken: tokens.refreshToken(),
+				accessToken: access_token,
+				accessTokenExpiration: tokens.accessTokenExpiresAt()
+			});
+	}
+
+	const userinfo = await fetch(url_endpoint + 'users/@me', {
+		headers: new Headers({
+			'Authorization': `Bearer ${access_token}`
+		})
+	});
+
+	const guildinfo = await fetch(url_endpoint + 'users/@me/guilds', {
+		headers: new Headers({
+			'Authorization': `Bearer ${access_token}`
+		})
+	});
+
+	return c.json({
+		user: await userinfo.json(),
+		guilds: await guildinfo.json()
+	})
 });
 
 export default oauth_route;

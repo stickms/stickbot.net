@@ -4,7 +4,9 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc -b",
-    "prettier": "prettier --write \"src/**/*.{js,ts,jsx,tsx}\" --config \"../.prettierrc.json\""
+    "prettier": "prettier --write \"src/**/*.{js,ts,jsx,tsx}\" --config \"../.prettierrc.json\"",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.4",
