@@ -11,4 +11,3 @@ export const STEAM_API_KEY: string = process.env.STEAM_API_KEY!;
 export const DISCORD_CLIENT_ID: string = process.env.DISCORD_CLIENT_ID!;
 export const DISCORD_CLIENT_SECRET: string = process.env.DISCORD_CLIENT_SECRET!;
 export const DISCORD_REDIRECT_URI: string = process.env.DISCORD_REDIRECT_URI!;
-
