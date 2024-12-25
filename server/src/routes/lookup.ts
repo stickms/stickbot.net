@@ -1,7 +1,10 @@
 import { Hono } from 'hono';
-import { STEAM_API_KEY } from '../env.js';
+import { MONGO_URL, STEAM_API_KEY } from '../env.js';
 import { URL, URLSearchParams } from 'url';
 import Sourcebans from '../helpers/sourcebans.js';
+import { getCookie } from 'hono/cookie';
+import { deleteSessionTokenCookie, validateSessionToken } from '../db/session.js';
+import { Collection, MongoClient } from 'mongodb';
 
 const lookup_route = new Hono();
 
@@ -86,6 +89,78 @@ lookup_route.get('/sourcebans/:steamid', async (c) => {
 
   return c.json({
     'sourcebans': sourcebans
+  });
+});
+
+type TagEntry = {
+  addedby: string;
+  date: number;
+};
+
+export interface DatabasePlayerEntry {
+  _id: string;
+  addresses: {
+    [ip: string]: {
+      game: string;
+      date: number;
+    };
+  };
+  bandata: {
+    vacbans: number;
+    gamebans: number;
+    communityban: boolean;
+    tradeban: boolean;
+  };
+  names: {
+    [name: string]: number;
+  };
+  notifications: {
+    [guildid: string]: {
+      ban: string[];
+      name: string[];
+      log: string[];
+    };
+  };
+  tags: {
+    [guildid: string]: {
+      cheater?: TagEntry;
+      suspicious?: TagEntry;
+      popular?: TagEntry;
+      banwatch?: TagEntry;
+    };
+  };
+}
+
+const mongo = new MongoClient(MONGO_URL);
+const players: Collection<DatabasePlayerEntry> = mongo.db('stickbot').collection('players');
+
+lookup_route.get('/botdata/:steamid', async (c) => {
+  const cookie = getCookie(c);
+  const { session, user } = await validateSessionToken(cookie['session']);
+
+  if (!session || !user) {
+    deleteSessionTokenCookie(c);
+    return c.json({ message: 'Invalid session' }, 400);
+  }
+  
+  const steamid = c.req.param('steamid');
+  const guildid = c.req.query('guildid');
+
+  if (!guildid) {
+    return c.json({ message: 'Please specify a guildid' }, 400);
+  }
+
+  const player = await players.findOne({
+    _id: steamid
+  });
+
+  if (!player) {
+    return c.json({ message: 'Profile not found' }, 404);
+  }
+
+  return c.json({
+    names: player.names,
+    tags: player.tags[guildid] ?? {}
   });
 });
 

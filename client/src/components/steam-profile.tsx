@@ -12,6 +12,8 @@ import { useEffect, useState } from 'react';
 import { Sourceban, SteamProfileSummary } from '../types/steam';
 import { API_ENDPOINT } from '../env';
 import { parseSteamID } from '../helpers/steamid';
+import { useStore } from '@nanostores/react';
+import { $guildid } from '../lib/store';
 
 type SteamProfileProps = {
   steamid: string;
@@ -52,7 +54,7 @@ function SteamIdList({ summary }: { summary: SteamProfileSummary }) {
   );
 }
 
-function AlertList({ summary }: { summary: SteamProfileSummary }) {
+function AlertList({ summary, tags }: { summary: SteamProfileSummary, tags: TagList }) {
   const alertlist: { color: string; text: string }[] = [];
 
   const plural = (num: number, label: string) => {
@@ -86,6 +88,24 @@ function AlertList({ summary }: { summary: SteamProfileSummary }) {
     });
 
   alertlist.push(...banlist);
+
+  const profiletags = (): { name: string; value: string }[] => {
+    return [
+      { name: 'Cheater', value: 'cheater' },
+      { name: 'Suspicious', value: 'suspicious' },
+      { name: 'Content Creator', value: 'popular' },
+      { name: 'Ban Watch', value: 'banwatch' }
+    ];
+  }
+
+  for (const tag of profiletags()) {
+    if (tags[tag.value]) {
+      alertlist.push({
+        color: tag.value === 'banwatch' ? 'blue': 'yellow',
+        text: tag.name
+      });
+    }
+  }
 
   if (!alertlist.length) {
     alertlist.push({
@@ -199,9 +219,19 @@ function Sourcebans({
   );
 }
 
+type TagList = {
+  [Key: string]: {
+    addedby: string;
+    date: number;
+  };
+}
+
 function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
+  const guildid = useStore($guildid);
+
   const [summary, setSummary] = useState<SteamProfileSummary>();
   const [sourcebans, setSourcebans] = useState<Sourceban[]>();
+  const [tags, setTags] = useState<TagList>({});
 
   const [error, setError] = useState<string>();
   const [sourcebansError, setSourcebansError] = useState<string>();
@@ -244,6 +274,12 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
           resp.json().then((json) => setSourcebans(json['sourcebans']));
         })
         .catch((error) => setSourcebansError(`${error}`));
+      
+      fetch(`${API_ENDPOINT}/botdata/${steam}?guildid=${guildid}`, { credentials: 'include' })
+        .then((resp) => {
+          resp.json().then((json) => setTags(json['tags'] ?? {}));
+        })
+        .catch((error) => console.log(`${error}`));
 
       return summary_json;
     };
@@ -252,7 +288,7 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
       .then((summ) => setSummary(summ))
       .catch((error) => setError(error))
       .finally(() => setDisabled(false));
-  }, [steamid, setDisabled]);
+  }, [ steamid, setDisabled, guildid ]);
 
   return (
     <Card className='mb-2 min-h-[300px] w-[calc(100%-32px)]'>
@@ -280,7 +316,7 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
             </Box>
             <Flex className='gap-5 flex-wrap'>
               <SteamIdList summary={summary} />
-              <AlertList summary={summary} />
+              <AlertList summary={summary} tags={tags} />
               <QuickLinks summary={summary} />
               <Sourcebans sourcebans={sourcebans} error={sourcebansError} />
             </Flex>

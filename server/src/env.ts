@@ -8,6 +8,7 @@ dotenv.config({
 export const API_PORT: string | undefined = process.env.API_PORT;
 export const STEAM_API_KEY: string = process.env.STEAM_API_KEY!;
 export const CLIENT_URL: string = process.env.CLIENT_URL!;
+export const MONGO_URL: string = process.env.MONGO_URL!;
 
 export const DISCORD_CLIENT_ID: string = process.env.DISCORD_CLIENT_ID!;
 export const DISCORD_CLIENT_SECRET: string = process.env.DISCORD_CLIENT_SECRET!;

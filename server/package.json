@@ -17,6 +17,7 @@
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.38.2",
     "hono": "^4.6.8",
+    "mongodb": "^6.12.0",
     "node-html-parser": "^6.1.13"
   },
   "devDependencies": {

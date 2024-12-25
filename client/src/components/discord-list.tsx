@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { API_ENDPOINT } from "../env";
 import { DiscordLogoIcon } from "@radix-ui/react-icons";
 import { useStore } from '@nanostores/react';
-import { $guilds, $user, clearGuilds, clearUser, setGuilds, setUser } from "../lib/store";
+import { $guilds, $user, clearGuildId, clearGuilds, clearUser, setGuildId, setGuilds, setUser } from "../lib/store";
 
 function DiscordList() {
   const user = useStore($user);
@@ -18,6 +18,7 @@ function DiscordList() {
       setGuilds(json['guilds']);
     }
 
+    clearGuildId();
     get_data();
   }, []);
 
@@ -28,6 +29,7 @@ function DiscordList() {
     }).then(() => {
       clearUser();
       clearGuilds();
+      clearGuildId();
     });
   }
 
@@ -43,7 +45,7 @@ function DiscordList() {
 
   return (
     <Flex className='flex-nowrap gap-x-4'>
-      <Select.Root>
+      <Select.Root onValueChange={setGuildId}>
         <Select.Trigger placeholder='Search by Server' />
         <Select.Content>
           <Select.Group>
