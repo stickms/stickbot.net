@@ -9,6 +9,7 @@ import {
 import { useState } from 'react';
 import SteamProfile from '../components/steam-profile';
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
+import DiscordList from '../components/discord-list';
 
 function ProfileLookup() {
   const [query, setQuery] = useState<string>('');
@@ -44,6 +45,7 @@ function ProfileLookup() {
         >
           Steam Profile Lookup
         </Link>
+        <Flex className='flex-nowrap gap-x-4'>
         <TextField.Root
           className='w-96 max-w-[80vw]'
           placeholder='Lookup a Steam Profile...'
@@ -59,6 +61,8 @@ function ProfileLookup() {
             </IconButton>
           </TextField.Slot>
         </TextField.Root>
+        <DiscordList />
+        </Flex>
       </Flex>
       <Flex className='items-center justify-center'>
         <ScrollArea

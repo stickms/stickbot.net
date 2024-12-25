@@ -5,6 +5,8 @@ import { getCookie, setCookie } from 'hono/cookie';
 
 const oauth_route = new Hono();
 
+const url_endpoint = 'https://discord.com/api/v10/';
+
 const discord = new Discord(
   DISCORD_CLIENT_ID, 
   DISCORD_CLIENT_SECRET, 
@@ -27,9 +29,9 @@ oauth_route.get('/login/discord', async (c) => {
 });
 
 oauth_route.get('/login/discord/callback', async (c) => {
-  const storedState = getCookie(c, "github_oauth_state");
+  const storedState = getCookie(c, "discord_oauth_state");
 	const { code, state } = c.req.query();
-	// validate state
+
 	if (
 		!storedState ||
 		!state ||
@@ -42,7 +44,22 @@ oauth_route.get('/login/discord/callback', async (c) => {
 	try {
 		const tokens = await discord.validateAuthorizationCode(code);
 
-		
+		const userinfo = await fetch(url_endpoint + 'users/@me', {
+			headers: new Headers({
+				'Authorization': `Bearer ${tokens.accessToken()}`
+			})
+		});
+
+		const guildinfo = await fetch(url_endpoint + 'users/@me/guilds', {
+			headers: new Headers({
+				'Authorization': `Bearer ${tokens.accessToken()}`
+			})
+		});
+
+		return c.json({
+			user: await userinfo.json(),
+			guilds: await guildinfo.json()
+		})
 	} catch (error) {
 		if (error instanceof OAuth2RequestError) {
 			// invalid code
