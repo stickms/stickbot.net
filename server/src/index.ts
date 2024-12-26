@@ -2,11 +2,13 @@ import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { API_PORT } from './env.js';
+import { auth } from './middleware/auth.js';
+import type { Context } from './lib/context.js';
 
 import lookup_route from './routes/lookup.js';
 import oauth_route from './routes/oauth.js';
 
-const app = new Hono();
+const app = new Hono<Context>();
 
 app.use(
   '/*',
@@ -18,6 +20,9 @@ app.use(
     exposeHeaders: ['Set-Cookie']
   })
 );
+
+app.use('/*', auth);
+
 app.route('/', lookup_route);
 app.route('/', oauth_route);
 

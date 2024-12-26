@@ -10,16 +10,24 @@ function DiscordList() {
   const guilds = useStore($guilds);
 
   useEffect(() => {
-    const get_data = async () => {
-      const resp = await fetch(`${API_ENDPOINT}/discord_info`, { credentials: 'include' });
-      const json = await resp.json();
-
-      setUser(json['user']);
-      setGuilds(json['guilds']);
-    }
-
     clearGuildId();
-    get_data();
+
+    fetch(`${API_ENDPOINT}/discord_info`, { credentials: 'include' })
+      .then((res) => {
+        res.json()
+          .then((json) => {
+            setUser(json['user']);
+            setGuilds(json['guilds']);
+          })
+          .catch(() => {
+            clearUser();
+            clearGuilds();    
+          })
+      })
+      .catch(() => {
+        clearUser();
+        clearGuilds();
+      })
   }, []);
 
   const handleLogout = () => {
@@ -54,7 +62,7 @@ function DiscordList() {
             </Select.Label>
             {
               guilds.length > 0 && guilds.map((guild) => {
-                return <Select.Item value={guild.id} id={guild.id}>
+                return <Select.Item value={guild.id} id={guild.id} key={guild.id}>
                   <Avatar src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`} fallback='S' size='1' />
                   {' '}{guild.name}
                 </Select.Item>

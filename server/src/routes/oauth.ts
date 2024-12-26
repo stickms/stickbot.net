@@ -1,19 +1,20 @@
-import { Hono } from 'hono';
+import {  Hono } from 'hono';
 import { Discord, generateState, OAuth2RequestError } from 'arctic';
 import {
 	CLIENT_URL,
   DISCORD_CLIENT_ID,
   DISCORD_CLIENT_SECRET,
-  DISCORD_REDIRECT_URI
+  DISCORD_REDIRECT_URI,
+	DISCORD_URL
 } from '../env.js';
 import { getCookie, setCookie } from 'hono/cookie';
 import { db, users } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 import { createSession, deleteSessionTokenCookie, generateSessionToken, invalidateSession, setSessionTokenCookie, validateSessionToken } from '../db/session.js';
+import { authGuard } from '../middleware/auth-guard.js';
+import type { Context } from '../lib/context.js';
 
-const oauth_route = new Hono();
-
-const url_endpoint = 'https://discord.com/api/v10/';
+const oauth_route = new Hono<Context>();
 
 const discord = new Discord(
   DISCORD_CLIENT_ID,
@@ -52,7 +53,7 @@ oauth_route.get('/login/discord/callback', async (c) => {
   try {
     const tokens = await discord.validateAuthorizationCode(code);
 
-    const userinfo = await fetch(url_endpoint + 'users/@me', {
+    const userinfo = await fetch(DISCORD_URL + 'users/@me', {
       headers: new Headers({
         'Authorization': `Bearer ${tokens.accessToken()}`
       })
@@ -137,14 +138,8 @@ oauth_route.post('/logout/discord', async (c) => {
 	});
 });
 
-oauth_route.get('/discord_info', async(c) => {
-	const cookie = getCookie(c);
-	const { session, user } = await validateSessionToken(cookie['session']);
-
-	if (!session || !user) {
-		deleteSessionTokenCookie(c);
-		return c.json({message: 'Invalid session'}, 400);
-	}
+oauth_route.get('/discord_info', authGuard, async(c) => {
+	const user = c.get('user')!;
 
 	let access_token = user.accessToken;
 
@@ -161,13 +156,13 @@ oauth_route.get('/discord_info', async(c) => {
 			});
 	}
 
-	const userinfo = await fetch(url_endpoint + 'users/@me', {
+	const userinfo = await fetch(DISCORD_URL + 'users/@me', {
 		headers: new Headers({
 			'Authorization': `Bearer ${access_token}`
 		})
 	});
 
-	const guildinfo = await fetch(url_endpoint + 'users/@me/guilds', {
+	const guildinfo = await fetch(DISCORD_URL + 'users/@me/guilds', {
 		headers: new Headers({
 			'Authorization': `Bearer ${access_token}`
 		})

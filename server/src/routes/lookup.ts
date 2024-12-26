@@ -1,20 +1,19 @@
 import { Hono } from 'hono';
-import { MONGO_URL, STEAM_API_KEY } from '../env.js';
+import { MONGO_URL, STEAM_API_KEY, STEAM_URL } from '../env.js';
 import { URL, URLSearchParams } from 'url';
 import Sourcebans from '../helpers/sourcebans.js';
-import { getCookie } from 'hono/cookie';
-import { deleteSessionTokenCookie, validateSessionToken } from '../db/session.js';
 import { Collection, MongoClient } from 'mongodb';
+import type { DatabasePlayerEntry } from '../lib/types.js';
+import { authGuard } from '../middleware/auth-guard.js';
+import type { Context } from '../lib/context.js';
 
-const lookup_route = new Hono();
-
-const url_endpoint = 'https://api.steampowered.com/ISteamUser/';
+const lookup_route = new Hono<Context>();
 
 lookup_route.get('/lookup/:steamid', async (c) => {
   const steamid = c.req.param('steamid');
 
-  const sum_url = new URL(url_endpoint + 'GetPlayerSummaries/v2/');
-  const ban_url = new URL(url_endpoint + 'GetPlayerBans/v1/');
+  const sum_url = new URL(STEAM_URL + 'GetPlayerSummaries/v2/');
+  const ban_url = new URL(STEAM_URL + 'GetPlayerBans/v1/');
 
   const params = new URLSearchParams({
     key: STEAM_API_KEY,
@@ -58,7 +57,7 @@ lookup_route.get('/lookup/:steamid', async (c) => {
 lookup_route.get('/resolve/:vanityurl', async (c) => {
   const vanityurl = c.req.param('vanityurl');
 
-  const res_url = new URL(url_endpoint + 'ResolveVanityURL/v1/');
+  const res_url = new URL(STEAM_URL + 'ResolveVanityURL/v1/');
 
   const params = new URLSearchParams({
     key: STEAM_API_KEY,
@@ -92,57 +91,10 @@ lookup_route.get('/sourcebans/:steamid', async (c) => {
   });
 });
 
-type TagEntry = {
-  addedby: string;
-  date: number;
-};
-
-export interface DatabasePlayerEntry {
-  _id: string;
-  addresses: {
-    [ip: string]: {
-      game: string;
-      date: number;
-    };
-  };
-  bandata: {
-    vacbans: number;
-    gamebans: number;
-    communityban: boolean;
-    tradeban: boolean;
-  };
-  names: {
-    [name: string]: number;
-  };
-  notifications: {
-    [guildid: string]: {
-      ban: string[];
-      name: string[];
-      log: string[];
-    };
-  };
-  tags: {
-    [guildid: string]: {
-      cheater?: TagEntry;
-      suspicious?: TagEntry;
-      popular?: TagEntry;
-      banwatch?: TagEntry;
-    };
-  };
-}
-
 const mongo = new MongoClient(MONGO_URL);
 const players: Collection<DatabasePlayerEntry> = mongo.db('stickbot').collection('players');
 
-lookup_route.get('/botdata/:steamid', async (c) => {
-  const cookie = getCookie(c);
-  const { session, user } = await validateSessionToken(cookie['session']);
-
-  if (!session || !user) {
-    deleteSessionTokenCookie(c);
-    return c.json({ message: 'Invalid session' }, 400);
-  }
-  
+lookup_route.get('/botdata/:steamid', authGuard, async (c) => {
   const steamid = c.req.param('steamid');
   const guildid = c.req.query('guildid');
 

@@ -124,9 +124,8 @@ function AlertList({ summary, tags }: { summary: SteamProfileSummary, tags: TagL
       <Box className='w-full whitespace-pre-line'>
         {alertlist.map((alert) => {
           return (
-            <Box className='w-full'>
+            <Box className='w-full' key={alert.text}>
               <Badge
-                key={alert.text}
                 size='2'
                 color={alert.color as 'red' | 'yellow' | 'green' | 'blue'}
               >
