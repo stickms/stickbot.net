@@ -1,5 +1,5 @@
 import {  Hono } from 'hono';
-import { Discord, generateState, OAuth2RequestError } from 'arctic';
+import { generateState } from 'arctic';
 import {
 	CLIENT_URL,
   DISCORD_CLIENT_ID,
@@ -14,6 +14,7 @@ import { createSession, deleteSessionTokenCookie, generateSessionToken, invalida
 import { authGuard } from '../middleware/auth-guard.js';
 import type { Context } from '../lib/context.js';
 import { discord, discordRefresh } from '../middleware/discord.js';
+import { HTTPException } from 'hono/http-exception';
 
 const oauth_route = new Hono<Context>();
 
@@ -54,77 +55,64 @@ oauth_route.get('/login/discord/callback', async (c) => {
     storedState !== state ||
     typeof code !== 'string'
   ) {
-    return c.text('Bad request', 400);
+		throw new HTTPException(400, { message: 'Bad request' });
   }
 
-  try {
-    const tokens = await discord.validateAuthorizationCode(code);
+	const tokens = await discord.validateAuthorizationCode(code);
 
-    const userinfo = await fetch(DISCORD_URL + 'users/@me', {
-      headers: new Headers({
-        'Authorization': `Bearer ${tokens.accessToken()}`
-      })
-    });
+	const userinfo = await fetch(DISCORD_URL + 'users/@me', {
+		headers: new Headers({
+			'Authorization': `Bearer ${tokens.accessToken()}`
+		})
+	});
 
-		const uinfojs = await userinfo.json();
+	const uinfojs = await userinfo.json();
 
-		const userCheck = db
-			.select()
-			.from(users)
+	const userCheck = db
+		.select()
+		.from(users)
+		.where(eq(users.discordId, uinfojs['id']))
+		.get()
+	
+	let userid = 0;
+
+	if (userCheck) {
+		const existingUser = db
+			.update(users)
+			.set({
+				accessToken: tokens.accessToken(),
+				refreshToken: tokens.refreshToken(),
+				accessTokenExpiration: tokens.accessTokenExpiresAt()
+			})
 			.where(eq(users.discordId, uinfojs['id']))
-			.get()
+			.returning()
+			.get();
 		
-		let userid = 0;
+		userid = existingUser.id;
+	} else {
+		const newUser = db
+			.insert(users)
+			.values({
+				discordId: uinfojs['id'],
+				accessToken: tokens.accessToken(),
+				refreshToken: tokens.refreshToken(),
+				accessTokenExpiration: tokens.accessTokenExpiresAt()
+			})
+			.returning()
+			.get();
 
-		if (userCheck) {
-			const existingUser = db
-				.update(users)
-				.set({
-					accessToken: tokens.accessToken(),
-					refreshToken: tokens.refreshToken(),
-					accessTokenExpiration: tokens.accessTokenExpiresAt()
-				})
-				.where(eq(users.discordId, uinfojs['id']))
-				.returning()
-				.get();
-			
-			userid = existingUser.id;
-		} else {
-			const newUser = db
-				.insert(users)
-				.values({
-					discordId: uinfojs['id'],
-					accessToken: tokens.accessToken(),
-					refreshToken: tokens.refreshToken(),
-					accessTokenExpiration: tokens.accessTokenExpiresAt()
-				})
-				.returning()
-				.get();
-
-			if (!newUser) {
-				return c.text('Could not create user context', 500);
-			}
-		
-			userid = newUser.id;
+		if (!newUser) {
+			throw new HTTPException(400, { message: 'Could not create user' });
 		}
+	
+		userid = newUser.id;
+	}
 
-		const sessionToken = generateSessionToken();
-		const session = await createSession(sessionToken, userid);
-		setSessionTokenCookie(c, sessionToken, session.expiresAt);
+	const sessionToken = generateSessionToken();
+	const session = await createSession(sessionToken, userid);
+	setSessionTokenCookie(c, sessionToken, session.expiresAt);
 
-		return c.redirect(`${CLIENT_URL}${redirect}`);
-  } catch (error) {
-    if (error instanceof OAuth2RequestError) {
-      // invalid code
-      return c.text('Bad request', 400);
-    }
-
-		if (error instanceof Error) {
-			return c.text(error.message, 400);
-		}
-
-    return c.text('An unknown error occurred', 500);
-  }
+	return c.redirect(`${CLIENT_URL}${redirect}`);
 });
 
 oauth_route.post('/logout/discord', async (c) => {

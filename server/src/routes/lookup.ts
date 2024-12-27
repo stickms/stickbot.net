@@ -6,6 +6,7 @@ import { Collection, MongoClient } from 'mongodb';
 import type { DatabasePlayerEntry } from '../lib/types.js';
 import { authGuard } from '../middleware/auth-guard.js';
 import type { Context } from '../lib/context.js';
+import { HTTPException } from 'hono/http-exception';
 
 const lookup_route = new Hono<Context>();
 
@@ -33,17 +34,17 @@ lookup_route.get('/lookup/:steamid', async (c) => {
   ]);
 
   if (results.some((r) => !r.ok)) {
-    return c.json({ 'error': 'Could not reach Steam API' });
+    throw new HTTPException(400, { message: 'Could not reach Steam API' });
   }
 
   const jsons = [await results[0].json(), await results[1].json()];
 
   if (!jsons[0]['response']?.['players']?.[0]) {
-    return c.json({ 'error': 'Could not find profile summary' });
+    throw new HTTPException(400, { message: 'Could not find profile summary' });
   }
 
   if (!jsons[1]['players']?.[0]) {
-    return c.json({ 'error': 'Could not find profile ban data' });
+    throw new HTTPException(400, { message: 'Could not find profile bandata' });
   }
 
   const resp = {
@@ -68,12 +69,12 @@ lookup_route.get('/resolve/:vanityurl', async (c) => {
 
   const result = await fetch(res_url, { signal: AbortSignal.timeout(1000) });
   if (!result.ok) {
-    return c.json({ 'error': 'Could not reach Steam API' });
+    throw new HTTPException(400, { message: 'Could not reach Steam API' });
   }
 
   const json = await result.json();
   if (!json['response']) {
-    return c.json({ 'error': 'Error resolving Vanity URL' });
+    throw new HTTPException(400, { message: 'Error resolving vanity URL' });
   }
 
   return c.json({
@@ -99,7 +100,7 @@ lookup_route.get('/botdata/:steamid', authGuard, async (c) => {
   const guildid = c.req.query('guildid');
 
   if (!guildid) {
-    return c.json({ message: 'Please specify a guildid' }, 400);
+    throw new HTTPException(400, { message: 'Please specify a guildid' });
   }
 
   const player = await players.findOne({
@@ -107,7 +108,7 @@ lookup_route.get('/botdata/:steamid', authGuard, async (c) => {
   });
 
   if (!player) {
-    return c.json({ message: 'Profile not found' }, 404);
+    throw new HTTPException(404, { message: 'Profile not found' });
   }
 
   return c.json({

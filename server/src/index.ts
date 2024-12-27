@@ -7,6 +7,8 @@ import type { Context } from './lib/context.js';
 
 import lookup_route from './routes/lookup.js';
 import oauth_route from './routes/oauth.js';
+import { OAuth2RequestError } from 'arctic';
+import { HTTPException } from 'hono/http-exception';
 
 const app = new Hono<Context>();
 
@@ -27,7 +29,19 @@ app.route('/', lookup_route);
 app.route('/', oauth_route);
 
 app.onError((error, c) => {
-  return c.json({ 'error': error.message }, 500);
+  if (error instanceof OAuth2RequestError) {
+    return c.json({ 'error': 'Bad request' }, 400);
+  }
+
+  if (error instanceof HTTPException) {
+    return c.json({ 'error': error.message }, error.status);
+  }
+
+  if (error instanceof Error) {
+    return c.json({ 'error': error.message }, 400);
+  }
+
+  return c.json({ 'error': 'An unknown error has occurred' }, 500);
 });
 
 const port = parseInt(API_PORT ?? '3000');
