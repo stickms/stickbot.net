@@ -23,6 +23,8 @@ const discord = new Discord(
 );
 
 oauth_route.get('/login/discord', async (c) => {
+	const redirect = c.req.query('redirect') ?? '/';
+
   const state = generateState();
   const url = discord.createAuthorizationURL(state, ['identify', 'guilds']);
 
@@ -34,11 +36,21 @@ oauth_route.get('/login/discord', async (c) => {
     sameSite: 'lax'
   });
 
+	setCookie(c, 'callback_redirect', redirect, {
+		maxAge: 60 * 10, // 10 mins
+    httpOnly: true,
+    path: '/',
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax'
+	})
+
   return c.redirect(url.toString());
 });
 
 oauth_route.get('/login/discord/callback', async (c) => {
   const storedState = getCookie(c, 'discord_oauth_state');
+  const redirect = getCookie(c, 'callback_redirect') ?? '/';
+
   const { code, state } = c.req.query();
 
   if (
@@ -104,7 +116,7 @@ oauth_route.get('/login/discord/callback', async (c) => {
 		const session = await createSession(sessionToken, userid);
 		setSessionTokenCookie(c, sessionToken, session.expiresAt);
 
-		return c.redirect(CLIENT_URL);
+		return c.redirect(`${CLIENT_URL}${redirect}`);
   } catch (error) {
     if (error instanceof OAuth2RequestError) {
       // invalid code

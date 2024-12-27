@@ -1,5 +1,5 @@
 import { persistentAtom, persistentMap } from '@nanostores/persistent';
-import { DiscordUser, DiscordGuild } from '../types/discord';
+import { DiscordUser, DiscordGuild } from './types';
 import { atom } from 'nanostores';
 
 const default_user: DiscordUser = {

@@ -9,7 +9,7 @@ import {
   Text
 } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
-import { Sourceban, SteamProfileSummary } from '../types/steam';
+import { Sourceban, SteamProfileSummary } from '../lib/types';
 import { API_ENDPOINT } from '../env';
 import { parseSteamID } from '../helpers/steamid';
 import { useStore } from '@nanostores/react';

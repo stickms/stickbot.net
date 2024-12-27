@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Theme } from '@radix-ui/themes';
 
 import Header from './components/header.tsx';
@@ -12,24 +12,6 @@ import OpenProfile from './routes/open-profile.tsx';
 import '@radix-ui/themes/styles.css';
 import './index.css';
 
-const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <Root />,
-    errorElement: <ErrorPage />
-  },
-  {
-    path: '/profile',
-    element: <ProfileLookup />,
-    errorElement: <ErrorPage />
-  },
-  {
-    path: '/openprofile/:id',
-    element: <OpenProfile />,
-    errorElement: <ErrorPage />
-  }
-]);
-
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Theme
@@ -38,8 +20,16 @@ createRoot(document.getElementById('root')!).render(
       grayColor='sand'
       radius='large'
     >
-      <Header />
-      <RouterProvider router={router} />
+      <Router>
+        <Header />
+        <Routes>
+          <Route path='*' element={<ErrorPage />} />
+
+          <Route index element={<Root />} />
+          <Route path='profile' element={<ProfileLookup />} />
+          <Route path='openprofile/:id' element={<OpenProfile />} />
+        </Routes>
+      </Router>
     </Theme>
   </StrictMode>
 );

@@ -4,9 +4,11 @@ import { $user, clearGuildId, clearGuilds, clearUser, setUser } from "../lib/sto
 import { DiscordLogoIcon } from "@radix-ui/react-icons";
 import { API_ENDPOINT } from "../env";
 import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 function DiscordLogin() {
   const user = useStore($user);
+  const location = useLocation();
 
   useEffect(() => {
     fetch(`${API_ENDPOINT}/discord/user`, { credentials: 'include' })
@@ -36,8 +38,9 @@ function DiscordLogin() {
   }
 
   if (!user?.id) {
+    const redirect = `?redirect=${encodeURIComponent(location.pathname)}`;
     return (
-      <Link href={`${API_ENDPOINT}/login/discord`}>
+      <Link href={`${API_ENDPOINT}/login/discord${redirect}`}>
         <Button className='cursor-pointer'>
           <DiscordLogoIcon /> Login
         </Button>
