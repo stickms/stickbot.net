@@ -39,9 +39,13 @@ function DiscordList() {
             Search by Server
           </Select.Label>
           {
-            guilds.length > 0 && guilds.map((guild) => {
-              return <Select.Item value={guild.id} id={guild.id} key={guild.id}>
-                <Avatar src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`} fallback='S' size='1' />
+            guilds?.length > 0 && guilds.map((guild) => {
+              return <Select.Item value={guild.id} key={guild.id}>
+                <Avatar 
+                  src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`}
+                  fallback={guild.name[0]}
+                  size='1'
+                />
                 {' '}{guild.name}
               </Select.Item>
             })

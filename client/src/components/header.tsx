@@ -52,7 +52,11 @@ function DiscordLogin() {
     <DropdownMenu.Root>
       <DropdownMenu.Trigger>
         <Button variant='ghost' className='cursor-pointer'>
-          <Avatar src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`} fallback='U' size='2' />
+          <Avatar
+            src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`}
+            fallback='U'
+            size='2'
+          />
           <DropdownMenu.TriggerIcon /> 
         </Button>
       </DropdownMenu.Trigger>

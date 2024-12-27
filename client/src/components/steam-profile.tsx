@@ -23,12 +23,14 @@ type SteamProfileProps = {
 function SteamIdList({ summary }: { summary: SteamProfileSummary }) {
   const accountid = Number(BigInt(summary.steamid) & BigInt(0xffffffff));
 
+  // Steam ID6, ID3, ID2
   const idlist = [
-    summary.steamid, // Steam ID 64
-    `[U:1:${accountid}]`, // Steam ID 3
-    `STEAM_1:${accountid & 1}:${Math.floor(accountid / 2)}` // Steam ID 2
+    summary.steamid,
+    `[U:1:${accountid}]`,
+    `STEAM_1:${accountid & 1}:${Math.floor(accountid / 2)}`
   ];
 
+  // Include vanity URL if present
   if (summary.profileurl.includes('/id/')) {
     idlist.push(summary.profileurl.split('/')[4]);
   }
@@ -292,14 +294,14 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
   return (
     <Card className='mb-2 min-h-[300px] w-[calc(100%-32px)]'>
       {error && (
-        <>
+        <Box>
           <Box className='w-full'>
             <Text size='3' weight='bold' color='ruby'>
               ❌ Error
             </Text>
           </Box>
           <Text size='3'>{error.toString()}</Text>
-        </>
+        </Box>
       )}
 
       {!error && !summary && <Spinner size='3' />}

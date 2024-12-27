@@ -13,14 +13,9 @@ import { eq } from 'drizzle-orm';
 import { createSession, deleteSessionTokenCookie, generateSessionToken, invalidateSession, setSessionTokenCookie, validateSessionToken } from '../db/session.js';
 import { authGuard } from '../middleware/auth-guard.js';
 import type { Context } from '../lib/context.js';
+import { discord, discordRefresh } from '../middleware/discord.js';
 
 const oauth_route = new Hono<Context>();
-
-const discord = new Discord(
-  DISCORD_CLIENT_ID,
-  DISCORD_CLIENT_SECRET,
-  DISCORD_REDIRECT_URI
-);
 
 oauth_route.get('/login/discord', async (c) => {
 	const redirect = c.req.query('redirect') ?? '/';
@@ -82,17 +77,18 @@ oauth_route.get('/login/discord/callback', async (c) => {
 		let userid = 0;
 
 		if (userCheck) {
-			const newUser = db
+			const existingUser = db
 				.update(users)
 				.set({
 					accessToken: tokens.accessToken(),
 					refreshToken: tokens.refreshToken(),
 					accessTokenExpiration: tokens.accessTokenExpiresAt()
 				})
+				.where(eq(users.discordId, uinfojs['id']))
 				.returning()
 				.get();
 			
-			userid = newUser.id;
+			userid = existingUser.id;
 		} else {
 			const newUser = db
 				.insert(users)
@@ -150,27 +146,12 @@ oauth_route.post('/logout/discord', async (c) => {
 	});
 });
 
-oauth_route.get('/discord/guilds', authGuard, async (c) => {
+oauth_route.get('/discord/guilds', authGuard, discordRefresh, async (c) => {
 	const user = c.get('user')!;
-
-	let access_token = user.accessToken;
-
-	if (new Date() > user.accessTokenExpiration) {
-		const tokens = await discord.refreshAccessToken(user.refreshToken);
-		access_token = tokens.accessToken();
-
-		await db
-			.update(users)
-			.set({
-				refreshToken: tokens.refreshToken(),
-				accessToken: access_token,
-				accessTokenExpiration: tokens.accessTokenExpiresAt()
-			});
-	}
 
 	const guildinfo = await fetch(DISCORD_URL + 'users/@me/guilds', {
 		headers: new Headers({
-			'Authorization': `Bearer ${access_token}`
+			'Authorization': `Bearer ${user.accessToken}`
 		})
 	});
 
@@ -179,27 +160,12 @@ oauth_route.get('/discord/guilds', authGuard, async (c) => {
 	})
 });
 
-oauth_route.get('/discord/user', authGuard, async(c) => {
+oauth_route.get('/discord/user', authGuard, discordRefresh, async(c) => {
 	const user = c.get('user')!;
-
-	let access_token = user.accessToken;
-
-	if (new Date() > user.accessTokenExpiration) {
-		const tokens = await discord.refreshAccessToken(user.refreshToken);
-		access_token = tokens.accessToken();
-
-		await db
-			.update(users)
-			.set({
-				refreshToken: tokens.refreshToken(),
-				accessToken: access_token,
-				accessTokenExpiration: tokens.accessTokenExpiresAt()
-			});
-	}
 
 	const userinfo = await fetch(DISCORD_URL + 'users/@me', {
 		headers: new Headers({
-			'Authorization': `Bearer ${access_token}`
+			'Authorization': `Bearer ${user.accessToken}`
 		})
 	});
 	

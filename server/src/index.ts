@@ -27,6 +27,7 @@ app.route('/', lookup_route);
 app.route('/', oauth_route);
 
 app.onError((error, c) => {
+  console.log(error);
   return c.json({ 'error': error.message }, 500);
 });
 
