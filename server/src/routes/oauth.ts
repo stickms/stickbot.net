@@ -104,7 +104,7 @@ oauth_route.get('/login/discord/callback', async (c) => {
 		const session = await createSession(sessionToken, userid);
 		setSessionTokenCookie(c, sessionToken, session.expiresAt);
 
-		return c.redirect(`${CLIENT_URL}/profile`);
+		return c.redirect(CLIENT_URL);
   } catch (error) {
     if (error instanceof OAuth2RequestError) {
       // invalid code
@@ -138,7 +138,36 @@ oauth_route.post('/logout/discord', async (c) => {
 	});
 });
 
-oauth_route.get('/discord_info', authGuard, async(c) => {
+oauth_route.get('/discord/guilds', authGuard, async (c) => {
+	const user = c.get('user')!;
+
+	let access_token = user.accessToken;
+
+	if (new Date() > user.accessTokenExpiration) {
+		const tokens = await discord.refreshAccessToken(user.refreshToken);
+		access_token = tokens.accessToken();
+
+		await db
+			.update(users)
+			.set({
+				refreshToken: tokens.refreshToken(),
+				accessToken: access_token,
+				accessTokenExpiration: tokens.accessTokenExpiresAt()
+			});
+	}
+
+	const guildinfo = await fetch(DISCORD_URL + 'users/@me/guilds', {
+		headers: new Headers({
+			'Authorization': `Bearer ${access_token}`
+		})
+	});
+
+	return c.json({
+		guilds: await guildinfo.json()
+	})
+});
+
+oauth_route.get('/discord/user', authGuard, async(c) => {
 	const user = c.get('user')!;
 
 	let access_token = user.accessToken;
@@ -161,16 +190,9 @@ oauth_route.get('/discord_info', authGuard, async(c) => {
 			'Authorization': `Bearer ${access_token}`
 		})
 	});
-
-	const guildinfo = await fetch(DISCORD_URL + 'users/@me/guilds', {
-		headers: new Headers({
-			'Authorization': `Bearer ${access_token}`
-		})
-	});
-
+	
 	return c.json({
-		user: await userinfo.json(),
-		guilds: await guildinfo.json()
+		user: await userinfo.json()
 	})
 });
 

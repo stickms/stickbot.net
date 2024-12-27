@@ -2,7 +2,7 @@ import { Avatar, Select } from "@radix-ui/themes";
 import { useEffect } from "react";
 import { API_ENDPOINT } from "../env";
 import { useStore } from '@nanostores/react';
-import { $guilds, $user, clearGuildId, clearGuilds, clearUser, setGuildId, setGuilds, setUser } from "../lib/store";
+import { $guilds, $user, clearGuildId, clearGuilds, setGuildId, setGuilds } from "../lib/store";
 
 function DiscordList() {
   const user = useStore($user);
@@ -11,20 +11,17 @@ function DiscordList() {
   useEffect(() => {
     clearGuildId();
 
-    fetch(`${API_ENDPOINT}/discord_info`, { credentials: 'include' })
+    fetch(`${API_ENDPOINT}/discord/guilds`, { credentials: 'include' })
       .then((res) => {
         res.json()
           .then((json) => {
-            setUser(json['user']);
             setGuilds(json['guilds']);
           })
           .catch(() => {
-            clearUser();
             clearGuilds();    
           })
       })
       .catch(() => {
-        clearUser();
         clearGuilds();
       })
   }, []);

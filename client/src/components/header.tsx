@@ -1,6 +1,6 @@
 import { useStore } from "@nanostores/react";
 import { Avatar, Button, DropdownMenu, Flex, Link } from "@radix-ui/themes";
-import { $user, clearGuildId, clearGuilds, clearUser, setGuilds, setUser } from "../lib/store";
+import { $user, clearGuildId, clearGuilds, clearUser, setUser } from "../lib/store";
 import { DiscordLogoIcon } from "@radix-ui/react-icons";
 import { API_ENDPOINT } from "../env";
 import { useEffect } from "react";
@@ -9,23 +9,20 @@ function DiscordLogin() {
   const user = useStore($user);
 
   useEffect(() => {
-    fetch(`${API_ENDPOINT}/discord_info`, { credentials: 'include' })
+    fetch(`${API_ENDPOINT}/discord/user`, { credentials: 'include' })
       .then((res) => {
         res.json()
           .then((json) => {
             setUser(json['user']);
-            setGuilds(json['guilds']);
           })
           .catch(() => {
             clearUser();
-            clearGuilds();    
           })
       })
       .catch(() => {
         clearUser();
-        clearGuilds();
       })
-  }, []);
+  }, [ user?.id ]);
 
   const handleLogout = () => {
     fetch(`${API_ENDPOINT}/logout/discord`, {
