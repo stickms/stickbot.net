@@ -1,12 +1,6 @@
 import {  Hono } from 'hono';
 import { generateState } from 'arctic';
-import {
-	CLIENT_URL,
-  DISCORD_CLIENT_ID,
-  DISCORD_CLIENT_SECRET,
-  DISCORD_REDIRECT_URI,
-	DISCORD_URL
-} from '../env.js';
+import { CLIENT_URL, DISCORD_URL } from '../env.js';
 import { getCookie, setCookie } from 'hono/cookie';
 import { db, users } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
@@ -144,7 +138,10 @@ oauth_route.get('/discord/guilds', authGuard, discordRefresh, async (c) => {
 	});
 
 	return c.json({
-		guilds: await guildinfo.json()
+		success: true,
+		data: {
+			guilds: await guildinfo.json()
+		}
 	})
 });
 
@@ -158,7 +155,10 @@ oauth_route.get('/discord/user', authGuard, discordRefresh, async(c) => {
 	});
 	
 	return c.json({
-		user: await userinfo.json()
+		success: true,
+		data: {
+			user: await userinfo.json()
+		}
 	})
 });
 

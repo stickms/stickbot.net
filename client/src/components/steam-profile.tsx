@@ -261,7 +261,7 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
 
       const vanity_json = await vanity.json();
 
-      const steam = parseSteamID(vanity_json['steamid'] ?? query);
+      const steam = parseSteamID(vanity_json['data']?.['steamid'] ?? query);
 
       const summary = await fetch(`${API_ENDPOINT}/lookup/${steam}`);
 
@@ -271,18 +271,29 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
       }
 
       fetch(`${API_ENDPOINT}/sourcebans/${steam}`)
-        .then((resp) => {
-          resp.json().then((json) => setSourcebans(json['sourcebans']));
+        .then(async (resp) => {
+          const json = await resp.json();
+          if (!json['success']) {
+            setSourcebansError(json['message']);
+            return;
+          }
+
+          setSourcebans(json['data']['sourcebans']);
         })
         .catch((error) => setSourcebansError(`${error}`));
       
       fetch(`${API_ENDPOINT}/botdata/${steam}?guildid=${guildid}`, { credentials: 'include' })
-        .then((resp) => {
-          resp.json().then((json) => setTags(json['tags'] ?? {}));
-        })
-        .catch((error) => console.log(`${error}`));
+        .then(async (resp) => {
+          const json = await resp.json();
+          if (!json['success']) {
+            return;
+          }
 
-      return summary_json;
+          setTags(json['data']['tags'] ?? {});
+        })
+        .catch(() => {});
+
+      return summary_json['data'];
     };
 
     getPlayerData()

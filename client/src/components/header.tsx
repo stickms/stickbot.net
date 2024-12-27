@@ -15,7 +15,12 @@ function DiscordLogin() {
       .then((res) => {
         res.json()
           .then((json) => {
-            setUser(json['user']);
+            if (!json['success']) {
+              clearUser();
+              return;
+            }
+
+            setUser(json['data']['user']);
           })
           .catch(() => {
             clearUser();

@@ -30,18 +30,30 @@ app.route('/', oauth_route);
 
 app.onError((error, c) => {
   if (error instanceof OAuth2RequestError) {
-    return c.json({ 'error': 'Bad request' }, 400);
+    return c.json({ 
+      success: false,
+      message: 'Bad request' 
+    }, 400);
   }
 
   if (error instanceof HTTPException) {
-    return c.json({ 'error': error.message }, error.status);
+    return c.json({ 
+      success: false,
+      message: error.message 
+    }, error.status);
   }
 
   if (error instanceof Error) {
-    return c.json({ 'error': error.message }, 400);
+    return c.json({ 
+      success: false,
+      message: error.message 
+    }, 400);
   }
 
-  return c.json({ 'error': 'An unknown error has occurred' }, 500);
+  return c.json({ 
+    success: false,
+    message: 'An unknown error has occurred' 
+  }, 500);
 });
 
 const port = parseInt(API_PORT ?? '3000');

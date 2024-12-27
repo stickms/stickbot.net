@@ -15,7 +15,12 @@ function DiscordList() {
       .then((res) => {
         res.json()
           .then((json) => {
-            setGuilds(json['guilds']);
+            if (!json['success']) {
+              clearGuilds();
+              return;
+            }
+            
+            setGuilds(json['data']['guilds']);
           })
           .catch(() => {
             clearGuilds();    

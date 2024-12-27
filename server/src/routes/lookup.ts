@@ -48,8 +48,11 @@ lookup_route.get('/lookup/:steamid', async (c) => {
   }
 
   const resp = {
-    ...jsons[1]['players'][0],
-    ...jsons[0]['response']['players'][0]
+    success: true,
+    data: {
+      ...jsons[1]['players'][0],
+      ...jsons[0]['response']['players'][0]  
+    }
   };
 
   return c.json(resp);
@@ -78,7 +81,10 @@ lookup_route.get('/resolve/:vanityurl', async (c) => {
   }
 
   return c.json({
-    ...json['response']
+    success: true,
+    data: {
+      ...json['response']
+    }
   });
 });
 
@@ -88,7 +94,10 @@ lookup_route.get('/sourcebans/:steamid', async (c) => {
   const sourcebans = await Sourcebans.get(steamid);
 
   return c.json({
-    'sourcebans': sourcebans
+    success: true,
+    data: {
+      sourcebans
+    }
   });
 });
 
@@ -112,8 +121,11 @@ lookup_route.get('/botdata/:steamid', authGuard, async (c) => {
   }
 
   return c.json({
-    names: player.names,
-    tags: player.tags[guildid] ?? {}
+    success: true,
+    data: {
+      names: player.names,
+      tags: player.tags[guildid] ?? {}
+    }
   });
 });
 
