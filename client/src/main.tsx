@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { Theme } from '@radix-ui/themes';
 
+import Header from './components/header.tsx';
 import Root from './routes/root.tsx';
 import ErrorPage from './error-page.tsx';
 import ProfileLookup from './routes/profile-lookup.tsx';
@@ -37,6 +38,7 @@ createRoot(document.getElementById('root')!).render(
       grayColor='sand'
       radius='large'
     >
+      <Header />
       <RouterProvider router={router} />
     </Theme>
   </StrictMode>

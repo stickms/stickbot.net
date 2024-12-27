@@ -2,9 +2,9 @@ import {
   Flex,
   Grid,
   IconButton,
-  Link,
   ScrollArea,
-  TextField
+  TextField,
+  Text
 } from '@radix-ui/themes';
 import { useState } from 'react';
 import SteamProfile from '../components/steam-profile';
@@ -36,32 +36,26 @@ function ProfileLookup() {
   return (
     <Grid className='grid-rows-2 grid-cols-1 w-screen h-screen'>
       <Flex className='items-center justify-center flex-col gap-y-24 mt-[20vh]'>
-        <Link
-          href='.'
-          color='gray'
-          highContrast
-          underline='hover'
-          className='text-3xl text-center'
-        >
+        <Text className='text-3xl'>
           Steam Profile Lookup
-        </Link>
-        <Flex className='flex-nowrap gap-x-4'>
-        <TextField.Root
-          className='w-96 max-w-[80vw]'
-          placeholder='Lookup a Steam Profile...'
-          value={query}
-          maxLength={128}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={handleKeyPress}
-          disabled={disabled}
-        >
-          <TextField.Slot side='right'>
-            <IconButton size='2' variant='ghost' onClick={() => handleSearch()}>
-              <MagnifyingGlassIcon />
-            </IconButton>
-          </TextField.Slot>
-        </TextField.Root>
-        <DiscordList />
+        </Text>
+        <Flex className='flex-wrap gap-4 items-center justify-center'>
+          <TextField.Root
+            className='w-96 max-w-[80vw]'
+            placeholder='Lookup a Steam Profile...'
+            value={query}
+            maxLength={128}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={handleKeyPress}
+            disabled={disabled}
+          >
+            <TextField.Slot side='right'>
+              <IconButton size='2' variant='ghost' onClick={() => handleSearch()}>
+                <MagnifyingGlassIcon />
+              </IconButton>
+            </TextField.Slot>
+          </TextField.Root>
+          <DiscordList />
         </Flex>
       </Flex>
       <Flex className='items-center justify-center'>
