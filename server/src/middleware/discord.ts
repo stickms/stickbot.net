@@ -14,6 +14,7 @@ export const discordRefresh = async (c: Context, next: Next) => {
   const user: User = c.get('user')!;
 
   if (new Date() > user.accessTokenExpiration) {
+    // Will throw an error if this fails
     const tokens = await discord.refreshAccessToken(user.refreshToken);
     
     user.refreshToken = tokens.refreshToken();

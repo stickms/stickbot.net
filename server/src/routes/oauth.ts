@@ -12,6 +12,14 @@ import { HTTPException } from 'hono/http-exception';
 
 const oauth_route = new Hono<Context>();
 
+oauth_route.post('/validate-session', authGuard, async (c) => {
+	// If we get here, we've passed the authGuard and refreshed our session
+	return c.json({
+		success: true,
+		message: 'Validated session'
+	});
+});
+
 oauth_route.get('/login/discord', async (c) => {
 	const redirect = c.req.query('redirect') ?? '/';
 
@@ -128,23 +136,6 @@ oauth_route.post('/logout/discord', async (c) => {
 	});
 });
 
-oauth_route.get('/discord/guilds', authGuard, discordRefresh, async (c) => {
-	const user = c.get('user')!;
-
-	const guildinfo = await fetch(DISCORD_URL + 'users/@me/guilds', {
-		headers: new Headers({
-			'Authorization': `Bearer ${user.accessToken}`
-		})
-	});
-
-	return c.json({
-		success: true,
-		data: {
-			guilds: await guildinfo.json()
-		}
-	})
-});
-
 oauth_route.get('/discord/user', authGuard, discordRefresh, async(c) => {
 	const user = c.get('user')!;
 
@@ -158,6 +149,23 @@ oauth_route.get('/discord/user', authGuard, discordRefresh, async(c) => {
 		success: true,
 		data: {
 			user: await userinfo.json()
+		}
+	})
+});
+
+oauth_route.get('/discord/guilds', authGuard, discordRefresh, async (c) => {
+	const user = c.get('user')!;
+
+	const guildinfo = await fetch(DISCORD_URL + 'users/@me/guilds', {
+		headers: new Headers({
+			'Authorization': `Bearer ${user.accessToken}`
+		})
+	});
+
+	return c.json({
+		success: true,
+		data: {
+			guilds: await guildinfo.json()
 		}
 	})
 });

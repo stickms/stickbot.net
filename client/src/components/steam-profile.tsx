@@ -270,42 +270,41 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
       }
 
       const vanity = await fetch(`${API_ENDPOINT}/resolve/${query}`);
-
-      const vanity_json = await vanity.json();
+      const vanity_json = vanity.ok ? await vanity.json() : {};
 
       const steam = parseSteamID(vanity_json['data']?.['steamid'] ?? query);
 
       const summary = await fetch(`${API_ENDPOINT}/lookup/${steam}`);
 
-      const summary_json = await summary.json();
-      if (!summary_json['success']) {
-        throw new Error(summary_json['message']);
+      if (!summary.ok) {
+        throw new Error('Could not get player summary');
       }
 
       fetch(`${API_ENDPOINT}/sourcebans/${steam}`)
         .then(async (resp) => {
-          const json = await resp.json();
-          if (!json['success']) {
-            setSourcebansError(json['message']);
+          if (!resp.ok) {
+            setSourcebansError('Could not get sourcebans');
             return;
           }
 
+          const json = await resp.json();
           setSourcebans(json['data']['sourcebans']);
         })
         .catch((error) => setSourcebansError(`${error}`));
       
       fetch(`${API_ENDPOINT}/botdata/${steam}?guildid=${guildid}`, { credentials: 'include' })
         .then(async (resp) => {
-          const json = await resp.json();
-          if (!json['success']) {
+          if (!resp.ok) {
             setTags({});
             return;
           }
 
+          const json = await resp.json();
           setTags(json['data']['tags'] ?? {});
         })
         .catch(() => setTags({}));
 
+      const summary_json = await summary.json();
       return summary_json['data'];
     };
 

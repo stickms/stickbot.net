@@ -1,32 +1,18 @@
 import { Avatar, Select } from "@radix-ui/themes";
 import { useEffect } from "react";
-import { API_ENDPOINT } from "../env";
-import { useStore } from '@nanostores/react';
-import { $guilds, $user, clearGuildId, clearGuilds, setGuildId, setGuilds } from "../lib/store";
+import { clearGuildId, setGuildId } from "../lib/store";
+import useAuth from "../hooks/use-auth";
 
 function DiscordList() {
-  const user = useStore($user);
-  const guilds = useStore($guilds);
+  const { guilds, getGuilds } = useAuth();
 
   useEffect(() => {
-    const getGuilds = async () => {
-      clearGuildId();
-
-      const resp = await fetch(`${API_ENDPOINT}/discord/guilds`, { credentials: 'include' });
-      const json = await resp.json();
-
-      if (!json['success']) {
-        clearGuilds();
-        return;
-      }
-
-      setGuilds(json['data']['guilds']);
-    };
-
+    clearGuildId();
     getGuilds();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (!user?.id) {
+  if (!guilds.length) {
     return null;
   }
 
@@ -39,7 +25,7 @@ function DiscordList() {
             Search by Server
           </Select.Label>
           {
-            guilds?.length > 0 && guilds.map((guild) => {
+            guilds.map((guild) => {
               return <Select.Item value={guild.id} key={guild.id}>
                 <Avatar 
                   src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`}

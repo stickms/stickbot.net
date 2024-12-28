@@ -1,41 +1,18 @@
-import { useStore } from "@nanostores/react";
 import { Avatar, Button, DropdownMenu, Flex, Link } from "@radix-ui/themes";
-import { $user, clearGuildId, clearGuilds, clearUser, setUser } from "../lib/store";
 import { DiscordLogoIcon } from "@radix-ui/react-icons";
 import { API_ENDPOINT } from "../env";
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import useAuth from "../hooks/use-auth";
 
 function DiscordLogin() {
-  const user = useStore($user);
+  const { user, getUser, logout } = useAuth();
   const location = useLocation();
 
   useEffect(() => {
-    const getUser = async () => {
-      const resp = await fetch(`${API_ENDPOINT}/discord/user`, { credentials: 'include' });
-      const json = await resp.json();
-
-      if (!json['success']) {
-        clearUser();
-        return;
-      }
-
-      setUser(json['data']['user']);
-    };
-
     getUser();
-  }, [ user?.id ]);
-
-  const handleLogout = () => {
-    fetch(`${API_ENDPOINT}/logout/discord`, {
-      method: 'POST',
-      credentials: 'include'
-    }).then(() => {
-      clearUser();
-      clearGuilds();
-      clearGuildId();
-    });
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (!user?.id) {
     const redirect = `?redirect=${encodeURIComponent(location.pathname)}`;
@@ -64,7 +41,7 @@ function DiscordLogin() {
         <DropdownMenu.Label>
           {user.username}
         </DropdownMenu.Label>
-        <DropdownMenu.Item onClick={handleLogout} className='cursor-pointer'>
+        <DropdownMenu.Item onClick={logout} className='cursor-pointer'>
           Logout
         </DropdownMenu.Item>
       </DropdownMenu.Content>
