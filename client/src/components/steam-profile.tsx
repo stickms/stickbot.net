@@ -56,7 +56,7 @@ function SteamIdList({ summary }: { summary: SteamProfileSummary }) {
   );
 }
 
-function AlertList({ summary, tags }: { summary: SteamProfileSummary, tags: TagList }) {
+function AlertList({ summary, tags }: { summary: SteamProfileSummary, tags?: TagList }) {
   const alertlist: { color: string; text: string }[] = [];
 
   const plural = (num: number, label: string) => {
@@ -100,13 +100,20 @@ function AlertList({ summary, tags }: { summary: SteamProfileSummary, tags: TagL
     ];
   }
 
-  for (const tag of profiletags()) {
-    if (tags[tag.value]) {
-      alertlist.push({
-        color: tag.value === 'banwatch' ? 'blue': 'yellow',
-        text: tag.name
-      });
-    }
+  if (!tags) {
+    alertlist.push({
+      color: 'gray',
+      text: 'Loading tags...'
+    })
+  } else {
+    for (const tag of profiletags()) {
+      if (tags[tag.value]) {
+        alertlist.push({
+          color: tag.value === 'banwatch' ? 'blue': 'yellow',
+          text: tag.name
+        });
+      }
+    }  
   }
 
   if (!alertlist.length) {
@@ -129,7 +136,7 @@ function AlertList({ summary, tags }: { summary: SteamProfileSummary, tags: TagL
             <Box className='w-full' key={alert.text}>
               <Badge
                 size='2'
-                color={alert.color as 'red' | 'yellow' | 'green' | 'blue'}
+                color={alert.color as 'red' | 'yellow' | 'green' | 'blue' | 'gray'}
               >
                 {alert.text}
               </Badge>
@@ -232,13 +239,18 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
 
   const [summary, setSummary] = useState<SteamProfileSummary>();
   const [sourcebans, setSourcebans] = useState<Sourceban[]>();
-  const [tags, setTags] = useState<TagList>({});
+  const [tags, setTags] = useState<TagList>();
 
   const [error, setError] = useState<string>();
   const [sourcebansError, setSourcebansError] = useState<string>();
 
   useEffect(() => {
     const getPlayerData = async (): Promise<SteamProfileSummary> => {
+      // Reset some things
+      setTags(() => undefined);
+      setError(() => undefined);
+      setSourcebansError(() => undefined);
+
       let query = steamid.trim();
 
       try {
@@ -266,8 +278,8 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
       const summary = await fetch(`${API_ENDPOINT}/lookup/${steam}`);
 
       const summary_json = await summary.json();
-      if (summary_json['error']) {
-        throw new Error(summary_json['error']);
+      if (!summary_json['success']) {
+        throw new Error(summary_json['message']);
       }
 
       fetch(`${API_ENDPOINT}/sourcebans/${steam}`)
@@ -286,12 +298,13 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
         .then(async (resp) => {
           const json = await resp.json();
           if (!json['success']) {
+            setTags({});
             return;
           }
 
           setTags(json['data']['tags'] ?? {});
         })
-        .catch(() => {});
+        .catch(() => setTags({}));
 
       return summary_json['data'];
     };

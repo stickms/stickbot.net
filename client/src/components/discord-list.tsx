@@ -9,26 +9,21 @@ function DiscordList() {
   const guilds = useStore($guilds);
 
   useEffect(() => {
-    clearGuildId();
+    const getGuilds = async () => {
+      clearGuildId();
 
-    fetch(`${API_ENDPOINT}/discord/guilds`, { credentials: 'include' })
-      .then((res) => {
-        res.json()
-          .then((json) => {
-            if (!json['success']) {
-              clearGuilds();
-              return;
-            }
-            
-            setGuilds(json['data']['guilds']);
-          })
-          .catch(() => {
-            clearGuilds();    
-          })
-      })
-      .catch(() => {
+      const resp = await fetch(`${API_ENDPOINT}/discord/guilds`, { credentials: 'include' });
+      const json = await resp.json();
+
+      if (!json['success']) {
         clearGuilds();
-      })
+        return;
+      }
+
+      setGuilds(json['data']['guilds']);
+    };
+
+    getGuilds();
   }, []);
 
   if (!user?.id) {
@@ -51,7 +46,7 @@ function DiscordList() {
                   fallback={guild.name[0]}
                   size='1'
                 />
-                {' '}{guild.name}
+                {' ' + guild.name}
               </Select.Item>
             })
           }

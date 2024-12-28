@@ -11,24 +11,19 @@ function DiscordLogin() {
   const location = useLocation();
 
   useEffect(() => {
-    fetch(`${API_ENDPOINT}/discord/user`, { credentials: 'include' })
-      .then((res) => {
-        res.json()
-          .then((json) => {
-            if (!json['success']) {
-              clearUser();
-              return;
-            }
+    const getUser = async () => {
+      const resp = await fetch(`${API_ENDPOINT}/discord/user`, { credentials: 'include' });
+      const json = await resp.json();
 
-            setUser(json['data']['user']);
-          })
-          .catch(() => {
-            clearUser();
-          })
-      })
-      .catch(() => {
+      if (!json['success']) {
         clearUser();
-      })
+        return;
+      }
+
+      setUser(json['data']['user']);
+    };
+
+    getUser();
   }, [ user?.id ]);
 
   const handleLogout = () => {
@@ -40,7 +35,7 @@ function DiscordLogin() {
       clearGuilds();
       clearGuildId();
     });
-  }
+  };
 
   if (!user?.id) {
     const redirect = `?redirect=${encodeURIComponent(location.pathname)}`;
