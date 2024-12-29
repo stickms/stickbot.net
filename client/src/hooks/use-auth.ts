@@ -6,13 +6,13 @@ function useAuth() {
   const user = useStore($user);
   const guilds = useStore($guilds);
 
-  const clearAll = () => {
+  function clearAll() {
     clearUser();
     clearGuilds();
     clearGuildId();
   }
 
-  const getUser = async () => {
+  async function getUser() {
     const resp = await fetch(`${API_ENDPOINT}/discord/user`, { 
       credentials: 'include' 
     });
@@ -26,7 +26,7 @@ function useAuth() {
     setUser(json['data']['user']);
   }
 
-  const getGuilds = async () => {
+  async function getGuilds() {
     const resp = await fetch(`${API_ENDPOINT}/discord/guilds`, { 
       credentials: 'include' 
     });
@@ -40,7 +40,7 @@ function useAuth() {
     setGuilds(json['data']['guilds']);
   }
 
-  const logout = async () => {
+  async function logout() {
     const resp = await fetch(`${API_ENDPOINT}/logout/discord`, {
       method: 'POST',
       credentials: 'include'

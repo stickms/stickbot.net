@@ -35,7 +35,7 @@ function ProfileLookup() {
 
   return (
     <Grid className='grid-rows-2 grid-cols-1 w-screen h-screen'>
-      <Flex className='items-center justify-center flex-col gap-y-24 mt-[20vh]'>
+      <Flex className='items-center justify-center flex-col gap-y-20 mt-[16vh]'>
         <Text className='text-3xl'>
           Steam Profile Lookup
         </Text>
@@ -61,7 +61,7 @@ function ProfileLookup() {
       <Flex className='items-center justify-center'>
         <ScrollArea
           scrollbars='vertical'
-          className='w-[700px] max-w-[80vw] max-h-[40vh] pt-2'
+          className='w-[700px] max-w-[80vw] max-h-full pt-2'
         >
           <Flex className='items-center justify-center flex-col'>
             {profiles.map((p, i) => (

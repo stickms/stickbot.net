@@ -1,7 +1,7 @@
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { API_PORT } from './env.js';
+import { API_PORT, CLIENT_URL } from './env.js';
 import { auth } from './middleware/auth.js';
 import type { Context } from './lib/context.js';
 
@@ -9,6 +9,7 @@ import lookup_route from './routes/lookup.js';
 import oauth_route from './routes/oauth.js';
 import { OAuth2RequestError } from 'arctic';
 import { HTTPException } from 'hono/http-exception';
+import { csrf } from 'hono/csrf';
 
 const app = new Hono<Context>();
 
@@ -22,6 +23,10 @@ app.use(
     exposeHeaders: ['Set-Cookie']
   })
 );
+
+app.use('/*', csrf({
+  origin: CLIENT_URL
+}))
 
 app.use('/*', auth);
 

@@ -53,14 +53,14 @@ function Header() {
   return (
     <Flex className='fixed top-0 w-full justify-between items-center'>
       {/* Left */}
-      <Flex className='pl-6 py-2'>
+      <Flex className='pl-6 py-4'>
         <Link href='/' color='gray' highContrast underline='hover'>
           Stickbot.net
         </Link>
       </Flex>
 
       {/* Right */}
-      <Flex className='pr-6 py-2'>
+      <Flex className='pr-6 py-4'>
         <DiscordLogin />
       </Flex>
     </Flex>

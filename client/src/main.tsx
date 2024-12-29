@@ -11,6 +11,7 @@ import OpenProfile from './routes/open-profile.tsx';
 
 import '@radix-ui/themes/styles.css';
 import './index.css';
+import Toaster from './components/toaster.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -29,6 +30,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path='profile' element={<ProfileLookup />} />
           <Route path='openprofile/:id' element={<OpenProfile />} />
         </Routes>
+        <Toaster />
       </Router>
     </Theme>
   </StrictMode>

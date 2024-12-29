@@ -275,7 +275,6 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
       const steam = parseSteamID(vanity_json['data']?.['steamid'] ?? query);
 
       const summary = await fetch(`${API_ENDPOINT}/lookup/${steam}`);
-
       if (!summary.ok) {
         throw new Error('Could not get player summary');
       }
@@ -292,17 +291,21 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
         })
         .catch((error) => setSourcebansError(`${error}`));
       
-      fetch(`${API_ENDPOINT}/botdata/${steam}?guildid=${guildid}`, { credentials: 'include' })
-        .then(async (resp) => {
-          if (!resp.ok) {
-            setTags({});
-            return;
-          }
+      if (guildid) {
+        fetch(`${API_ENDPOINT}/botdata/${steam}?guildid=${guildid}`, { credentials: 'include' })
+          .then(async (resp) => {
+            if (!resp.ok) {
+              setTags({});
+              return;
+            }
 
-          const json = await resp.json();
-          setTags(json['data']['tags'] ?? {});
-        })
-        .catch(() => setTags({}));
+            const json = await resp.json();
+            setTags(json['data']['tags'] ?? {});
+          })
+          .catch(() => setTags({}));
+      } else {
+        setTags({});
+      }
 
       const summary_json = await summary.json();
       return summary_json['data'];
