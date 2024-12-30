@@ -1,22 +1,23 @@
 import { persistentAtom, persistentMap } from '@nanostores/persistent';
-import { DiscordUser, DiscordGuild } from './types';
+import { UserType, GuildType } from './types';
 import { atom } from 'nanostores';
 
-const default_user: DiscordUser = {
+const default_user: UserType = {
   avatar: '',
   id: '',
-  username: ''
+  username: '',
+  token_guild: ''
 };
 
-export const $user = persistentMap<DiscordUser>('user:', default_user);
-export const $guilds = persistentAtom<DiscordGuild[]>('guilds:', [], {
+export const $user = persistentMap<UserType>('user:', default_user);
+export const $guilds = persistentAtom<GuildType[]>('guilds:', [], {
   encode: JSON.stringify,
   decode: JSON.parse,
 });
 
 export const $guildid = atom<string>('');
 
-export function setUser(user: DiscordUser) {
+export function setUser(user: UserType) {
   $user.set(user);
 }
 
@@ -24,7 +25,7 @@ export function clearUser() {
   $user.set(default_user);
 }
 
-export function setGuilds(guilds: DiscordGuild[]) {
+export function setGuilds(guilds: GuildType[]) {
   $guilds.set(guilds);
 }
 

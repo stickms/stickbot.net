@@ -1,31 +1,15 @@
 // Discord Types
-export type DiscordUser = {
-  // accent_color: number,
+export type UserType = {
   avatar: string,
-  // avatar_decoration_data: unknown,
-  // banner: string,
-  // banner_color: string,
-  // clan: unknown,
-  // discriminator: string,
-  // flags: number,
-  // global_name: string,
   id: string,
-  // locale: string,
-  // mfa_enabled: boolean,
-  // premium_type: number,
-  // primary_guild: unknown,
-  // public_flags: number,
-  username: string
+  username: string,
+  token_guild: string
 };
 
-export type DiscordGuild = {
-  // banner: string,
-  // featers: string[],
+export type GuildType = {
   icon: string,
   id: string,
   name: string,
-  // owner: boolean,
-  // permissions: string
 };
 
 // Steam Types

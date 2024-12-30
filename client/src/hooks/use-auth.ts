@@ -1,10 +1,13 @@
 import { useStore } from "@nanostores/react";
 import { $guilds, $user, clearGuildId, clearGuilds, clearUser, setGuilds, setUser } from "../lib/store";
 import { API_ENDPOINT } from "../env";
+import useToast from "./use-toast";
 
 function useAuth() {
   const user = useStore($user);
   const guilds = useStore($guilds);
+
+  const { toast } = useToast();
 
   function clearAll() {
     clearUser();
@@ -53,6 +56,44 @@ function useAuth() {
     clearAll();
   }
 
+  const generateApiToken = async (guildid: string) => {
+    const resp = await fetch(`${API_ENDPOINT}/discord/generate-token?guildid=${guildid}`, { 
+      method: 'POST',
+      credentials: 'include'
+    });
+
+    if (!resp.ok) {
+      toast({
+        title: 'Error: Could not generate API token',
+        description: (await resp.json())['message']
+      });
+      return;
+    }
+
+    const json = await resp.json();
+    return json['data'];
+  }
+
+  const revokeApiToken = async () => {
+    const resp = await fetch(`${API_ENDPOINT}/discord/revoke-token`, { 
+      method: 'POST',
+      credentials: 'include'
+    });
+
+    if (!resp.ok) {
+      toast({
+        title: 'Error: Could not revoke API token',
+        description: (await resp.json())['message']
+      });
+      return;
+    }
+
+    setUser({
+      ...user,
+      token_guild: ''
+    });
+  }
+
   const validateSession = async () => {
     const resp = await fetch(`${API_ENDPOINT}/validate-session`, { 
       method: 'POST',
@@ -71,6 +112,8 @@ function useAuth() {
     getUser,
     getGuilds,
     logout,
+    generateApiToken,
+    revokeApiToken,
     validateSession
   }
 }

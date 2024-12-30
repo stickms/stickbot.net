@@ -12,11 +12,12 @@ import OpenProfile from './routes/open-profile.tsx';
 import '@radix-ui/themes/styles.css';
 import './index.css';
 import Toaster from './components/toaster.tsx';
+import ApiReference from './routes/api-reference.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Theme
-      accentColor='crimson'
+      accentColor='iris'
       appearance='dark'
       grayColor='sand'
       radius='large'
@@ -24,11 +25,11 @@ createRoot(document.getElementById('root')!).render(
       <Router>
         <Header />
         <Routes>
-          <Route path='*' element={<ErrorPage />} />
-
           <Route index element={<Root />} />
-          <Route path='profile' element={<ProfileLookup />} />
-          <Route path='openprofile/:id' element={<OpenProfile />} />
+          <Route path='/profile' element={<ProfileLookup />} />
+          <Route path='/api-reference' element={<ApiReference />} />
+          <Route path='/openprofile/:id' element={<OpenProfile />} />
+          <Route path='*' element={<ErrorPage />} />
         </Routes>
         <Toaster />
       </Router>

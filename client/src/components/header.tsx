@@ -51,7 +51,7 @@ function DiscordLogin() {
 
 function Header() {
   return (
-    <Flex className='fixed top-0 w-full justify-between items-center'>
+    <Flex className='fixed top-0 w-full justify-between items-center z-50 bg-inherit'>
       {/* Left */}
       <Flex className='pl-6 py-4'>
         <Link href='/' color='gray' highContrast underline='hover'>

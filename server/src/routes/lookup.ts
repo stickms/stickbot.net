@@ -7,6 +7,8 @@ import type { DatabasePlayerEntry } from '../lib/types.js';
 import { authGuard } from '../middleware/auth-guard.js';
 import type { Context } from '../lib/context.js';
 import { HTTPException } from 'hono/http-exception';
+import { db, users } from '../db/schema.js';
+import { and, eq, isNotNull } from 'drizzle-orm';
 
 const lookup_route = new Hono<Context>();
 
@@ -124,6 +126,44 @@ lookup_route.get('/botdata/:steamid', authGuard, async (c) => {
     success: true,
     data: {
       names: player.names,
+      tags: player.tags[guildid] ?? {}
+    }
+  });
+});
+
+lookup_route.get('/bot/lookup/:steamid', async (c) => {
+  const steamid = c.req.param('steamid');
+  const token = c.req.query('token');
+
+  if (!token) {
+    throw new HTTPException(400, { message: 'Please specify an API token' });
+  }
+
+  const user = db
+    .select()
+    .from(users)
+    .where(and(eq(users.apiToken, token), isNotNull(users.apiGuild)))
+    .get();
+
+  if (!user) {
+    throw new HTTPException(400, { message: 'Invalid API token' });
+  }
+
+  const player = await players.findOne({
+    _id: steamid
+  });
+
+  if (!player) {
+    throw new HTTPException(404, { message: 'Profile not found' });
+  }
+  
+  const guildid = user.apiGuild!;
+
+  return c.json({
+    success: true,
+    data: {
+      names: player.names,
+      addresses: player.addresses,
       tags: player.tags[guildid] ?? {}
     }
   });

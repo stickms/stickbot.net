@@ -1,6 +1,5 @@
 import {
   Flex,
-  Grid,
   IconButton,
   ScrollArea,
   TextField,
@@ -34,47 +33,43 @@ function ProfileLookup() {
   };
 
   return (
-    <Grid className='grid-rows-2 grid-cols-1 w-screen h-screen'>
-      <Flex className='items-center justify-center flex-col gap-y-20 mt-[16vh]'>
-        <Text className='text-3xl'>
-          Steam Profile Lookup
-        </Text>
-        <Flex className='flex-wrap gap-4 items-center justify-center'>
-          <TextField.Root
-            className='w-96 max-w-[80vw]'
-            placeholder='Lookup a Steam Profile...'
-            value={query}
-            maxLength={128}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={handleKeyPress}
-            disabled={disabled}
-          >
-            <TextField.Slot side='right'>
-              <IconButton size='2' variant='ghost' onClick={() => handleSearch()}>
-                <MagnifyingGlassIcon />
-              </IconButton>
-            </TextField.Slot>
-          </TextField.Root>
-          <DiscordList />
-        </Flex>
-      </Flex>
-      <Flex className='items-center justify-center'>
-        <ScrollArea
-          scrollbars='vertical'
-          className='w-[700px] max-w-[80vw] max-h-full pt-2'
+    <Flex className='flex-col items-center justify-center gap-y-24 md:max-h-screen'>
+      <Text className='mt-[20vh] text-3xl'>
+        Steam Profile Lookup
+      </Text>
+      <Flex className='flex-wrap gap-4 items-center justify-center max-w-[80vw]'>
+        <TextField.Root
+          className='w-96 max-w-[80vw]'
+          placeholder='Lookup a Steam Profile...'
+          value={query}
+          maxLength={128}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleKeyPress}
+          disabled={disabled}
         >
-          <Flex className='items-center justify-center flex-col'>
-            {profiles.map((p, i) => (
-              <SteamProfile
-                key={profiles.length - i}
-                steamid={p}
-                setDisabled={setDisabled}
-              />
-            ))}
-          </Flex>
-        </ScrollArea>
+          <TextField.Slot side='right'>
+            <IconButton size='2' variant='ghost' onClick={() => handleSearch()}>
+              <MagnifyingGlassIcon />
+            </IconButton>
+          </TextField.Slot>
+        </TextField.Root>
+        <DiscordList />
       </Flex>
-    </Grid>
+      <ScrollArea
+        scrollbars='vertical'
+        className='w-auto max-w-[80vw] mb-6 md:mb-0'
+      >
+        <Flex className='items-center justify-center flex-col'>
+          {profiles.map((p, i) => (
+            <SteamProfile
+              key={profiles.length - i}
+              steamid={p}
+              setDisabled={setDisabled}
+            />
+          ))}
+        </Flex>
+      </ScrollArea>
+    </Flex>
   );
 }
 

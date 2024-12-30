@@ -9,6 +9,7 @@ import { authGuard } from '../middleware/auth-guard.js';
 import type { Context } from '../lib/context.js';
 import { discord, discordRefresh } from '../middleware/discord.js';
 import { HTTPException } from 'hono/http-exception';
+import { randomBytes } from 'node:crypto';
 
 const oauth_route = new Hono<Context>();
 
@@ -136,6 +137,70 @@ oauth_route.post('/logout/discord', async (c) => {
 	});
 });
 
+oauth_route.post('/discord/generate-token', authGuard, discordRefresh, async (c) => {
+	const user = c.get('user')!;
+	const guildid = c.req.query('guildid');
+
+	if (!guildid) {
+		throw new HTTPException(400, { message: 'Please specify a guildid' });
+	}
+
+	const guildinfo = await fetch(DISCORD_URL + 'users/@me/guilds', {
+		headers: new Headers({
+			'Authorization': `Bearer ${user.accessToken}`
+		})
+	});
+
+	if (!guildinfo.ok) {
+		throw new HTTPException(400, { message: 'Could not reach Discord API' });
+	}
+
+	const json = await guildinfo.json();
+
+	const valid_guild = json.some((guild: { id: string }) => {
+		return guild.id === guildid;
+	});
+
+	if (!valid_guild) {
+		throw new HTTPException(400, { message: 'You are not in the specified guild' });
+	}
+
+	// Generate new random token, add to database
+	const token = randomBytes(32).toString('hex');
+
+	await db
+		.update(users)
+		.set({
+			apiToken: token,
+			apiGuild: guildid
+		})
+		.where(eq(users.discordId, user.discordId));
+
+	return c.json({
+		success: true,
+		data: {
+			token
+		}
+	})
+});
+
+oauth_route.post('/discord/revoke-token', authGuard, async (c) => {
+	const user = c.get('user')!;
+
+	await db
+		.update(users)
+		.set({
+			apiToken: null,
+			apiGuild: null
+		})
+		.where(eq(users.discordId, user.discordId));
+
+		return c.json({
+			success: true,
+			message: `Revoked API token for Discord User #${user.discordId}`
+		})
+});
+
 oauth_route.get('/discord/user', authGuard, discordRefresh, async(c) => {
 	const user = c.get('user')!;
 
@@ -144,11 +209,20 @@ oauth_route.get('/discord/user', authGuard, discordRefresh, async(c) => {
 			'Authorization': `Bearer ${user.accessToken}`
 		})
 	});
+
+	if (!userinfo.ok) {
+		throw new HTTPException(400, { message: 'Could not reach Discord API' });
+	}
+
+	const json = await userinfo.json();
 	
 	return c.json({
 		success: true,
 		data: {
-			user: await userinfo.json()
+			user: {
+				...json,
+				token_guild: user.apiGuild ?? ''
+			}
 		}
 	})
 });
@@ -161,6 +235,10 @@ oauth_route.get('/discord/guilds', authGuard, discordRefresh, async (c) => {
 			'Authorization': `Bearer ${user.accessToken}`
 		})
 	});
+
+	if (!guildinfo.ok) {
+		throw new HTTPException(400, { message: 'Could not reach Discord API' });
+	}
 
 	return c.json({
 		success: true,
