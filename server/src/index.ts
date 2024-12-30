@@ -25,9 +25,9 @@ app.use(
   })
 );
 
-app.use('/*', csrf({
+app.use('/bot/*-token', csrf({
   origin: CLIENT_URL
-}))
+}));
 
 app.use('/*', auth);
 

@@ -9,7 +9,6 @@ function Root() {
       <Flex className='items-center justify-center flex-col gap-y-4'>
         <Link href='/profile'>Steam Profile Lookup</Link>
         <Link href='/api-reference'>API & Reference</Link>
-        <Link href='https://boba.alexwu.monster'>boba.alexwu.monster</Link>
       </Flex>
     </Flex>
   );

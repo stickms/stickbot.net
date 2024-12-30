@@ -28,6 +28,48 @@ function ApiReference() {
           }
         ]}
       />
+
+      <ApiEndpointInfo 
+        name='/bot/addtag/{steamid}'
+        method='POST'
+        params={[
+          {
+            name: 'steamid',
+            description: 'SteamID of profile in ID64 format'
+          }
+        ]}
+        queries={[
+          {
+            name: 'token',
+            description: 'Stickbot API token'
+          },
+          {
+            name: 'tag',
+            description: 'Tag to add (cheater, suspicious, popular, banwatch)'
+          }
+        ]}
+      />
+
+      <ApiEndpointInfo 
+        name='/bot/removetag/{steamid}'
+        method='POST'
+        params={[
+          {
+            name: 'steamid',
+            description: 'SteamID of profile in ID64 format'
+          }
+        ]}
+        queries={[
+          {
+            name: 'token',
+            description: 'Stickbot API token'
+          },
+          {
+            name: 'tag',
+            description: 'Tag to remove (cheater, suspicious, popular, banwatch)'
+          }
+        ]}
+      />
     </Flex>
   );
 }

@@ -9,14 +9,21 @@ import { useState } from 'react';
 import SteamProfile from '../components/steam-profile';
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import DiscordList from '../components/discord-list';
+import useToast from '../hooks/use-toast';
 
 function ProfileLookup() {
+  const { toast } = useToast();
+
   const [query, setQuery] = useState<string>('');
   const [disabled, setDisabled] = useState<boolean>(false);
   const [profiles, setProfiles] = useState<string[]>([]);
 
   const handleSearch = () => {
     if (query === '') {
+      toast({
+        title: 'Error: Could not lookup profile',
+        description: 'Please enter a Steam ID or profile URL'
+      });
       return;
     }
 
@@ -57,7 +64,7 @@ function ProfileLookup() {
       </Flex>
       <ScrollArea
         scrollbars='vertical'
-        className='w-auto max-w-[80vw] mb-6 md:mb-0'
+        className='w-[720px] max-w-[80vw] mb-6 md:mb-0'
       >
         <Flex className='items-center justify-center flex-col'>
           {profiles.map((p, i) => (

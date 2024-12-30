@@ -146,4 +146,85 @@ bot_route.get('/bot/lookup/:steamid', async (c) => {
   });
 });
 
+bot_route.post('/bot/addtag/:steamid', async (c) => {
+  const steamid = c.req.param('steamid');
+  const token = c.req.query('token');
+  const tag = c.req.query('tag');
+
+  if (!token) {
+    throw new HTTPException(400, { message: 'Please specify an API token' });
+  }
+
+  const user = db
+    .select()
+    .from(users)
+    .where(and(eq(users.apiToken, token), isNotNull(users.apiGuild)))
+    .get();
+
+  if (!user) {
+    throw new HTTPException(400, { message: 'Invalid API token' });
+  }
+
+  const valid_tags = [ 'cheater', 'suspicious', 'popular', 'banwatch'];
+
+  if (!tag || !valid_tags.includes(tag)) {
+    throw new HTTPException(400, { message: 'Please specify a valid tag' });
+  }
+
+  await players.updateOne(
+    { _id: steamid },
+    { $set: {
+      [`tags.${user.apiGuild}.${tag}`]: {
+        addedby: user.discordId,
+        date: Math.floor(Date.now() / 1000)
+      }
+    } },
+    { upsert: true }
+  );
+
+  return c.json({
+    success: true,
+    message: `Successfully added tag '${tag}' to Steam ID ${steamid}`
+  })
+});
+
+bot_route.post('/bot/removetag/:steamid', async (c) => {
+  const steamid = c.req.param('steamid');
+  const token = c.req.query('token');
+  const tag = c.req.query('tag');
+
+  if (!token) {
+    throw new HTTPException(400, { message: 'Please specify an API token' });
+  }
+
+  const user = db
+    .select()
+    .from(users)
+    .where(and(eq(users.apiToken, token), isNotNull(users.apiGuild)))
+    .get();
+
+  if (!user) {
+    throw new HTTPException(400, { message: 'Invalid API token' });
+  }
+
+  const valid_tags = [ 'cheater', 'suspicious', 'popular', 'banwatch'];
+
+  if (!tag || !valid_tags.includes(tag)) {
+    throw new HTTPException(400, { message: 'Please specify a valid tag' });
+  }
+
+  await players.updateOne(
+    { _id: steamid },
+    { $unset: {
+      [`tags.${user.apiGuild}.${tag}`]: 1
+    } },
+    { upsert: true }
+  );
+
+  return c.json({
+    success: true,
+    message: `Successfully removed tag '${tag}' from Steam ID ${steamid}`
+  })
+});
+
 export default bot_route;
