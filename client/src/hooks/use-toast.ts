@@ -51,16 +51,12 @@ function useToast() {
   }
 
   function showToast(id: string) {
-    console.log(`Showing toast #${id}`);
-
     setToasts(memory_state.toasts.map((t) => {
       return t.id == id ? { ...t, open: true } : t;
     }));
   }
 
   function hideToast(id: string) {
-    console.log(`Hiding toast #${id}`);
-
     setToasts(memory_state.toasts.map((t) => {
       return t.id == id ? { ...t, open: false } : t;
     }));
@@ -71,8 +67,6 @@ function useToast() {
   }
 
   function removeToast(id: string) {
-    console.log(`Removing toast #${id}`);
-
     setToasts(memory_state.toasts.filter((t) => t.id != id));
   }
 
