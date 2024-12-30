@@ -11,7 +11,7 @@ import {
 import { useEffect, useState } from 'react';
 import { Sourceban, SteamProfileSummary } from '../lib/types';
 import { API_ENDPOINT } from '../env';
-import { parseSteamID } from '../helpers/steamid';
+import { parseSteamID } from '../lib/steamid';
 import { useStore } from '@nanostores/react';
 import { $guildid } from '../lib/store';
 
