@@ -1,5 +1,5 @@
 import { CopyIcon, InfoCircledIcon } from "@radix-ui/react-icons";
-import { Button, Callout, Flex, IconButton, Text, TextField } from "@radix-ui/themes";
+import { Button, Callout, Code, Flex, IconButton, Text, TextField } from "@radix-ui/themes";
 import DiscordList from "../components/discord-list";
 import useAuth from "../hooks/use-auth";
 import { useStore } from "@nanostores/react";
@@ -70,8 +70,9 @@ function BotApiToken() {
 function ApiReference() {
   return (
     <Flex className='items-center justify-center flex-col gap-y-24 mb-6'>
-      <Flex className='mt-[20vh]'>
-        <Text className='text-3xl'>API Reference</Text>
+      <Flex className='mt-[20vh] flex-wrap items-center justify-center gap-y-8 text-center'>
+        <Text className='text-3xl w-full'>API Reference</Text>
+        <Code size='3'>https://api.stickbot.net/</Code>
       </Flex>
 
       <BotApiToken />

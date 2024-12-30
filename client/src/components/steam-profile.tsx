@@ -318,7 +318,7 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
   }, [ steamid, setDisabled, guildid ]);
 
   return (
-    <Card className='my-2 min-h-[300px] w-[calc(100%-32px)]'>
+    <Card className='my-2 min-h-[300px] min-w-[calc(100%-32px)] max-w-[calc(100%-32px)]'>
       {error && (
         <Box>
           <Box className='w-full'>

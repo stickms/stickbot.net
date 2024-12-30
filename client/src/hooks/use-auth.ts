@@ -57,7 +57,7 @@ function useAuth() {
   }
 
   const generateApiToken = async (guildid: string) => {
-    const resp = await fetch(`${API_ENDPOINT}/discord/generate-token?guildid=${guildid}`, { 
+    const resp = await fetch(`${API_ENDPOINT}/bot/generate-token?guildid=${guildid}`, { 
       method: 'POST',
       credentials: 'include'
     });
@@ -75,7 +75,7 @@ function useAuth() {
   }
 
   const revokeApiToken = async () => {
-    const resp = await fetch(`${API_ENDPOINT}/discord/revoke-token`, { 
+    const resp = await fetch(`${API_ENDPOINT}/bot/revoke-token`, { 
       method: 'POST',
       credentials: 'include'
     });
