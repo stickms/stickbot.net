@@ -16,7 +16,9 @@ function BotApiToken() {
 
   const generateToken = async () => {
     const data = await generateApiToken(guildid);
-    setToken(() => data['token']);
+    if (data) {
+      setToken(() => data['token']);
+    }
   }  
 
   if (!user?.id) {
