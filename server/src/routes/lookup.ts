@@ -4,16 +4,8 @@ import { URL, URLSearchParams } from 'url';
 import Sourcebans from '../helpers/sourcebans.js';
 import type { Context } from '../lib/context.js';
 import { HTTPException } from 'hono/http-exception';
-import { ipRestriction } from 'hono/ip-restriction';
-import { getConnInfo } from '@hono/node-server/conninfo';
 
 const lookup_route = new Hono<Context>();
-
-// These routes are for internal use only
-lookup_route.use('/*', ipRestriction(getConnInfo, {
-  denyList: [],
-  allowList: ['127.0.0.1', '::1']
-}))
 
 lookup_route.get('/lookup/:steamid', async (c) => {
   const steamid = c.req.param('steamid');
