@@ -19,7 +19,7 @@ export const validateToken = async (c: Context, next: Next) => {
   if (!user) {
     throw new HTTPException(401, { message: 'Invalid API token' });
   }
-  
+
   // Set user for future usage
   c.set('user', user);
 

@@ -2,13 +2,8 @@ import { Hono } from 'hono';
 import { MONGO_URL, STEAM_API_KEY, STEAM_URL } from '../env.js';
 import { URL, URLSearchParams } from 'url';
 import Sourcebans from '../helpers/sourcebans.js';
-import { Collection, MongoClient } from 'mongodb';
-import type { DatabasePlayerEntry } from '../lib/types.js';
-import { authGuard } from '../middleware/auth-guard.js';
 import type { Context } from '../lib/context.js';
 import { HTTPException } from 'hono/http-exception';
-import { db, users } from '../db/schema.js';
-import { and, eq, isNotNull } from 'drizzle-orm';
 
 const lookup_route = new Hono<Context>();
 
@@ -53,7 +48,7 @@ lookup_route.get('/lookup/:steamid', async (c) => {
     success: true,
     data: {
       ...jsons[1]['players'][0],
-      ...jsons[0]['response']['players'][0]  
+      ...jsons[0]['response']['players'][0]
     }
   };
 

@@ -1,15 +1,15 @@
-import { Hono } from "hono";
-import type { Context } from "../lib/context.js";
-import { MongoClient } from "mongodb";
-import { DISCORD_URL, MONGO_URL } from "../env.js";
-import type { DatabasePlayerEntry } from "../lib/types.js";
-import { authGuard } from "../middleware/auth-guard.js";
-import { HTTPException } from "hono/http-exception";
-import { db, users } from "../db/schema.js";
-import { eq, and, isNotNull } from "drizzle-orm";
-import { discordRefresh } from "../middleware/discord.js";
-import { randomBytes } from "node:crypto";
-import { validateToken } from "../middleware/validate-token.js";
+import { Hono } from 'hono';
+import type { Context } from '../lib/context.js';
+import { MongoClient } from 'mongodb';
+import { DISCORD_URL, MONGO_URL } from '../env.js';
+import type { DatabasePlayerEntry } from '../lib/types.js';
+import { authGuard } from '../middleware/auth-guard.js';
+import { HTTPException } from 'hono/http-exception';
+import { db, users } from '../db/schema.js';
+import { eq } from 'drizzle-orm';
+import { discordRefresh } from '../middleware/discord.js';
+import { randomBytes } from 'node:crypto';
+import { validateToken } from '../middleware/validate-token.js';
 
 const bot_route = new Hono<Context>();
 
@@ -42,7 +42,9 @@ bot_route.post('/bot/generate-token', authGuard, discordRefresh, async (c) => {
   });
 
   if (!valid_guild) {
-    throw new HTTPException(400, { message: 'You are not in the specified guild' });
+    throw new HTTPException(400, {
+      message: 'You are not in the specified guild'
+    });
   }
 
   // Generate new random token, add to database
@@ -61,7 +63,7 @@ bot_route.post('/bot/generate-token', authGuard, discordRefresh, async (c) => {
     data: {
       token
     }
-  })
+  });
 });
 
 // Revoke an existing token
@@ -79,7 +81,7 @@ bot_route.post('/bot/revoke-token', authGuard, async (c) => {
   return c.json({
     success: true,
     message: `Revoked API token for Discord User #${user.id}`
-  })
+  });
 });
 
 // Frontend use only
@@ -114,34 +116,43 @@ bot_route.get('/bot/lookup', validateToken, async (c) => {
   const steamids = c.req.query('steamids');
 
   if (!steamids) {
-    throw new HTTPException(400, { message: 'Please specify steamids for lookup' });
+    throw new HTTPException(400, {
+      message: 'Please specify steamids for lookup'
+    });
   }
 
   const idlist = steamids.split(',');
   if (idlist.length > 100) {
-    throw new HTTPException(400, { message: 'A maximum of 100 profiles can be looked up per search' });
+    throw new HTTPException(400, {
+      message: 'A maximum of 100 profiles can be looked up per search'
+    });
   }
 
-  const profiles = await players.find({
-    _id: { $in: idlist }
-  }).toArray();
+  const profiles = await players
+    .find({
+      _id: { $in: idlist }
+    })
+    .toArray();
 
   if (!profiles.length) {
     throw new HTTPException(404, { message: 'Profile(s) not found' });
   }
-  
+
   const guildid = user.apiGuild!;
+
+  const server_profiles = profiles.map((profile) => {
+    return {
+      steamid: profile._id,
+      names: profile.names,
+      addresses: profile.addresses,
+      tags: profile.tags[guildid] ?? {}
+    };
+  });
 
   return c.json({
     success: true,
     data: {
-      profiles: profiles.map((profile) => {
-        return {
-          names: profile.names,
-          addresses: profile.addresses,
-          tags: profile.tags[guildid] ?? {}
-        };
-      })
+      profiles: server_profiles
     }
   });
 });
@@ -155,7 +166,7 @@ bot_route.post('/bot/addtag', validateToken, async (c) => {
     throw new HTTPException(400, { message: 'Please specify a Steam ID' });
   }
 
-  const valid_tags = [ 'cheater', 'suspicious', 'popular', 'banwatch'];
+  const valid_tags = ['cheater', 'suspicious', 'popular', 'banwatch'];
 
   if (!tag || !valid_tags.includes(tag)) {
     throw new HTTPException(400, { message: 'Please specify a valid tag' });
@@ -163,19 +174,21 @@ bot_route.post('/bot/addtag', validateToken, async (c) => {
 
   await players.updateOne(
     { _id: steamid },
-    { $set: {
-      [`tags.${user.apiGuild!}.${tag}`]: {
-        addedby: user.id,
-        date: Math.floor(Date.now() / 1000)
+    {
+      $set: {
+        [`tags.${user.apiGuild!}.${tag}`]: {
+          addedby: user.id,
+          date: Math.floor(Date.now() / 1000)
+        }
       }
-    } },
+    },
     { upsert: true }
   );
 
   return c.json({
     success: true,
     message: `Successfully added tag '${tag}' to Steam ID ${steamid}`
-  })
+  });
 });
 
 bot_route.post('/bot/removetag', validateToken, async (c) => {
@@ -187,7 +200,7 @@ bot_route.post('/bot/removetag', validateToken, async (c) => {
     throw new HTTPException(400, { message: 'Please specify a Steam ID' });
   }
 
-  const valid_tags = [ 'cheater', 'suspicious', 'popular', 'banwatch'];
+  const valid_tags = ['cheater', 'suspicious', 'popular', 'banwatch'];
 
   if (!tag || !valid_tags.includes(tag)) {
     throw new HTTPException(400, { message: 'Please specify a valid tag' });
@@ -195,16 +208,18 @@ bot_route.post('/bot/removetag', validateToken, async (c) => {
 
   await players.updateOne(
     { _id: steamid },
-    { $unset: {
-      [`tags.${user.apiGuild!}.${tag}`]: 1
-    } },
+    {
+      $unset: {
+        [`tags.${user.apiGuild!}.${tag}`]: 1
+      }
+    },
     { upsert: true }
   );
 
   return c.json({
     success: true,
     message: `Successfully removed tag '${tag}' from Steam ID ${steamid}`
-  })
+  });
 });
 
 export default bot_route;

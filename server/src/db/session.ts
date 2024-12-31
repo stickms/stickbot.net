@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm';
 import {
   encodeBase32LowerCaseNoPadding,
   encodeHexLowerCase
-} from '@oslojs/encoding'
+} from '@oslojs/encoding';
 import { sha256 } from '@oslojs/crypto/sha2';
 
 import type { User, Session } from './schema.js';
@@ -73,21 +73,21 @@ export function setSessionTokenCookie(
   token: string,
   expiresAt: Date
 ): void {
-	setCookie(context, 'session', token, {
-		httpOnly: true,
-		sameSite: 'lax',
-		expires: expiresAt,
-		path: '/',
-		secure: process.env.NODE_ENV === 'production'
-	});
+  setCookie(context, 'session', token, {
+    httpOnly: true,
+    sameSite: 'lax',
+    expires: expiresAt,
+    path: '/',
+    secure: process.env.NODE_ENV === 'production'
+  });
 }
 
 export function deleteSessionTokenCookie(context: Context): void {
-	setCookie(context, 'session', '', {
-		httpOnly: true,
-		sameSite: 'lax',
-		maxAge: 0,
-		path: '/',
-		secure: process.env.NODE_ENV === 'production'
-	});
+  setCookie(context, 'session', '', {
+    httpOnly: true,
+    sameSite: 'lax',
+    maxAge: 0,
+    path: '/',
+    secure: process.env.NODE_ENV === 'production'
+  });
 }

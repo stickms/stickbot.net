@@ -1,6 +1,10 @@
 import { Discord } from 'arctic';
 import type { Context, Next } from 'hono';
-import { DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_REDIRECT_URI } from '../env.js';
+import {
+  DISCORD_CLIENT_ID,
+  DISCORD_CLIENT_SECRET,
+  DISCORD_REDIRECT_URI
+} from '../env.js';
 import { db, users, type User } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 
@@ -16,7 +20,7 @@ export const discordRefresh = async (c: Context, next: Next) => {
   if (new Date() > user.accessTokenExpiration) {
     // Will throw an error if this fails
     const tokens = await discord.refreshAccessToken(user.refreshToken);
-    
+
     user.refreshToken = tokens.refreshToken();
     user.accessToken = tokens.accessToken();
     user.accessTokenExpiration = tokens.accessTokenExpiresAt();
@@ -29,7 +33,7 @@ export const discordRefresh = async (c: Context, next: Next) => {
         accessTokenExpiration: user.accessTokenExpiration
       })
       .where(eq(users.id, user.id));
-    
+
     c.set('user', user);
   }
 
