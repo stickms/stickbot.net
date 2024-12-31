@@ -13,7 +13,7 @@ function Toaster() {
             <Callout.Root 
               key={toast.id}
               data-open={toast.open}
-              className='min-w-96 transition ease-in-out duration-200 data-[open=false]:translate-x-[calc(100%+1.5rem)] data-[open=true]:translate-x-0'
+              className='min-w-96 max-w-[30rem] ml-6 transition ease-in-out duration-200 data-[open=false]:translate-x-[calc(100%+1.5rem)] data-[open=true]:translate-x-0'
             >
               <Callout.Icon>
                 <InfoCircledIcon />
