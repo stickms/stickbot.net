@@ -29,7 +29,7 @@ function ApiEndpointInfo({ ...props }: EndpointInfoProps) {
 
   return (
     <Flex className='items-center justify-center flex-col gap-y-8 max-w-[80vw]'>
-      <Flex className='items-center gap-x-6'>
+      <Flex className='items-center justify-center flex-wrap-reverse gap-6'>
         <Badge color={methodColor()} size='3'>
           {props.method}
         </Badge>
@@ -76,8 +76,10 @@ function ApiEndpointInfo({ ...props }: EndpointInfoProps) {
                     <Code>{query.name}</Code>
                   </Table.RowHeaderCell>
                   <Table.Cell>{query.description}</Table.Cell>
-                  <Table.Cell className='flex justify-center'>
-                    {!query.optional ? <CheckIcon /> : ''}
+                  <Table.Cell>
+                    <Flex className='justify-center'>
+                      {!query.optional ? <CheckIcon /> : ''}
+                    </Flex>
                   </Table.Cell>
                 </Table.Row>
               );
