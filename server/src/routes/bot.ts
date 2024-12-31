@@ -10,6 +10,7 @@ import { eq } from 'drizzle-orm';
 import { discordRefresh } from '../middleware/discord.js';
 import { randomBytes } from 'node:crypto';
 import { validateToken } from '../middleware/validate-token.js';
+import Sourcebans from '../helpers/sourcebans.js';
 
 const bot_route = new Hono<Context>();
 
@@ -153,6 +154,25 @@ bot_route.get('/bot/lookup', validateToken, async (c) => {
     success: true,
     data: {
       profiles: server_profiles
+    }
+  });
+});
+
+bot_route.get('/bot/sourcebans', validateToken, async (c) => {
+  const steamid = c.req.query('steamid');
+
+  if (!steamid) {
+    throw new HTTPException(400, {
+      message: 'Please specify a Steam ID for lookup'
+    });
+  }
+
+  const sourcebans = await Sourcebans.get(steamid);
+
+  return c.json({
+    success: true,
+    data: {
+      sourcebans
     }
   });
 });

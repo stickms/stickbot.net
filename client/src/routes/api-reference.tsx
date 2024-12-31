@@ -29,6 +29,21 @@ function ApiReference() {
       />
 
       <ApiEndpointInfo 
+        name='/bot/sourcebans/'
+        method='GET'
+        queries={[
+          {
+            name: 'token',
+            description: 'Stickbot API token'
+          },
+          {
+            name: 'steamid',
+            description: 'SteamIDs of profile in ID64 format'
+          }
+        ]}
+      />
+
+      <ApiEndpointInfo 
         name='/bot/addtag/'
         method='POST'
         queries={[
