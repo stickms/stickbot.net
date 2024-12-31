@@ -47,7 +47,7 @@ export type SteamProfileSummary = {
   EconomyBan: string;
 
   // Sourcebans
-  sourcebans: Sourceban[] | undefined;
+  sourcebans?: Sourceban[];
 };
 
 export type Sourceban = {

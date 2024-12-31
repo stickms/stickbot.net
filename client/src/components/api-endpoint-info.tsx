@@ -4,7 +4,7 @@ import { API_ENDPOINT } from "../env";
 
 type EndpointInfoProps = {
   name: string;
-  method: 'GET' | 'POST';
+  method: 'GET' | 'POST' | 'DELETE';
   params?: {
     name: string;
     description: string;
@@ -17,10 +17,20 @@ type EndpointInfoProps = {
 };
 
 function ApiEndpointInfo({ ...props }: EndpointInfoProps) {
+  const methodColor = () => {
+    if (props.method === 'GET') {
+      return 'green';
+    } else if (props.method === 'POST') {
+      return 'amber';
+    } else if (props.method === 'DELETE') {
+      return 'red';
+    }
+  }
+
   return (
     <Flex className='items-center justify-center flex-col gap-y-8 max-w-[80vw]'>
       <Flex className='items-center gap-x-6'>
-        <Badge color={props.method === 'GET' ? 'green' : 'amber'} size='3'>
+        <Badge color={methodColor()} size='3'>
           {props.method}
         </Badge>
         <Code size='4'>{API_ENDPOINT}{props.name}</Code>

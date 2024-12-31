@@ -49,7 +49,7 @@ function ApiReference() {
 
       <ApiEndpointInfo 
         name='/bot/removetag/'
-        method='POST'
+        method='DELETE'
         queries={[
           {
             name: 'token',

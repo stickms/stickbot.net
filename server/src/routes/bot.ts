@@ -191,7 +191,7 @@ bot_route.post('/bot/addtag', validateToken, async (c) => {
   });
 });
 
-bot_route.post('/bot/removetag', validateToken, async (c) => {
+bot_route.delete('/bot/removetag', validateToken, async (c) => {
   const user = c.get('user')!;
   const steamid = c.req.query('steamid');
   const tag = c.req.query('tag');
