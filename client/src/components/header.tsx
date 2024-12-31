@@ -18,7 +18,7 @@ function DiscordLogin() {
     const redirect = `?redirect=${encodeURIComponent(location.pathname)}`;
     return (
       <Link href={`${API_ENDPOINT}/login/discord${redirect}`}>
-        <Button className='cursor-pointer'>
+        <Button>
           <DiscordLogoIcon /> Login
         </Button>
       </Link>
@@ -28,7 +28,7 @@ function DiscordLogin() {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger>
-        <Button variant='ghost' className='cursor-pointer'>
+        <Button variant='ghost'>
           <Avatar
             src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`}
             fallback='U'
@@ -41,7 +41,7 @@ function DiscordLogin() {
         <DropdownMenu.Label>
           {user.username}
         </DropdownMenu.Label>
-        <DropdownMenu.Item onClick={logout} className='cursor-pointer'>
+        <DropdownMenu.Item onClick={logout}>
           Logout
         </DropdownMenu.Item>
       </DropdownMenu.Content>
