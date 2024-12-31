@@ -21,10 +21,6 @@ function useAuth() {
     });
 
     if (!resp.ok) {
-      toast({
-        title: 'Error: Could not get current user',
-        description: 'Please try again later'
-      });
       clearUser();
       return;
     }
@@ -39,10 +35,6 @@ function useAuth() {
     });
 
     if (!resp.ok) {
-      toast({
-        title: 'Error: Could not get user guilds',
-        description: 'Please try again later'
-      });
       clearGuilds();
       return;
     }
