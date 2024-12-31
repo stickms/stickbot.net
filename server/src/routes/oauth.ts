@@ -73,7 +73,7 @@ oauth_route.get('/login/discord/callback', async (c) => {
 	const userCheck = db
 		.select()
 		.from(users)
-		.where(eq(users.discordId, uinfojs['id']))
+		.where(eq(users.id, uinfojs['id']))
 		.get()
 	
 	let userid = 0;
@@ -86,7 +86,7 @@ oauth_route.get('/login/discord/callback', async (c) => {
 				refreshToken: tokens.refreshToken(),
 				accessTokenExpiration: tokens.accessTokenExpiresAt()
 			})
-			.where(eq(users.discordId, uinfojs['id']))
+			.where(eq(users.id, uinfojs['id']))
 			.returning()
 			.get();
 		
@@ -95,7 +95,7 @@ oauth_route.get('/login/discord/callback', async (c) => {
 		const newUser = db
 			.insert(users)
 			.values({
-				discordId: uinfojs['id'],
+				id: uinfojs['id'],
 				accessToken: tokens.accessToken(),
 				refreshToken: tokens.refreshToken(),
 				accessTokenExpiration: tokens.accessTokenExpiresAt()

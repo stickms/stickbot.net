@@ -7,10 +7,9 @@ const sqliteDB = sqlite('sqlite.db');
 export const db = drizzle(sqliteDB);
 
 export const users = sqliteTable('users', {
-  id: integer('id').primaryKey(),
+  id: integer('id').primaryKey(), // Discord ID
 	apiToken: text('api_token'),
 	apiGuild: text('api_guild'),
-	discordId: text('discord_id').notNull(),
 	refreshToken: text('refresh_token').notNull(),
 	accessToken: text('access_token').notNull(),
 	accessTokenExpiration: integer('access_token_expiration', {

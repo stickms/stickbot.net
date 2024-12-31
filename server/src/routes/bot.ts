@@ -54,7 +54,7 @@ bot_route.post('/bot/generate-token', authGuard, discordRefresh, async (c) => {
       apiToken: token,
       apiGuild: guildid
     })
-    .where(eq(users.discordId, user.discordId));
+    .where(eq(users.id, user.id));
 
   return c.json({
     success: true,
@@ -74,11 +74,11 @@ bot_route.post('/bot/revoke-token', authGuard, async (c) => {
       apiToken: null,
       apiGuild: null
     })
-    .where(eq(users.discordId, user.discordId));
+    .where(eq(users.id, user.id));
 
   return c.json({
     success: true,
-    message: `Revoked API token for Discord User #${user.discordId}`
+    message: `Revoked API token for Discord User #${user.id}`
   })
 });
 
@@ -109,16 +109,25 @@ bot_route.get('/botdata/:steamid', authGuard, async (c) => {
 });
 
 // API for anyone else
-bot_route.get('/bot/lookup/:steamid', validateToken, async (c) => {
+bot_route.get('/bot/lookup', validateToken, async (c) => {
   const user = c.get('user')!;
-  const steamid = c.req.param('steamid');
+  const steamids = c.req.query('steamids');
 
-  const player = await players.findOne({
-    _id: steamid
-  });
+  if (!steamids) {
+    throw new HTTPException(400, { message: 'Please specify steamids for lookup' });
+  }
 
-  if (!player) {
-    throw new HTTPException(404, { message: 'Profile not found' });
+  const idlist = steamids.split(',');
+  if (idlist.length > 100) {
+    throw new HTTPException(400, { message: 'A maximum of 100 profiles can be looked up per search' });
+  }
+
+  const profiles = await players.find({
+    _id: { $in: idlist }
+  }).toArray();
+
+  if (!profiles.length) {
+    throw new HTTPException(404, { message: 'Profile(s) not found' });
   }
   
   const guildid = user.apiGuild!;
@@ -126,17 +135,25 @@ bot_route.get('/bot/lookup/:steamid', validateToken, async (c) => {
   return c.json({
     success: true,
     data: {
-      names: player.names,
-      addresses: player.addresses,
-      tags: player.tags[guildid] ?? {}
+      profiles: profiles.map((profile) => {
+        return {
+          names: profile.names,
+          addresses: profile.addresses,
+          tags: profile.tags[guildid] ?? {}
+        };
+      })
     }
   });
 });
 
-bot_route.post('/bot/addtag/:steamid', validateToken, async (c) => {
+bot_route.post('/bot/addtag', validateToken, async (c) => {
   const user = c.get('user')!;
-  const steamid = c.req.param('steamid');
+  const steamid = c.req.query('steamid');
   const tag = c.req.query('tag');
+
+  if (!steamid) {
+    throw new HTTPException(400, { message: 'Please specify a Steam ID' });
+  }
 
   const valid_tags = [ 'cheater', 'suspicious', 'popular', 'banwatch'];
 
@@ -148,7 +165,7 @@ bot_route.post('/bot/addtag/:steamid', validateToken, async (c) => {
     { _id: steamid },
     { $set: {
       [`tags.${user.apiGuild!}.${tag}`]: {
-        addedby: user.discordId,
+        addedby: user.id,
         date: Math.floor(Date.now() / 1000)
       }
     } },
@@ -161,10 +178,14 @@ bot_route.post('/bot/addtag/:steamid', validateToken, async (c) => {
   })
 });
 
-bot_route.post('/bot/removetag/:steamid', validateToken, async (c) => {
+bot_route.post('/bot/removetag', validateToken, async (c) => {
   const user = c.get('user')!;
-  const steamid = c.req.param('steamid');
+  const steamid = c.req.query('steamid');
   const tag = c.req.query('tag');
+
+  if (!steamid) {
+    throw new HTTPException(400, { message: 'Please specify a Steam ID' });
+  }
 
   const valid_tags = [ 'cheater', 'suspicious', 'popular', 'banwatch'];
 
