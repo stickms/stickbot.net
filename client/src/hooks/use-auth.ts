@@ -21,6 +21,10 @@ function useAuth() {
     });
 
     if (!resp.ok) {
+      toast({
+        title: 'Error: Could not get current user',
+        description: 'Please try again later'
+      });
       clearUser();
       return;
     }
@@ -35,6 +39,10 @@ function useAuth() {
     });
 
     if (!resp.ok) {
+      toast({
+        title: 'Error: Could not get user guilds',
+        description: 'Please try again later'
+      });
       clearGuilds();
       return;
     }
@@ -50,6 +58,10 @@ function useAuth() {
     });
 
     if (!resp.ok) {
+      toast({
+        title: 'Error: Could not logout',
+        description: 'Please try again later'
+      });
       return;
     }
 
@@ -65,7 +77,7 @@ function useAuth() {
     if (!resp.ok) {
       toast({
         title: 'Error: Could not generate API token',
-        description: (await resp.json())['message']
+        description: 'Please try again later'
       });
       return;
     }
@@ -83,7 +95,7 @@ function useAuth() {
     if (!resp.ok) {
       toast({
         title: 'Error: Could not revoke API token',
-        description: (await resp.json())['message']
+        description: 'Please try again later'
       });
       return;
     }
