@@ -9,6 +9,7 @@ import { db, users } from "../db/schema.js";
 import { eq, and, isNotNull } from "drizzle-orm";
 import { discordRefresh } from "../middleware/discord.js";
 import { randomBytes } from "node:crypto";
+import { validateToken } from "../middleware/validate-token.js";
 
 const bot_route = new Hono<Context>();
 
@@ -108,23 +109,9 @@ bot_route.get('/botdata/:steamid', authGuard, async (c) => {
 });
 
 // API for anyone else
-bot_route.get('/bot/lookup/:steamid', async (c) => {
+bot_route.get('/bot/lookup/:steamid', validateToken, async (c) => {
+  const user = c.get('user')!;
   const steamid = c.req.param('steamid');
-  const token = c.req.query('token');
-
-  if (!token) {
-    throw new HTTPException(400, { message: 'Please specify an API token' });
-  }
-
-  const user = db
-    .select()
-    .from(users)
-    .where(and(eq(users.apiToken, token), isNotNull(users.apiGuild)))
-    .get();
-
-  if (!user) {
-    throw new HTTPException(400, { message: 'Invalid API token' });
-  }
 
   const player = await players.findOne({
     _id: steamid
@@ -146,24 +133,10 @@ bot_route.get('/bot/lookup/:steamid', async (c) => {
   });
 });
 
-bot_route.post('/bot/addtag/:steamid', async (c) => {
+bot_route.post('/bot/addtag/:steamid', validateToken, async (c) => {
+  const user = c.get('user')!;
   const steamid = c.req.param('steamid');
-  const token = c.req.query('token');
   const tag = c.req.query('tag');
-
-  if (!token) {
-    throw new HTTPException(400, { message: 'Please specify an API token' });
-  }
-
-  const user = db
-    .select()
-    .from(users)
-    .where(and(eq(users.apiToken, token), isNotNull(users.apiGuild)))
-    .get();
-
-  if (!user) {
-    throw new HTTPException(400, { message: 'Invalid API token' });
-  }
 
   const valid_tags = [ 'cheater', 'suspicious', 'popular', 'banwatch'];
 
@@ -174,7 +147,7 @@ bot_route.post('/bot/addtag/:steamid', async (c) => {
   await players.updateOne(
     { _id: steamid },
     { $set: {
-      [`tags.${user.apiGuild}.${tag}`]: {
+      [`tags.${user.apiGuild!}.${tag}`]: {
         addedby: user.discordId,
         date: Math.floor(Date.now() / 1000)
       }
@@ -188,24 +161,10 @@ bot_route.post('/bot/addtag/:steamid', async (c) => {
   })
 });
 
-bot_route.post('/bot/removetag/:steamid', async (c) => {
+bot_route.post('/bot/removetag/:steamid', validateToken, async (c) => {
+  const user = c.get('user')!;
   const steamid = c.req.param('steamid');
-  const token = c.req.query('token');
   const tag = c.req.query('tag');
-
-  if (!token) {
-    throw new HTTPException(400, { message: 'Please specify an API token' });
-  }
-
-  const user = db
-    .select()
-    .from(users)
-    .where(and(eq(users.apiToken, token), isNotNull(users.apiGuild)))
-    .get();
-
-  if (!user) {
-    throw new HTTPException(400, { message: 'Invalid API token' });
-  }
 
   const valid_tags = [ 'cheater', 'suspicious', 'popular', 'banwatch'];
 
@@ -216,7 +175,7 @@ bot_route.post('/bot/removetag/:steamid', async (c) => {
   await players.updateOne(
     { _id: steamid },
     { $unset: {
-      [`tags.${user.apiGuild}.${tag}`]: 1
+      [`tags.${user.apiGuild!}.${tag}`]: 1
     } },
     { upsert: true }
   );
