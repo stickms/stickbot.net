@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { MONGO_URL, STEAM_API_KEY, STEAM_URL } from '../env.js';
+import { STEAM_API_KEY, STEAM_URL } from '../env.js';
 import { URL, URLSearchParams } from 'url';
 import Sourcebans from '../helpers/sourcebans.js';
 import type { Context } from '../lib/context.js';
@@ -48,7 +48,8 @@ lookup_route.get('/lookup/:steamid', async (c) => {
     success: true,
     data: {
       ...jsons[1]['players'][0],
-      ...jsons[0]['response']['players'][0]
+      ...jsons[0]['response']['players'][0],
+      SteamId: undefined // Get rid of extra SteamId from playerbans
     }
   };
 

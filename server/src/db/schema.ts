@@ -5,7 +5,7 @@ import {
   text
 } from 'drizzle-orm/sqlite-core';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
-import { sql, type InferSelectModel } from 'drizzle-orm';
+import type { InferSelectModel } from 'drizzle-orm';
 
 const sqliteDB = sqlite('sqlite.db');
 export const db = drizzle(sqliteDB);

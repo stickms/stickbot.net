@@ -11,6 +11,7 @@ import type { Context } from './lib/context.js';
 import lookup_route from './routes/lookup.js';
 import oauth_route from './routes/oauth.js';
 import bot_route from './routes/bot.js';
+import { trimTrailingSlash } from 'hono/trailing-slash';
 
 const app = new Hono<Context>();
 
@@ -31,6 +32,8 @@ app.use(
     origin: CLIENT_URL
   })
 );
+
+app.use('/*', trimTrailingSlash());
 
 app.use('/*', auth);
 
@@ -56,16 +59,6 @@ app.onError((error, c) => {
         message: error.message
       },
       error.status
-    );
-  }
-
-  if (error instanceof Error) {
-    return c.json(
-      {
-        success: false,
-        message: error.message
-      },
-      400
     );
   }
 

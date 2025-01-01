@@ -8,7 +8,7 @@ import {
   Spinner,
   Text
 } from '@radix-ui/themes';
-import { useEffect, useState } from 'react';
+import { ComponentProps, useEffect, useState } from 'react';
 import { Sourceban, SteamProfileSummary } from '../lib/types';
 import { API_ENDPOINT } from '../env';
 import { parseSteamID } from '../lib/steamid';
@@ -136,7 +136,7 @@ function AlertList({ summary, tags }: { summary: SteamProfileSummary, tags?: Tag
             <Box className='w-full' key={alert.text}>
               <Badge
                 size='2'
-                color={alert.color as 'red' | 'yellow' | 'green' | 'blue' | 'gray'}
+                color={alert.color as ComponentProps<typeof Badge>['color']}
               >
                 {alert.text}
               </Badge>
