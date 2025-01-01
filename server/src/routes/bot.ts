@@ -11,6 +11,7 @@ import { discordRefresh } from '../middleware/discord.js';
 import { randomBytes } from 'node:crypto';
 import { validateToken } from '../middleware/validate-token.js';
 import Sourcebans from '../helpers/sourcebans.js';
+import { validateSteamId } from '../middleware/validate-steamid.js';
 
 const bot_route = new Hono<Context>();
 
@@ -158,14 +159,8 @@ bot_route.get('/bot/lookup', validateToken, async (c) => {
   });
 });
 
-bot_route.get('/bot/sourcebans', validateToken, async (c) => {
-  const steamid = c.req.query('steamid');
-
-  if (!steamid) {
-    throw new HTTPException(400, {
-      message: 'Please specify a Steam ID for lookup'
-    });
-  }
+bot_route.get('/bot/sourcebans', validateToken, validateSteamId, async (c) => {
+  const steamid = c.req.query('steamid')!;
 
   const sourcebans = await Sourcebans.get(steamid);
 
@@ -177,7 +172,7 @@ bot_route.get('/bot/sourcebans', validateToken, async (c) => {
   });
 });
 
-bot_route.post('/bot/addtag', validateToken, async (c) => {
+bot_route.post('/bot/addtag', validateToken, validateSteamId, async (c) => {
   const user = c.get('user')!;
   const steamid = c.req.query('steamid');
   const tag = c.req.query('tag');
@@ -211,14 +206,10 @@ bot_route.post('/bot/addtag', validateToken, async (c) => {
   });
 });
 
-bot_route.delete('/bot/removetag', validateToken, async (c) => {
+bot_route.delete('/bot/removetag', validateToken, validateSteamId, async (c) => {
   const user = c.get('user')!;
-  const steamid = c.req.query('steamid');
+  const steamid = c.req.query('steamid')!;
   const tag = c.req.query('tag');
-
-  if (!steamid) {
-    throw new HTTPException(400, { message: 'Please specify a Steam ID' });
-  }
 
   const valid_tags = ['cheater', 'suspicious', 'popular', 'banwatch'];
 

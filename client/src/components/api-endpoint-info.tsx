@@ -33,7 +33,7 @@ function ApiEndpointInfo({ ...props }: EndpointInfoProps) {
         <Badge color={methodColor()} size='3'>
           {props.method}
         </Badge>
-        <Code size='4'>{API_ENDPOINT}{props.name}</Code>
+        <Code size='4' className='text-center'>{API_ENDPOINT}{props.name}</Code>
       </Flex>
 
       {props.params && (

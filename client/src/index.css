@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-// Force pointer cursor on UI elements
 .radix-themes {
 	--cursor-button: pointer;
 	--cursor-checkbox: pointer;

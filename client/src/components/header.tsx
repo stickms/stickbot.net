@@ -14,7 +14,7 @@ function DiscordLogin() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (!user?.id) {
+  if (!user.id) {
     const redirect = `?redirect=${encodeURIComponent(location.pathname)}`;
     return (
       <Link href={`${API_ENDPOINT}/login/discord${redirect}`}>

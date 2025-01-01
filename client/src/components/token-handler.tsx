@@ -20,7 +20,7 @@ function TokenHandler() {
     }
   }  
 
-  if (!user?.id) {
+  if (!user.id) {
     return (
       <Callout.Root size='2'>
         <Callout.Icon>
