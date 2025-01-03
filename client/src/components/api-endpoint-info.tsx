@@ -28,8 +28,8 @@ function ApiEndpointInfo({ ...props }: EndpointInfoProps) {
   }
 
   return (
-    <Flex className='items-center justify-center flex-col gap-y-8 max-w-[80vw]'>
-      <Flex className='items-center justify-center flex-wrap-reverse gap-6'>
+    <Flex className='items-center justify-center flex-col gap-y-4 max-w-[80vw]'>
+      <Flex className='items-center justify-center flex-wrap-reverse gap-4'>
         <Badge color={methodColor()} size='3'>
           {props.method}
         </Badge>
