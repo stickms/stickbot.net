@@ -1,5 +1,5 @@
 import { Discord } from 'arctic';
-import type { Context, Next } from 'hono';
+import type { Context as HonoContext, Next } from 'hono';
 import {
   DISCORD_CLIENT_ID,
   DISCORD_CLIENT_SECRET,
@@ -7,6 +7,7 @@ import {
 } from '../env.js';
 import { db, users, type User } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
+import type { Context } from '../lib/context.js';
 
 export const discord = new Discord(
   DISCORD_CLIENT_ID,
@@ -14,8 +15,8 @@ export const discord = new Discord(
   DISCORD_REDIRECT_URI
 );
 
-export const discordRefresh = async (c: Context, next: Next) => {
-  const user: User = c.get('user')!;
+export const discordRefresh = async (c: HonoContext<Context>, next: Next) => {
+  const user = c.get('user')!;
 
   if (new Date() > user.accessTokenExpiration) {
     // Will throw an error if this fails

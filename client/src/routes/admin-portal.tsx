@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { API_ENDPOINT } from '../env';
 import { MagnifyingGlassIcon, MinusIcon, PlusIcon } from '@radix-ui/react-icons';
 
-type UserList = {
+type UserListType = {
   id: string;
   is_admin: boolean;
 };
@@ -15,7 +15,7 @@ function UserList() {
   const { user, admin } = useAuth();
   const { toast } = useToast();
 
-  const [ users, setUsers ] = useState<UserList[]>([]);
+  const [ users, setUsers ] = useState<UserListType[]>([]);
   const [ userQuery, setUserQuery ] = useState<string>('');
   const [ modifying, setModifying ] = useState<boolean>(false);
 
@@ -27,27 +27,28 @@ function UserList() {
     fetch(`${API_ENDPOINT}/admin/list-users`, 
       { credentials: 'include' }
     ).then((resp) => {
-      if (resp.ok) {
-        return resp.json();
+      if (!resp.ok) {
+        throw new Error(resp.statusText);
       }
 
-      throw new Error(resp.statusText);
+      return resp.json();
     })
     .then((data) => {
       setUsers(() => data['data']['users']);
       setUsers((cur) => cur.sort((a,b) => {
         return a.is_admin === b.is_admin ? 0 : a.is_admin ? -1 : 1;
       }));
-    }).catch(() => {
+    })
+    .catch(() => {
       setUsers(() => []);
     });
   }, [ admin, modifying ]);
 
-  const modifyAdmin = (user: UserList) => {
+  const modifyAdmin = (u: UserListType) => {
     setModifying(() => true);
 
-    const endpoint = !user.is_admin ? '/admin/add' : '/admin/remove';
-    fetch(`${API_ENDPOINT}${endpoint}?userid=${user.id}`, 
+    const endpoint = !u.is_admin ? '/admin/add' : '/admin/remove';
+    fetch(`${API_ENDPOINT}${endpoint}?userid=${u.id}`, 
       { method: 'POST', credentials: 'include' }
     ).then((resp) => {
         if (!resp.ok) {
@@ -110,11 +111,16 @@ function UserList() {
 }
 
 function AdminPortal() {
-  const { user, admin } = useAuth();
+  const { user, admin, validateAdmin } = useAuth();
   const { toast } = useToast();
   const navigation = useNavigate();
 
-  if (!admin) {
+  useEffect(() => {
+    validateAdmin();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  if (!user.id || !admin) {
     toast({
       title: 'Error: Unauthorized',
       description: 'Sorry, you cannot access that page'
@@ -123,7 +129,6 @@ function AdminPortal() {
     navigation('/');
     return null;
   }
-
 
   return (
     <Flex className='items-center justify-center flex-col gap-16'>

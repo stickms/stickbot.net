@@ -1,10 +1,10 @@
-import type { Context, Next } from 'hono';
+import type { Context as HonoContext, Next } from 'hono';
 import { HTTPException } from 'hono/http-exception';
-import type { User } from '../db/schema.js';
+import type { Context } from '../lib/context.js';
 
-export const adminGuard = async (c: Context, next: Next) => {
+export const adminGuard = async (c: HonoContext<Context>, next: Next) => {
   const session = c.get('session');
-  const user: User | null = c.get('user');
+  const user = c.get('user');
 
   if (!session || !user?.isAdmin) {
     throw new HTTPException(401, { message: 'Unauthorized' });

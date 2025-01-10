@@ -4,12 +4,12 @@ import { connection, db, sessions, users } from './schema.js'
 async function seed() {
   console.log('Seeding the database...');
 
-  // Clean existign data
-  console.log('Cleaning existing data...');
-  await db.delete(users);
-  await db.delete(sessions);
+  // Clean existing data
+  // console.log('Cleaning existing data...');
+  // await db.delete(users);
+  // await db.delete(sessions);
 
-  console.log('Inserting new seed data...');
+  console.log('Inserting seed data...');
 
   for (const id of SITE_ADMIN_IDS.split(',')) {
     await db
@@ -20,6 +20,12 @@ async function seed() {
         refreshToken: '',
         accessToken: '',
         accessTokenExpiration: new Date()
+      })
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          isAdmin: true
+        }
       });
   }
 

@@ -75,50 +75,37 @@ oauth_route.get('/login/discord/callback', async (c) => {
     })
   });
 
+  if (!userinfo.ok) {
+    throw new HTTPException(400, { message: 'Could not reach Discord API' });
+  }
+
   const uinfojs = await userinfo.json();
 
-  const userCheck = db
-    .select()
-    .from(users)
-    .where(eq(users.id, uinfojs['id']))
+  const user = db
+    .insert(users)
+    .values({
+      id: uinfojs['id'],
+      accessToken: tokens.accessToken(),
+      refreshToken: tokens.refreshToken(),
+      accessTokenExpiration: tokens.accessTokenExpiresAt()
+    })
+    .onConflictDoUpdate({
+      target: users.id,
+      set: {
+        accessToken: tokens.accessToken(),
+        refreshToken: tokens.refreshToken(),
+        accessTokenExpiration: tokens.accessTokenExpiresAt()  
+      }
+    })
+    .returning()
     .get();
 
-  let userid = '';
-
-  if (userCheck) {
-    const existingUser = db
-      .update(users)
-      .set({
-        accessToken: tokens.accessToken(),
-        refreshToken: tokens.refreshToken(),
-        accessTokenExpiration: tokens.accessTokenExpiresAt()
-      })
-      .where(eq(users.id, uinfojs['id']))
-      .returning()
-      .get();
-
-    userid = existingUser.id;
-  } else {
-    const newUser = db
-      .insert(users)
-      .values({
-        id: uinfojs['id'],
-        accessToken: tokens.accessToken(),
-        refreshToken: tokens.refreshToken(),
-        accessTokenExpiration: tokens.accessTokenExpiresAt()
-      })
-      .returning()
-      .get();
-
-    if (!newUser) {
-      throw new HTTPException(400, { message: 'Could not create user' });
-    }
-
-    userid = newUser.id;
+  if (!user) {
+    throw new HTTPException(400, { message: 'Could not create/update user' });
   }
 
   const sessionToken = generateSessionToken();
-  const session = await createSession(sessionToken, userid);
+  const session = await createSession(sessionToken, user.id);
   setSessionTokenCookie(c, sessionToken, session.expiresAt);
 
   return c.redirect(`${CLIENT_URL}${redirect}`);
