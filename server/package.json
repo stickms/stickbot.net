@@ -6,7 +6,8 @@
     "build": "tsc -b",
     "prettier": "prettier --write \"src/**/*.{js,ts,jsx,tsx}\" --config \"../.prettierrc.json\"",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed": "tsx ./src/db/seed.ts"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.4",

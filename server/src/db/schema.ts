@@ -7,13 +7,20 @@ import {
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import type { InferSelectModel } from 'drizzle-orm';
 
-const sqliteDB = sqlite('sqlite.db');
-export const db = drizzle(sqliteDB);
+export const connection = sqlite('sqlite.db');
+export const db = drizzle(connection);
 
 export const users = sqliteTable('users', {
-  id: integer('id').primaryKey(), // Discord ID
+  // Same as Discord ID
+  id: text('id').primaryKey(),
+  // Website/API admin? (Can access admin portal)
+  isAdmin: integer('is_admin', {
+    mode: 'boolean'
+  }).default(false).notNull(),
+  // Website API
   apiToken: text('api_token'),
   apiGuild: text('api_guild'),
+  // Discord OAuth2
   refreshToken: text('refresh_token').notNull(),
   accessToken: text('access_token').notNull(),
   accessTokenExpiration: integer('access_token_expiration', {
@@ -23,9 +30,9 @@ export const users = sqliteTable('users', {
 
 export const sessions = sqliteTable('sessions', {
   id: text('id').primaryKey(),
-  userId: integer('user_id')
+  userId: text('user_id')
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: 'cascade' }),
   expiresAt: integer('expires_at', {
     mode: 'timestamp'
   }).notNull()

@@ -6,12 +6,13 @@ import { API_PORT, CLIENT_URL } from './env.js';
 import { auth } from './middleware/auth.js';
 import { OAuth2RequestError } from 'arctic';
 import { HTTPException } from 'hono/http-exception';
+import { trimTrailingSlash } from 'hono/trailing-slash';
 import type { Context } from './lib/context.js';
 
 import lookup_route from './routes/lookup.js';
 import oauth_route from './routes/oauth.js';
 import bot_route from './routes/bot.js';
-import { trimTrailingSlash } from 'hono/trailing-slash';
+import admin_route from './routes/admin.js';
 
 const app = new Hono<Context>();
 
@@ -34,12 +35,12 @@ app.use(
 );
 
 app.use('/*', trimTrailingSlash());
-
 app.use('/*', auth);
 
 app.route('/', lookup_route);
 app.route('/', oauth_route);
 app.route('/', bot_route);
+app.route('/', admin_route);
 
 app.onError((error, c) => {
   if (error instanceof OAuth2RequestError) {
@@ -71,7 +72,7 @@ app.onError((error, c) => {
   );
 });
 
-const port = parseInt(API_PORT ?? '3000');
+const port = parseInt(API_PORT);
 console.log(`Server is running on port ${port}`);
 
 serve({

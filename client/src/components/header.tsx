@@ -2,15 +2,17 @@ import { Avatar, Button, DropdownMenu, Flex, Link } from "@radix-ui/themes";
 import { DiscordLogoIcon } from "@radix-ui/react-icons";
 import { API_ENDPOINT } from "../env";
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import useAuth from "../hooks/use-auth";
 
 function DiscordLogin() {
-  const { user, getUser, logout } = useAuth();
+  const { user, admin, getUser, validateAdmin, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     getUser();
+    validateAdmin();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -41,7 +43,13 @@ function DiscordLogin() {
         <DropdownMenu.Label>
           {user.username}
         </DropdownMenu.Label>
-        <DropdownMenu.Item onClick={logout}>
+        <DropdownMenu.Separator />
+        {admin && (
+          <DropdownMenu.Item onClick={() => navigate('/admin-portal')}>
+            Admin Portal
+          </DropdownMenu.Item>
+        )}
+        <DropdownMenu.Item onClick={logout} color='red'>
           Logout
         </DropdownMenu.Item>
       </DropdownMenu.Content>

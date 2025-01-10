@@ -64,6 +64,7 @@ function ProfileLookup() {
       </Flex>
       <ScrollArea
         scrollbars='vertical'
+        type='auto'
         className='w-[720px] max-w-[80vw] mb-6 md:mb-0'
       >
         <Flex className='items-center justify-center flex-col'>

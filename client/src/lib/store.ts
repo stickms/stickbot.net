@@ -15,6 +15,11 @@ export const $guilds = persistentAtom<GuildType[]>('guilds:', [], {
   decode: JSON.parse,
 });
 
+export const $admin = persistentAtom<boolean>('admin:', false, {
+  encode: JSON.stringify,
+  decode: JSON.parse,
+});
+
 export const $guildid = atom<string>('');
 
 export function setUser(user: UserType) {
@@ -41,3 +46,6 @@ export function clearGuildId() {
   $guildid.set('');
 }
 
+export function setAdmin(admin: boolean) {
+  $admin.set(admin);
+}

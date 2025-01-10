@@ -83,7 +83,7 @@ oauth_route.get('/login/discord/callback', async (c) => {
     .where(eq(users.id, uinfojs['id']))
     .get();
 
-  let userid = 0;
+  let userid = '';
 
   if (userCheck) {
     const existingUser = db

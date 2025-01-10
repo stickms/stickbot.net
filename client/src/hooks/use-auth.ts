@@ -1,15 +1,17 @@
 import { useStore } from "@nanostores/react";
-import { $guilds, $user, clearGuildId, clearGuilds, clearUser, setGuilds, setUser } from "../lib/store";
+import { $admin, $guilds, $user, clearGuildId, clearGuilds, clearUser, setAdmin, setGuilds, setUser } from "../lib/store";
 import { API_ENDPOINT } from "../env";
 import useToast from "./use-toast";
 
 function useAuth() {
   const user = useStore($user);
   const guilds = useStore($guilds);
+  const admin = useStore($admin);
 
   const { toast } = useToast();
 
   function clearAll() {
+    setAdmin(false);
     clearUser();
     clearGuilds();
     clearGuildId();
@@ -110,15 +112,30 @@ function useAuth() {
     }
   }
 
+  const validateAdmin = async () => {
+    const resp = await fetch(`${API_ENDPOINT}/admin/validate`, 
+      { credentials: 'include' }
+    );
+
+    if (!resp.ok) {
+      setAdmin(false);
+      return;
+    }
+
+    setAdmin(true);
+  }
+
   return {
     user,
     guilds,
+    admin,
     getUser,
     getGuilds,
     logout,
     generateApiToken,
     revokeApiToken,
-    validateSession
+    validateSession,
+    validateAdmin
   }
 }
 

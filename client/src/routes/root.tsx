@@ -7,7 +7,7 @@ function Root() {
         <Text className='text-3xl'>Stickbot.net</Text>
       </Flex>
       <Flex className='items-center justify-center flex-col gap-y-4'>
-        <Link href='/profile'>Steam Profile Lookup</Link>
+        <Link href='/lookup'>Steam Profile Lookup</Link>
         <Link href='/api-reference'>API & Reference</Link>
       </Flex>
     </Flex>
