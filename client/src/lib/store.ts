@@ -12,12 +12,12 @@ const default_user: UserType = {
 export const $user = persistentMap<UserType>('user:', default_user);
 export const $guilds = persistentAtom<GuildType[]>('guilds:', [], {
   encode: JSON.stringify,
-  decode: JSON.parse,
+  decode: JSON.parse
 });
 
 export const $admin = persistentAtom<boolean>('admin:', false, {
   encode: JSON.stringify,
-  decode: JSON.parse,
+  decode: JSON.parse
 });
 
 export const $guildid = atom<string>('');

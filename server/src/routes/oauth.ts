@@ -94,7 +94,7 @@ oauth_route.get('/login/discord/callback', async (c) => {
       set: {
         accessToken: tokens.accessToken(),
         refreshToken: tokens.refreshToken(),
-        accessTokenExpiration: tokens.accessTokenExpiresAt()  
+        accessTokenExpiration: tokens.accessTokenExpiresAt()
       }
     })
     .returning()
@@ -148,10 +148,8 @@ oauth_route.get('/discord/user', authGuard, discordRefresh, async (c) => {
   return c.json({
     success: true,
     data: {
-      user: {
-        ...json,
-        token_guild: user.apiGuild ?? ''
-      }
+      ...json,
+      token_guild: user.apiGuild ?? ''
     }
   });
 });
@@ -171,9 +169,7 @@ oauth_route.get('/discord/guilds', authGuard, discordRefresh, async (c) => {
 
   return c.json({
     success: true,
-    data: {
-      guilds: await guildinfo.json()
-    }
+    data: await guildinfo.json()
   });
 });
 

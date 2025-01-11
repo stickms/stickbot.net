@@ -93,9 +93,7 @@ lookup_route.get('/sourcebans/:steamid', async (c) => {
 
   return c.json({
     success: true,
-    data: {
-      sourcebans
-    }
+    data: sourcebans
   });
 });
 

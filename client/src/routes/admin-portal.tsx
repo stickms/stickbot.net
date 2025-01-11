@@ -1,10 +1,26 @@
-import { Flex, Text, Code, ScrollArea, Box, Badge, Separator, TextField, Tooltip, IconButton } from '@radix-ui/themes';
+import {
+  Flex,
+  Text,
+  Code,
+  ScrollArea,
+  Box,
+  Badge,
+  Separator,
+  TextField,
+  Tooltip,
+  IconButton
+} from '@radix-ui/themes';
 import useAuth from '../hooks/use-auth';
 import { useNavigate } from 'react-router-dom';
 import useToast from '../hooks/use-toast';
 import { useEffect, useState } from 'react';
 import { API_ENDPOINT } from '../env';
-import { MagnifyingGlassIcon, MinusIcon, PlusIcon } from '@radix-ui/react-icons';
+import {
+  MagnifyingGlassIcon,
+  MinusIcon,
+  PlusIcon
+} from '@radix-ui/react-icons';
+import { fetchGetJson } from '../lib/util';
 
 type UserListType = {
   id: string;
@@ -15,57 +31,56 @@ function UserList() {
   const { user, admin } = useAuth();
   const { toast } = useToast();
 
-  const [ users, setUsers ] = useState<UserListType[]>([]);
-  const [ userQuery, setUserQuery ] = useState<string>('');
-  const [ modifying, setModifying ] = useState<boolean>(false);
+  const [users, setUsers] = useState<UserListType[]>([]);
+  const [userQuery, setUserQuery] = useState<string>('');
+  const [modifying, setModifying] = useState<boolean>(false);
 
   useEffect(() => {
     if (!admin || modifying) {
       return;
     }
 
-    fetch(`${API_ENDPOINT}/admin/list-users`, 
-      { credentials: 'include' }
-    ).then((resp) => {
-      if (!resp.ok) {
-        throw new Error(resp.statusText);
-      }
-
-      return resp.json();
-    })
-    .then((data) => {
-      setUsers(() => data['data']['users']);
-      setUsers((cur) => cur.sort((a,b) => {
-        return a.is_admin === b.is_admin ? 0 : a.is_admin ? -1 : 1;
-      }));
-    })
-    .catch(() => {
-      setUsers(() => []);
-    });
-  }, [ admin, modifying ]);
+    fetch(`${API_ENDPOINT}/admin/list-users`, { credentials: 'include' })
+      .then(fetchGetJson)
+      .then((data) => {
+        setUsers(() => data['data']);
+        setUsers((cur) =>
+          cur.sort((a, b) => {
+            return a.is_admin === b.is_admin ? 0 : a.is_admin ? -1 : 1;
+          })
+        );
+      })
+      .catch(() => {
+        setUsers(() => []);
+      });
+  }, [admin, modifying]);
 
   const modifyAdmin = (u: UserListType) => {
     setModifying(() => true);
 
     const endpoint = !u.is_admin ? '/admin/add' : '/admin/remove';
-    fetch(`${API_ENDPOINT}${endpoint}?userid=${u.id}`, 
-      { method: 'POST', credentials: 'include' }
-    ).then((resp) => {
+    fetch(`${API_ENDPOINT}${endpoint}?userid=${u.id}`, {
+      method: 'POST',
+      credentials: 'include'
+    })
+      .then((resp) => {
         if (!resp.ok) {
           throw new Error(resp.statusText);
         }
-      }).catch((e) => {
+      })
+      .catch((e) => {
         toast({
           title: 'Error: Could not change admin state',
           description: e.message
         });
-      }).finally(() => setModifying(() => false));
+      })
+      .finally(() => setModifying(() => false));
   };
 
   return (
     <Flex className='max-w-[80vw] items-center justify-center flex-col gap-8'>
       <Text className='text-2xl'>User List</Text>
-      <TextField.Root 
+      <TextField.Root
         placeholder='Search user list...'
         value={userQuery}
         maxLength={128}
@@ -86,11 +101,11 @@ function UserList() {
                     <Text>
                       {u.is_admin && <Badge>A</Badge>} {u.id}
                     </Text>
-                    <Tooltip 
+                    <Tooltip
                       content={!u.is_admin ? 'Add Admin' : 'Remove Admin'}
                     >
-                      <IconButton 
-                        size='1' 
+                      <IconButton
+                        size='1'
                         onClick={() => modifyAdmin(u)}
                         disabled={modifying || u.id === user.id}
                       >
@@ -102,8 +117,7 @@ function UserList() {
                   <Separator size='4' className='my-1' />
                 </Box>
               );
-            })
-          }
+            })}
         </Box>
       </ScrollArea>
     </Flex>
@@ -118,7 +132,7 @@ function AdminPortal() {
   useEffect(() => {
     validateAdmin();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, []);
 
   if (!user.id || !admin) {
     toast({
@@ -134,9 +148,11 @@ function AdminPortal() {
     <Flex className='items-center justify-center flex-col gap-16'>
       <Flex className='mt-[20vh] flex-wrap items-center justify-center gap-y-6 text-center'>
         <Text className='text-3xl w-full'>Admin Portal</Text>
-        <Text className='text-lg'>Welcome, <Code>{user.username}</Code></Text>
+        <Text className='text-lg'>
+          Welcome, <Code>{user.username}</Code>
+        </Text>
       </Flex>
-      
+
       <UserList />
     </Flex>
   );

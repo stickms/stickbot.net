@@ -1,9 +1,5 @@
 import sqlite from 'better-sqlite3';
-import {
-  sqliteTable,
-  integer,
-  text
-} from 'drizzle-orm/sqlite-core';
+import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import type { InferSelectModel } from 'drizzle-orm';
 
@@ -16,7 +12,9 @@ export const users = sqliteTable('users', {
   // Website/API admin? (Can access admin portal)
   isAdmin: integer('is_admin', {
     mode: 'boolean'
-  }).default(false).notNull(),
+  })
+    .default(false)
+    .notNull(),
   // Website API
   apiToken: text('api_token'),
   apiGuild: text('api_guild'),

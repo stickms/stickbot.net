@@ -1,15 +1,15 @@
 // Discord Types
 export type UserType = {
-  avatar: string,
-  id: string,
-  username: string,
-  token_guild: string
+  avatar: string;
+  id: string;
+  username: string;
+  token_guild: string;
 };
 
 export type GuildType = {
-  icon: string,
-  id: string,
-  name: string,
+  icon: string;
+  id: string;
+  name: string;
 };
 
 // Steam Types

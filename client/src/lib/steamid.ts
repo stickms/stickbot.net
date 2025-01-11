@@ -3,7 +3,7 @@
 export function parseSteamID(steamid: string) {
   let matches: RegExpMatchArray | null = null;
 
-  // Steam Communit ID 64
+  // Steam Community ID 64
   if (steamid.match(/^\d+$/)) {
     return steamid;
   }

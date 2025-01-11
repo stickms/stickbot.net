@@ -18,12 +18,7 @@ import './index.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <Theme
-      accentColor='iris'
-      appearance='dark'
-      grayColor='sand'
-      radius='large'
-    >
+    <Theme accentColor='iris' appearance='dark' grayColor='sand' radius='large'>
       <Router>
         <Header />
         <Routes>

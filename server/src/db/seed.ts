@@ -1,5 +1,5 @@
 import { SITE_ADMIN_IDS } from '../env.js';
-import { connection, db, sessions, users } from './schema.js'
+import { connection, db, sessions, users } from './schema.js';
 
 async function seed() {
   console.log('Seeding the database...');

@@ -6,7 +6,9 @@ export const validateSteamId = async (c: Context, next: Next) => {
   const steamid = c.req.query('steamid');
 
   if (!steamid || Number.isNaN(+steamid)) {
-    throw new HTTPException(401, { message: 'Please specify a valid Steam ID' });
+    throw new HTTPException(401, {
+      message: 'Please specify a valid Steam ID'
+    });
   }
 
   const sum_url = new URL(STEAM_URL + 'GetPlayerSummaries/v2/');
@@ -27,8 +29,10 @@ export const validateSteamId = async (c: Context, next: Next) => {
 
   const json = await resp.json();
 
-  if(!json['response']?.['players']?.[0]) {
-    throw new HTTPException(404, { message: `Steam profile \'${steamid}\' not found` });
+  if (!json['response']?.['players']?.[0]) {
+    throw new HTTPException(404, {
+      message: `Steam profile \'${steamid}\' not found`
+    });
   }
 
   return next();

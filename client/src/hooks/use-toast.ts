@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 // Inspired by chadcn/ui use-toast (thanks)
 
@@ -18,11 +18,11 @@ type ToasterToast = ToastProps & {
 
 type ToasterState = {
   toasts: ToasterToast[];
-}
+};
 
 let toast_count = 0;
 
-const listeners: Array<(state: ToasterState) => void> = []
+const listeners: Array<(state: ToasterState) => void> = [];
 let memory_state: ToasterState = { toasts: [] };
 
 function useToast() {
@@ -31,12 +31,12 @@ function useToast() {
   useEffect(() => {
     listeners.push(setState);
     return () => {
-      const index = listeners.indexOf(setState)
+      const index = listeners.indexOf(setState);
       if (index > -1) {
-        listeners.splice(index, 1)
+        listeners.splice(index, 1);
       }
-    }
-  }, [ state ]);
+    };
+  }, [state]);
 
   function genId() {
     toast_count = (toast_count + 1) % Number.MAX_SAFE_INTEGER;
@@ -51,15 +51,19 @@ function useToast() {
   }
 
   function showToast(id: string) {
-    setToasts(memory_state.toasts.map((t) => {
-      return t.id == id ? { ...t, open: true } : t;
-    }));
+    setToasts(
+      memory_state.toasts.map((t) => {
+        return t.id == id ? { ...t, open: true } : t;
+      })
+    );
   }
 
   function hideToast(id: string) {
-    setToasts(memory_state.toasts.map((t) => {
-      return t.id == id ? { ...t, open: false } : t;
-    }));
+    setToasts(
+      memory_state.toasts.map((t) => {
+        return t.id == id ? { ...t, open: false } : t;
+      })
+    );
 
     setTimeout(() => {
       removeToast(id);
@@ -77,7 +81,7 @@ function useToast() {
       open: false
     };
 
-    setToasts([ new_toast, ...memory_state.toasts ].slice(0, TOAST_LIMIT));
+    setToasts([new_toast, ...memory_state.toasts].slice(0, TOAST_LIMIT));
 
     setTimeout(() => {
       showToast(new_toast.id);
@@ -91,7 +95,7 @@ function useToast() {
   return {
     ...state,
     toast
-  }
+  };
 }
 
 export default useToast;

@@ -1,7 +1,7 @@
-import { Code, Flex, Text } from "@radix-ui/themes";
-import ApiEndpointInfo from "../components/api-endpoint-info";
-import TokenHandler from "../components/token-handler";
-import { API_ENDPOINT } from "../env";
+import { Code, Flex, Text } from '@radix-ui/themes';
+import ApiEndpointInfo from '../components/api-endpoint-info';
+import TokenHandler from '../components/token-handler';
+import { API_ENDPOINT } from '../env';
 
 function ApiReference() {
   return (
@@ -13,7 +13,7 @@ function ApiReference() {
 
       <TokenHandler />
 
-      <ApiEndpointInfo 
+      <ApiEndpointInfo
         name='/bot/lookup/'
         method='GET'
         queries={[
@@ -23,12 +23,13 @@ function ApiReference() {
           },
           {
             name: 'steamids',
-            description: 'SteamIDs of profiles in ID64 format, separated by commas'
+            description:
+              'SteamIDs of profiles in ID64 format, separated by commas'
           }
         ]}
       />
 
-      <ApiEndpointInfo 
+      <ApiEndpointInfo
         name='/bot/sourcebans/'
         method='GET'
         queries={[
@@ -43,7 +44,7 @@ function ApiReference() {
         ]}
       />
 
-      <ApiEndpointInfo 
+      <ApiEndpointInfo
         name='/bot/addtag/'
         method='POST'
         queries={[
@@ -62,7 +63,7 @@ function ApiReference() {
         ]}
       />
 
-      <ApiEndpointInfo 
+      <ApiEndpointInfo
         name='/bot/removetag/'
         method='DELETE'
         queries={[
@@ -76,7 +77,8 @@ function ApiReference() {
           },
           {
             name: 'tag',
-            description: 'Tag to remove (cheater, suspicious, popular, banwatch)'
+            description:
+              'Tag to remove (cheater, suspicious, popular, banwatch)'
           }
         ]}
       />

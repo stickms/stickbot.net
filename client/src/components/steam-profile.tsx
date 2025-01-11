@@ -5,6 +5,7 @@ import {
   Card,
   Flex,
   Link,
+  Skeleton,
   Spinner,
   Text
 } from '@radix-ui/themes';
@@ -14,6 +15,7 @@ import { API_ENDPOINT } from '../env';
 import { parseSteamID } from '../lib/steamid';
 import { useStore } from '@nanostores/react';
 import { $guildid } from '../lib/store';
+import { fetchGetJson } from '../lib/util';
 
 type SteamProfileProps = {
   steamid: string;
@@ -56,7 +58,13 @@ function SteamIdList({ summary }: { summary: SteamProfileSummary }) {
   );
 }
 
-function AlertList({ summary, tags }: { summary: SteamProfileSummary, tags?: TagList }) {
+function AlertList({
+  summary,
+  tags
+}: {
+  summary: SteamProfileSummary;
+  tags?: TagList;
+}) {
   const alertlist: { color: string; text: string }[] = [];
 
   const plural = (num: number, label: string) => {
@@ -98,22 +106,22 @@ function AlertList({ summary, tags }: { summary: SteamProfileSummary, tags?: Tag
       { name: 'Content Creator', value: 'popular' },
       { name: 'Ban Watch', value: 'banwatch' }
     ];
-  }
+  };
 
   if (!tags) {
     alertlist.push({
       color: 'gray',
       text: 'Loading tags...'
-    })
+    });
   } else {
     for (const tag of profiletags()) {
       if (tags[tag.value]) {
         alertlist.push({
-          color: tag.value === 'banwatch' ? 'blue': 'yellow',
+          color: tag.value === 'banwatch' ? 'blue' : 'yellow',
           text: tag.name
         });
       }
-    }  
+    }
   }
 
   if (!alertlist.length) {
@@ -227,12 +235,44 @@ function Sourcebans({
   );
 }
 
+function Placeholder() {
+  const randomtext = [];
+
+  for (let i = 0; i < Math.floor(Math.random() * 3) + 2; i++) {
+    randomtext.push('A'.repeat(Math.floor(Math.random() * 5) + 8));
+  }
+
+  return (
+    <Box className='min-w-36 flex-grow'>
+      <Box className='w-full'>
+        <Skeleton>
+          <Text size='2' weight='bold'>
+            PLACEHOLDER
+          </Text>
+        </Skeleton>
+      </Box>
+      <Box className='w-full whitespace-pre-line'>
+        {randomtext.map((text, i) => {
+          return (
+            <Skeleton>
+              <Text key={i} size='2'>
+                {text}
+                {'\n'}
+              </Text>
+            </Skeleton>
+          );
+        })}
+      </Box>
+    </Box>
+  );
+}
+
 type TagList = {
   [Key: string]: {
     addedby: string;
     date: number;
   };
-}
+};
 
 function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
   const guildid = useStore($guildid);
@@ -280,27 +320,19 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
       }
 
       fetch(`${API_ENDPOINT}/sourcebans/${steam}`)
-        .then(async (resp) => {
-          if (!resp.ok) {
-            setSourcebansError('Could not get sourcebans');
-            return;
-          }
-
-          const json = await resp.json();
-          setSourcebans(json['data']['sourcebans']);
+        .then(fetchGetJson)
+        .then((data) => {
+          setSourcebans(data['data']);
         })
-        .catch((error) => setSourcebansError(`${error}`));
-      
-      if (guildid) {
-        fetch(`${API_ENDPOINT}/botdata/${steam}?guildid=${guildid}`, { credentials: 'include' })
-          .then(async (resp) => {
-            if (!resp.ok) {
-              setTags({});
-              return;
-            }
+        .catch((error) => setSourcebansError(`Error: ${error}`));
 
-            const json = await resp.json();
-            setTags(json['data']['tags'] ?? {});
+      if (guildid) {
+        fetch(`${API_ENDPOINT}/botdata/${steam}?guildid=${guildid}`, {
+          credentials: 'include'
+        })
+          .then(fetchGetJson)
+          .then((data) => {
+            setTags(data['data']['tags'] ?? {});
           })
           .catch(() => setTags({}));
       } else {
@@ -315,7 +347,7 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
       .then((summ) => setSummary(summ))
       .catch((error) => setError(error))
       .finally(() => setDisabled(false));
-  }, [ steamid, setDisabled, guildid ]);
+  }, [steamid, setDisabled, guildid]);
 
   return (
     <Card className='my-2 min-h-[300px] w-[calc(100%-32px)]'>
@@ -330,7 +362,26 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
         </Box>
       )}
 
-      {!error && !summary && <Spinner size='3' />}
+      {!error && !summary && (
+        <Flex className='gap-3 items-start'>
+          <Skeleton className='w-10 h-10 ' />
+          <Box>
+            <Box className='w-full'>
+              <Skeleton>
+                <Text size='3' weight='bold'>
+                  SETAM USER
+                </Text>
+              </Skeleton>
+            </Box>
+            <Flex className='gap-5 flex-wrap'>
+              <Placeholder />
+              <Placeholder />
+              <Placeholder />
+              <Placeholder />
+            </Flex>
+          </Box>
+        </Flex>
+      )}
 
       {!error && summary && (
         <Flex className='gap-3 items-start'>

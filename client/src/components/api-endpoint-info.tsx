@@ -1,6 +1,6 @@
-import { CheckIcon } from "@radix-ui/react-icons";
-import { Badge, Flex, Table, Code } from "@radix-ui/themes";
-import { API_ENDPOINT } from "../env";
+import { CheckIcon } from '@radix-ui/react-icons';
+import { Badge, Flex, Table, Code } from '@radix-ui/themes';
+import { API_ENDPOINT } from '../env';
 
 type EndpointInfoProps = {
   name: string;
@@ -25,7 +25,7 @@ function ApiEndpointInfo({ ...props }: EndpointInfoProps) {
     } else if (props.method === 'DELETE') {
       return 'red';
     }
-  }
+  };
 
   return (
     <Flex className='items-center justify-center flex-col gap-y-4 max-w-[80vw]'>
@@ -33,7 +33,10 @@ function ApiEndpointInfo({ ...props }: EndpointInfoProps) {
         <Badge color={methodColor()} size='3'>
           {props.method}
         </Badge>
-        <Code size='4' className='text-center'>{API_ENDPOINT}{props.name}</Code>
+        <Code size='4' className='text-center'>
+          {API_ENDPOINT}
+          {props.name}
+        </Code>
       </Flex>
 
       {props.params && (
@@ -46,7 +49,7 @@ function ApiEndpointInfo({ ...props }: EndpointInfoProps) {
           </Table.Header>
           <Table.Body>
             {props.params.map((param) => {
-              return ( 
+              return (
                 <Table.Row>
                   <Table.RowHeaderCell>
                     <Code>{param.name}</Code>
@@ -58,7 +61,7 @@ function ApiEndpointInfo({ ...props }: EndpointInfoProps) {
           </Table.Body>
         </Table.Root>
       )}
-      
+
       {props.queries && (
         <Table.Root variant='surface'>
           <Table.Header>
@@ -70,7 +73,7 @@ function ApiEndpointInfo({ ...props }: EndpointInfoProps) {
           </Table.Header>
           <Table.Body>
             {props.queries.map((query) => {
-              return ( 
+              return (
                 <Table.Row>
                   <Table.RowHeaderCell>
                     <Code>{query.name}</Code>

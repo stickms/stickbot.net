@@ -62,9 +62,7 @@ bot_route.post('/bot/generate-token', authGuard, discordRefresh, async (c) => {
 
   return c.json({
     success: true,
-    data: {
-      token
-    }
+    data: token
   });
 });
 
@@ -153,9 +151,7 @@ bot_route.get('/bot/lookup', validateToken, async (c) => {
 
   return c.json({
     success: true,
-    data: {
-      profiles: server_profiles
-    }
+    data: server_profiles
   });
 });
 
@@ -166,9 +162,7 @@ bot_route.get('/bot/sourcebans', validateToken, validateSteamId, async (c) => {
 
   return c.json({
     success: true,
-    data: {
-      sourcebans
-    }
+    data: sourcebans
   });
 });
 
@@ -206,31 +200,36 @@ bot_route.post('/bot/addtag', validateToken, validateSteamId, async (c) => {
   });
 });
 
-bot_route.delete('/bot/removetag', validateToken, validateSteamId, async (c) => {
-  const user = c.get('user')!;
-  const steamid = c.req.query('steamid')!;
-  const tag = c.req.query('tag');
+bot_route.delete(
+  '/bot/removetag',
+  validateToken,
+  validateSteamId,
+  async (c) => {
+    const user = c.get('user')!;
+    const steamid = c.req.query('steamid')!;
+    const tag = c.req.query('tag');
 
-  const valid_tags = ['cheater', 'suspicious', 'popular', 'banwatch'];
+    const valid_tags = ['cheater', 'suspicious', 'popular', 'banwatch'];
 
-  if (!tag || !valid_tags.includes(tag)) {
-    throw new HTTPException(400, { message: 'Please specify a valid tag' });
+    if (!tag || !valid_tags.includes(tag)) {
+      throw new HTTPException(400, { message: 'Please specify a valid tag' });
+    }
+
+    await players.updateOne(
+      { _id: steamid },
+      {
+        $unset: {
+          [`tags.${user.apiGuild!}.${tag}`]: 1
+        }
+      },
+      { upsert: true }
+    );
+
+    return c.json({
+      success: true,
+      message: `Successfully removed tag '${tag}' from Steam ID ${steamid}`
+    });
   }
-
-  await players.updateOne(
-    { _id: steamid },
-    {
-      $unset: {
-        [`tags.${user.apiGuild!}.${tag}`]: 1
-      }
-    },
-    { upsert: true }
-  );
-
-  return c.json({
-    success: true,
-    message: `Successfully removed tag '${tag}' from Steam ID ${steamid}`
-  });
-});
+);
 
 export default bot_route;
