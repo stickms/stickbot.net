@@ -2,7 +2,7 @@ import { Avatar, Button, DropdownMenu, Flex, Link } from '@radix-ui/themes';
 import { DiscordLogoIcon } from '@radix-ui/react-icons';
 import { API_ENDPOINT } from '../env';
 import { useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/use-auth';
 
 function DiscordLogin() {
@@ -60,8 +60,8 @@ function Header() {
     <Flex className='fixed top-0 w-full justify-between items-center z-50 bg-inherit'>
       {/* Left */}
       <Flex className='pl-6 py-4'>
-        <Link href='/' color='gray' highContrast underline='hover'>
-          Stickbot.net
+        <Link asChild color='gray' highContrast underline='hover'>
+          <NavLink to='/'>Stickbot.net</NavLink>
         </Link>
       </Flex>
 

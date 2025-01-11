@@ -1,4 +1,5 @@
 import { Flex, Text, Link } from '@radix-ui/themes';
+import { NavLink } from 'react-router-dom';
 
 function Root() {
   return (
@@ -7,8 +8,12 @@ function Root() {
         <Text className='text-3xl'>Stickbot.net</Text>
       </Flex>
       <Flex className='items-center justify-center flex-col gap-y-4'>
-        <Link href='/lookup'>Steam Profile Lookup</Link>
-        <Link href='/api-reference'>API & Reference</Link>
+        <Link asChild>
+          <NavLink to='/lookup'>Steam Profile Lookup</NavLink>
+        </Link>
+        <Link asChild>
+          <NavLink to='/api-reference'>API & Reference</NavLink>
+        </Link>
       </Flex>
     </Flex>
   );

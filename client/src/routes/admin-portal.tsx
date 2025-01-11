@@ -43,12 +43,11 @@ function UserList() {
     fetch(`${API_ENDPOINT}/admin/list-users`, { credentials: 'include' })
       .then(fetchGetJson)
       .then((data) => {
-        setUsers(() => data['data']);
-        setUsers((cur) =>
-          cur.sort((a, b) => {
+        setUsers(() => data['data']
+          .sort((a: UserListType, b: UserListType) => {
             return a.is_admin === b.is_admin ? 0 : a.is_admin ? -1 : 1;
           })
-        );
+        )
       })
       .catch(() => {
         setUsers(() => []);
