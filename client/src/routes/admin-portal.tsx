@@ -8,7 +8,10 @@ import {
   Separator,
   TextField,
   Tooltip,
-  IconButton
+  IconButton,
+  HoverCard,
+  Avatar,
+  Link
 } from '@radix-ui/themes';
 import useAuth from '../hooks/use-auth';
 import { useNavigate } from 'react-router-dom';
@@ -20,12 +23,37 @@ import {
   MinusIcon,
   PlusIcon
 } from '@radix-ui/react-icons';
-import { fetchGetJson } from '../lib/util';
+import { fetchGetJson, getDiscordAvatar } from '../lib/util';
 
 type UserListType = {
   id: string;
+  username?: string;
+  avatar?: string;
   is_admin: boolean;
 };
+
+function UserCard({ user }: { user: UserListType }) {
+  return (
+    <HoverCard.Content className='p-4'>
+      <Flex className='gap-2'>
+        <Avatar
+          size='3'
+          fallback='U'
+          src={getDiscordAvatar(user.id, user.avatar)}
+        />
+        <Box>
+          <Text as='div'>{user.username ?? 'Username N/A'}</Text>
+          <Text as='div' className='text-sm' color='gray'>
+            {'<@'}{user.id}{'>'}
+          </Text>
+          <Text as='div' className='text-xs text-center' color='gray'>
+            click to copy userid
+          </Text>
+        </Box>
+      </Flex>
+    </HoverCard.Content>
+  );
+}
 
 function UserList() {
   const { user, admin } = useAuth();
@@ -45,7 +73,9 @@ function UserList() {
       .then((data) => {
         setUsers(() => data['data']
           .sort((a: UserListType, b: UserListType) => {
-            return a.is_admin === b.is_admin ? 0 : a.is_admin ? -1 : 1;
+            return (+b.is_admin - +a.is_admin) 
+              || (a.username && ((b.username && a.username.localeCompare(b.username)) || 1)) 
+              || (+a.id - +b.id);
           })
         )
       })
@@ -90,28 +120,48 @@ function UserList() {
         </TextField.Slot>
       </TextField.Root>
       <ScrollArea type='auto' scrollbars='vertical' className='max-h-96'>
-        <Box className='w-full px-4'>
+        <Box className='w-full px-4 py-1'>
           {users
-            .filter((u) => !userQuery || u.id.includes(userQuery))
+            .filter((u) => {
+              return !userQuery || u.id.includes(userQuery) 
+                || u.username?.includes(userQuery);
+            })
             .map((u) => {
               return (
-                <Box>
+                <Box key={u.id}>
                   <Flex className='items-center justify-between gap-4'>
-                    <Text>
-                      {u.is_admin && <Badge>A</Badge>} {u.id}
-                    </Text>
-                    <Tooltip
-                      content={!u.is_admin ? 'Add Admin' : 'Remove Admin'}
-                    >
-                      <IconButton
-                        size='1'
-                        onClick={() => modifyAdmin(u)}
-                        disabled={modifying || u.id === user.id}
+                    <HoverCard.Root>
+                      <HoverCard.Trigger>
+                        <Link 
+                          asChild
+                          highContrast
+                          underline='hover'
+                          onClick={() => navigator.clipboard.writeText(u.id)}
+                        >
+                            <button>{u.username ?? 'Username N/A'}</button>
+                        </Link>
+                      </HoverCard.Trigger>
+                      <UserCard user={u} />
+                    </HoverCard.Root>
+                    <Flex className='gap-2 items-center justify-center'>
+                      {u.is_admin && (
+                        <Tooltip content='Website Admin'>
+                          <Badge>A</Badge>
+                        </Tooltip>
+                      )} 
+                      <Tooltip
+                        content={!u.is_admin ? 'Promote' : 'Demote'}
                       >
-                        {!u.is_admin && <PlusIcon />}
-                        {u.is_admin && <MinusIcon />}
-                      </IconButton>
-                    </Tooltip>
+                        <IconButton
+                          size='1'
+                          onClick={() => modifyAdmin(u)}
+                          disabled={modifying || u.id === user.id}
+                        >
+                          {!u.is_admin && <PlusIcon />}
+                          {u.is_admin && <MinusIcon />}
+                        </IconButton>
+                      </Tooltip>
+                    </Flex>
                   </Flex>
                   <Separator size='4' className='my-1' />
                 </Box>

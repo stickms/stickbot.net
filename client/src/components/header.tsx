@@ -4,6 +4,7 @@ import { API_ENDPOINT } from '../env';
 import { useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/use-auth';
+import { getDiscordAvatar } from '../lib/util';
 
 function DiscordLogin() {
   const { user, admin, getUser, validateAdmin, logout } = useAuth();
@@ -32,8 +33,8 @@ function DiscordLogin() {
       <DropdownMenu.Trigger>
         <Button variant='ghost'>
           <Avatar
-            src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`}
-            fallback='U'
+            src={getDiscordAvatar(user.id, user.avatar)}
+            fallback={'U'}
             size='2'
           />
           <DropdownMenu.TriggerIcon />

@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import type { Context } from '../lib/context.js';
 import { MongoClient } from 'mongodb';
-import { DISCORD_URL, MONGO_URL } from '../env.js';
+import { MONGO_URL } from '../env.js';
 import type { DatabasePlayerEntry } from '../lib/types.js';
 import { authGuard } from '../middleware/auth-guard.js';
 import { HTTPException } from 'hono/http-exception';
@@ -12,6 +12,7 @@ import { randomBytes } from 'node:crypto';
 import { validateToken } from '../middleware/validate-token.js';
 import Sourcebans from '../helpers/sourcebans.js';
 import { validateSteamId } from '../middleware/validate-steamid.js';
+import { callDiscordApi } from '../lib/util.js';
 
 const bot_route = new Hono<Context>();
 
@@ -27,15 +28,7 @@ bot_route.post('/bot/generate-token', authGuard, discordRefresh, async (c) => {
     throw new HTTPException(400, { message: 'Please specify a guildid' });
   }
 
-  const guildinfo = await fetch(DISCORD_URL + 'users/@me/guilds', {
-    headers: new Headers({
-      'Authorization': `Bearer ${user.accessToken}`
-    })
-  });
-
-  if (!guildinfo.ok) {
-    throw new HTTPException(400, { message: 'Could not reach Discord API' });
-  }
+  const guildinfo = await callDiscordApi('users/@me/guilds', user.accessToken);
 
   const json = await guildinfo.json();
 

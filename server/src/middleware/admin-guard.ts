@@ -6,7 +6,7 @@ export const adminGuard = async (c: HonoContext<Context>, next: Next) => {
   const session = c.get('session');
   const user = c.get('user');
 
-  if (!session || !user?.isAdmin) {
+  if (!session || !user?.promotedOn) {
     throw new HTTPException(401, { message: 'Unauthorized' });
   }
 

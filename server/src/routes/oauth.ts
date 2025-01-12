@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { generateState } from 'arctic';
-import { CLIENT_URL, DISCORD_URL } from '../env.js';
+import { CLIENT_URL } from '../env.js';
 import { getCookie, setCookie } from 'hono/cookie';
 import { db, users } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
@@ -16,6 +16,7 @@ import { authGuard } from '../middleware/auth-guard.js';
 import type { Context } from '../lib/context.js';
 import { discord, discordRefresh } from '../middleware/discord.js';
 import { HTTPException } from 'hono/http-exception';
+import { callDiscordApi } from '../lib/util.js';
 
 const oauth_route = new Hono<Context>();
 
@@ -69,22 +70,16 @@ oauth_route.get('/login/discord/callback', async (c) => {
 
   const tokens = await discord.validateAuthorizationCode(code);
 
-  const userinfo = await fetch(DISCORD_URL + 'users/@me', {
-    headers: new Headers({
-      'Authorization': `Bearer ${tokens.accessToken()}`
-    })
-  });
+  const userinfo = await callDiscordApi('users/@me', tokens.accessToken());
 
-  if (!userinfo.ok) {
-    throw new HTTPException(400, { message: 'Could not reach Discord API' });
-  }
-
-  const uinfojs = await userinfo.json();
+  const json = await userinfo.json();
 
   const user = db
     .insert(users)
     .values({
-      id: uinfojs['id'],
+      id: json['id'],
+      username: json['username'],
+      avatar: json['avatar'],
       accessToken: tokens.accessToken(),
       refreshToken: tokens.refreshToken(),
       accessTokenExpiration: tokens.accessTokenExpiresAt()
@@ -92,6 +87,8 @@ oauth_route.get('/login/discord/callback', async (c) => {
     .onConflictDoUpdate({
       target: users.id,
       set: {
+        username: json['username'],
+        avatar: json['avatar'],
         accessToken: tokens.accessToken(),
         refreshToken: tokens.refreshToken(),
         accessTokenExpiration: tokens.accessTokenExpiresAt()
@@ -133,17 +130,17 @@ oauth_route.post('/logout/discord', async (c) => {
 oauth_route.get('/discord/user', authGuard, discordRefresh, async (c) => {
   const user = c.get('user')!;
 
-  const userinfo = await fetch(DISCORD_URL + 'users/@me', {
-    headers: new Headers({
-      'Authorization': `Bearer ${user.accessToken}`
-    })
-  });
-
-  if (!userinfo.ok) {
-    throw new HTTPException(400, { message: 'Could not reach Discord API' });
-  }
-
+  const userinfo = await callDiscordApi('users/@me', user.accessToken);
   const json = await userinfo.json();
+
+  // Set username in schema
+  await db
+    .update(users)
+    .set({
+      username: json['username'],
+      avatar: json['avatar']
+    })
+    .where(eq(users.id, user.id));
 
   return c.json({
     success: true,
@@ -157,15 +154,7 @@ oauth_route.get('/discord/user', authGuard, discordRefresh, async (c) => {
 oauth_route.get('/discord/guilds', authGuard, discordRefresh, async (c) => {
   const user = c.get('user')!;
 
-  const guildinfo = await fetch(DISCORD_URL + 'users/@me/guilds', {
-    headers: new Headers({
-      'Authorization': `Bearer ${user.accessToken}`
-    })
-  });
-
-  if (!guildinfo.ok) {
-    throw new HTTPException(400, { message: 'Could not reach Discord API' });
-  }
+  const guildinfo = await callDiscordApi('users/@me/guilds', user.accessToken);
 
   return c.json({
     success: true,

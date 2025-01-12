@@ -3,7 +3,8 @@ import type { Context } from '../lib/context.js';
 import { adminGuard } from '../middleware/admin-guard.js';
 import { HTTPException } from 'hono/http-exception';
 import { db, users } from '../db/schema.js';
-import { eq } from 'drizzle-orm';
+import { eq, isNotNull, sql } from 'drizzle-orm';
+import { callDiscordApi } from '../lib/util.js';
 
 const admin_route = new Hono<Context>();
 
@@ -17,9 +18,14 @@ admin_route.get('/admin/validate', adminGuard, async (c) => {
 
 admin_route.get('/admin/list-users', adminGuard, async (c) => {
   const user_list = await db
-    .select({ id: users.id, is_admin: users.isAdmin })
+    .select({ 
+      id: users.id, 
+      username: users.username, 
+      avatar: users.avatar,
+      is_admin: isNotNull(users.promotedOn).mapWith(Boolean)
+    })
     .from(users);
-
+  
   return c.json({
     success: true,
     data: user_list
@@ -41,7 +47,7 @@ admin_route.post('/admin/add', adminGuard, async (c) => {
     });
   }
 
-  if (user.isAdmin) {
+  if (user.promotedOn !== null) {
     throw new HTTPException(400, {
       message: `User '${user.id}' is already an admin`
     });
@@ -50,7 +56,7 @@ admin_route.post('/admin/add', adminGuard, async (c) => {
   await db
     .update(users)
     .set({
-      isAdmin: true
+      promotedOn: new Date()
     })
     .where(eq(users.id, user.id));
 
@@ -75,16 +81,22 @@ admin_route.post('/admin/remove', adminGuard, async (c) => {
     });
   }
 
-  if (!user.isAdmin) {
+  if (!user.promotedOn) {
     throw new HTTPException(400, {
       message: `User '${user.id}' is already not an admin`
+    });
+  }
+
+  if (user.promotedOn <= c.get('user')!.promotedOn!) {
+    throw new HTTPException(400, {
+      message: `You cannot demote someone made admin before you`
     });
   }
 
   await db
     .update(users)
     .set({
-      isAdmin: false
+      promotedOn: null
     })
     .where(eq(users.id, user.id));
 

@@ -1,4 +1,5 @@
 import { SITE_ADMIN_IDS } from '../env.js';
+import { callDiscordApi } from '../lib/util.js';
 import { connection, db, sessions, users } from './schema.js';
 
 async function seed() {
@@ -12,11 +13,17 @@ async function seed() {
   console.log('Inserting seed data...');
 
   for (const id of SITE_ADMIN_IDS.split(',')) {
+    const userinfo = await callDiscordApi(`users/${id}`);
+    const json = await userinfo.json();
+
     await db
       .insert(users)
       .values({
-        id: id,
-        isAdmin: true,
+        id: json['id'],
+        username: json['username'],
+        avatar: json['avatar'],
+
+        promotedOn: new Date(),
         refreshToken: '',
         accessToken: '',
         accessTokenExpiration: new Date()
@@ -24,7 +31,9 @@ async function seed() {
       .onConflictDoUpdate({
         target: users.id,
         set: {
-          isAdmin: true
+          username: json['username'],
+          avatar: json['avatar'],  
+          promotedOn: new Date()
         }
       });
   }

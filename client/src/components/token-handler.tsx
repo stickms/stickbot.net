@@ -55,7 +55,7 @@ function TokenHandler() {
 
   if (user.token_guild) {
     return (
-      <Flex className='items-center justify-center flex-col gap-4'>
+      <Flex className='items-center justify-center flex-col gap-4 max-w-[80vw]'>
         <Text>You already have an existing API token.</Text>
         <Button onClick={revokeApiToken}>Revoke API Token</Button>
       </Flex>
@@ -63,7 +63,7 @@ function TokenHandler() {
   }
 
   return (
-    <Flex className='items-center justify-center gap-4'>
+    <Flex className='items-center justify-center flex-wrap gap-4 max-w-[80vw]'>
       <DiscordList placeholder='Generate token for...' />
       <Button onClick={generateToken}>Generate API Token</Button>
     </Flex>
