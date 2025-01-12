@@ -388,9 +388,18 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
           <Avatar src={summary.avatarfull} fallback='T' />
           <Box>
             <Box className='w-full'>
-              <Text size='3' weight='bold'>
+              <Link 
+                href={`https://steamcommunity.com/profiles/${summary.steamid}`}
+                target='_blank'
+                rel='noopener noreferrer'  
+                color='gray' 
+                highContrast 
+                underline='hover' 
+                size='3' 
+                weight='bold'
+              >
                 {summary.personaname}
-              </Text>
+              </Link>
             </Box>
             <Flex className='gap-5 flex-wrap'>
               <SteamIdList summary={summary} />
