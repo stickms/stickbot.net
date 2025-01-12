@@ -7,7 +7,7 @@ import useAuth from '../hooks/use-auth';
 import { getDiscordAvatar } from '../lib/util';
 
 function DiscordLogin() {
-  const { user, admin, getUser, validateAdmin, logout } = useAuth();
+  const { user, getUser, validateAdmin, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -43,7 +43,7 @@ function DiscordLogin() {
       <DropdownMenu.Content>
         <DropdownMenu.Label>{user.username}</DropdownMenu.Label>
         <DropdownMenu.Separator />
-        {admin && (
+        {user.is_admin && (
           <DropdownMenu.Item onClick={() => navigate('/admin-portal')}>
             Admin Portal
           </DropdownMenu.Item>

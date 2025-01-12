@@ -6,16 +6,16 @@ const default_user: UserType = {
   avatar: '',
   id: '',
   username: '',
-  token_guild: ''
+  token_guild: '',
+  is_admin: false
 };
 
-export const $user = persistentMap<UserType>('user:', default_user);
-export const $guilds = persistentAtom<GuildType[]>('guilds:', [], {
+export const $user = persistentMap<UserType>('user:', default_user, {
   encode: JSON.stringify,
   decode: JSON.parse
 });
 
-export const $admin = persistentAtom<boolean>('admin:', false, {
+export const $guilds = persistentAtom<GuildType[]>('guilds:', [], {
   encode: JSON.stringify,
   decode: JSON.parse
 });
@@ -47,5 +47,8 @@ export function clearGuildId() {
 }
 
 export function setAdmin(admin: boolean) {
-  $admin.set(admin);
+  $user.set({
+    ...$user.get(),
+    is_admin: admin
+  });
 }

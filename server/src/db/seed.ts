@@ -32,7 +32,7 @@ async function seed() {
         target: users.id,
         set: {
           username: json['username'],
-          avatar: json['avatar'],  
+          avatar: json['avatar'],
           promotedOn: new Date()
         }
       });

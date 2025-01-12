@@ -1,6 +1,5 @@
 import { useStore } from '@nanostores/react';
 import {
-  $admin,
   $guilds,
   $user,
   clearGuildId,
@@ -16,12 +15,10 @@ import useToast from './use-toast';
 function useAuth() {
   const user = useStore($user);
   const guilds = useStore($guilds);
-  const admin = useStore($admin);
 
   const { toast } = useToast();
 
   function clearAll() {
-    setAdmin(false);
     clearUser();
     clearGuilds();
     clearGuildId();
@@ -143,7 +140,6 @@ function useAuth() {
   return {
     user,
     guilds,
-    admin,
     getUser,
     getGuilds,
     logout,

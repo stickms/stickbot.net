@@ -66,13 +66,15 @@ function ProfileLookup() {
         className='w-[720px] max-w-[80vw] mb-6 md:mb-0'
       >
         <Flex className='items-center justify-center flex-col'>
-          {profiles.map((p, i) => (
-            <SteamProfile
-              key={profiles.length - i}
-              steamid={p}
-              setDisabled={setDisabled}
-            />
-          ))}
+          {profiles.map((p, i) => {
+            return i >= 5 ? null : (
+              <SteamProfile
+                key={profiles.length - i}
+                steamid={p}
+                setDisabled={setDisabled}
+              />
+            );
+          })}
         </Flex>
       </ScrollArea>
     </Flex>

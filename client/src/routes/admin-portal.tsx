@@ -44,7 +44,9 @@ function UserCard({ user }: { user: UserListType }) {
         <Box>
           <Text as='div'>{user.username ?? 'Username N/A'}</Text>
           <Text as='div' className='text-sm' color='gray'>
-            {'<@'}{user.id}{'>'}
+            {'<@'}
+            {user.id}
+            {'>'}
           </Text>
           <Text as='div' className='text-xs text-center' color='gray'>
             click to copy userid
@@ -56,7 +58,7 @@ function UserCard({ user }: { user: UserListType }) {
 }
 
 function UserList() {
-  const { user, admin } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
 
   const [users, setUsers] = useState<UserListType[]>([]);
@@ -64,25 +66,28 @@ function UserList() {
   const [modifying, setModifying] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!admin || modifying) {
+    if (!user.is_admin || modifying) {
       return;
     }
 
     fetch(`${API_ENDPOINT}/admin/list-users`, { credentials: 'include' })
       .then(fetchGetJson)
       .then((data) => {
-        setUsers(() => data['data']
-          .sort((a: UserListType, b: UserListType) => {
-            return (+b.is_admin - +a.is_admin) 
-              || (a.username && ((b.username && a.username.localeCompare(b.username)) || 1)) 
-              || (+a.id - +b.id);
+        setUsers(() =>
+          data['data'].sort((a: UserListType, b: UserListType) => {
+            return (
+              +b.is_admin - +a.is_admin ||
+              (a.username &&
+                ((b.username && a.username.localeCompare(b.username)) || 1)) ||
+              +a.id - +b.id
+            );
           })
-        )
+        );
       })
       .catch(() => {
         setUsers(() => []);
       });
-  }, [admin, modifying]);
+  }, [user.is_admin, modifying]);
 
   const modifyAdmin = (u: UserListType) => {
     setModifying(() => true);
@@ -123,8 +128,11 @@ function UserList() {
         <Box className='w-full px-4 py-1'>
           {users
             .filter((u) => {
-              return !userQuery || u.id.includes(userQuery) 
-                || u.username?.includes(userQuery);
+              return (
+                !userQuery ||
+                u.id.includes(userQuery) ||
+                u.username?.includes(userQuery)
+              );
             })
             .map((u) => {
               return (
@@ -132,13 +140,13 @@ function UserList() {
                   <Flex className='items-center justify-between gap-4'>
                     <HoverCard.Root>
                       <HoverCard.Trigger>
-                        <Link 
+                        <Link
                           asChild
                           highContrast
                           underline='hover'
                           onClick={() => navigator.clipboard.writeText(u.id)}
                         >
-                            <button>{u.username ?? 'Username N/A'}</button>
+                          <button>{u.username ?? 'Username N/A'}</button>
                         </Link>
                       </HoverCard.Trigger>
                       <UserCard user={u} />
@@ -148,10 +156,8 @@ function UserList() {
                         <Tooltip content='Website Admin'>
                           <Badge>A</Badge>
                         </Tooltip>
-                      )} 
-                      <Tooltip
-                        content={!u.is_admin ? 'Promote' : 'Demote'}
-                      >
+                      )}
+                      <Tooltip content={!u.is_admin ? 'Promote' : 'Demote'}>
                         <IconButton
                           size='1'
                           onClick={() => modifyAdmin(u)}
@@ -174,7 +180,7 @@ function UserList() {
 }
 
 function AdminPortal() {
-  const { user, admin, validateAdmin } = useAuth();
+  const { user, validateAdmin } = useAuth();
   const { toast } = useToast();
   const navigation = useNavigate();
 
@@ -183,7 +189,7 @@ function AdminPortal() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (!user.id || !admin) {
+  if (!user.id || !user.is_admin) {
     toast({
       title: 'Error: Unauthorized',
       description: 'Sorry, you cannot access that page'

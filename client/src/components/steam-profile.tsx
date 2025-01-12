@@ -193,11 +193,9 @@ function QuickLinks({ summary }: { summary: SteamProfileSummary }) {
 }
 
 function Sourcebans({
-  sourcebans,
-  error
+  sourcebans
 }: {
-  sourcebans: Sourceban[] | undefined;
-  error: string | undefined;
+  sourcebans?: Sourceban[] | null;
 }) {
   return (
     <Box className='min-w-36 flex-grow'>
@@ -207,8 +205,8 @@ function Sourcebans({
         </Text>
       </Box>
       <Box className='w-full whitespace-pre-line'>
-        {!sourcebans && !error && <Spinner size='3' />}
-        {error && <Text size='2'>❌ Error: {error.toString()}</Text>}
+        {sourcebans === undefined && <Spinner size='3' />}
+        {sourcebans === null && <Text size='2'>❌ Error: Could not fetch sourcebans</Text>}
         {sourcebans && sourcebans.length == 0 && (
           <Badge size='2' color='green'>
             None
@@ -278,18 +276,16 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
   const guildid = useStore($guildid);
 
   const [summary, setSummary] = useState<SteamProfileSummary>();
-  const [sourcebans, setSourcebans] = useState<Sourceban[]>();
+  const [sourcebans, setSourcebans] = useState<Sourceban[] | null>();
   const [tags, setTags] = useState<TagList>();
 
   const [error, setError] = useState<string>();
-  const [sourcebansError, setSourcebansError] = useState<string>();
 
   useEffect(() => {
     const getPlayerData = async (): Promise<SteamProfileSummary> => {
       // Reset some things
       setTags(() => undefined);
       setError(() => undefined);
-      setSourcebansError(() => undefined);
 
       let query = steamid.trim();
 
@@ -324,7 +320,7 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
         .then((data) => {
           setSourcebans(data['data']);
         })
-        .catch((error) => setSourcebansError(`Error: ${error}`));
+        .catch(() => setSourcebans(null));
 
       if (guildid) {
         fetch(`${API_ENDPOINT}/botdata/${steam}?guildid=${guildid}`, {
@@ -347,7 +343,8 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
       .then((summ) => setSummary(summ))
       .catch((error) => setError(error))
       .finally(() => setDisabled(false));
-  }, [steamid, setDisabled, guildid]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [steamid, guildid]);
 
   return (
     <Card className='my-2 min-h-[300px] w-[calc(100%-32px)]'>
@@ -388,14 +385,14 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
           <Avatar src={summary.avatarfull} fallback='T' />
           <Box>
             <Box className='w-full'>
-              <Link 
+              <Link
                 href={`https://steamcommunity.com/profiles/${summary.steamid}`}
                 target='_blank'
-                rel='noopener noreferrer'  
-                color='gray' 
-                highContrast 
-                underline='hover' 
-                size='3' 
+                rel='noopener noreferrer'
+                color='gray'
+                highContrast
+                underline='hover'
+                size='3'
                 weight='bold'
               >
                 {summary.personaname}
@@ -405,7 +402,7 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
               <SteamIdList summary={summary} />
               <AlertList summary={summary} tags={tags} />
               <QuickLinks summary={summary} />
-              <Sourcebans sourcebans={sourcebans} error={sourcebansError} />
+              <Sourcebans sourcebans={sourcebans} />
             </Flex>
           </Box>
         </Flex>

@@ -1,6 +1,6 @@
 import type { Context, Next } from 'hono';
 import { HTTPException } from 'hono/http-exception';
-import { STEAM_API_KEY, STEAM_URL } from '../env.js';
+import { callSteamApi } from '../lib/util.js';
 
 export const validateSteamId = async (c: Context, next: Next) => {
   const steamid = c.req.query('steamid');
@@ -11,21 +11,9 @@ export const validateSteamId = async (c: Context, next: Next) => {
     });
   }
 
-  const sum_url = new URL(STEAM_URL + 'GetPlayerSummaries/v2/');
-  const params = new URLSearchParams({
-    key: STEAM_API_KEY,
+  const resp = await callSteamApi('GetPlayerSummaries/v2/', {
     steamids: steamid
-  }).toString();
-
-  sum_url.search = params;
-
-  const resp = await fetch(sum_url, {
-    signal: AbortSignal.timeout(1000)
   });
-
-  if (!resp.ok) {
-    throw new HTTPException(400, { message: 'Could not reach Steam API' });
-  }
 
   const json = await resp.json();
 

@@ -22,20 +22,18 @@ export const discordRefresh = async (c: HonoContext<Context>, next: Next) => {
     // Will throw an error if this fails
     const tokens = await discord.refreshAccessToken(user.refreshToken);
 
-    user.refreshToken = tokens.refreshToken();
-    user.accessToken = tokens.accessToken();
-    user.accessTokenExpiration = tokens.accessTokenExpiresAt();
-
-    await db
+    const new_user = db
       .update(users)
       .set({
-        refreshToken: user.refreshToken,
-        accessToken: user.accessToken,
-        accessTokenExpiration: user.accessTokenExpiration
+        refreshToken: tokens.refreshToken(),
+        accessToken: tokens.accessToken(),
+        accessTokenExpiration: tokens.accessTokenExpiresAt()
       })
-      .where(eq(users.id, user.id));
+      .where(eq(users.id, user.id))
+      .returning()
+      .get();
 
-    c.set('user', user);
+    c.set('user', new_user);
   }
 
   return next();

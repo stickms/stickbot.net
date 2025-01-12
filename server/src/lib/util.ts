@@ -1,7 +1,30 @@
-import { HTTPException } from "hono/http-exception";
-import { DISCORD_BOT_TOKEN } from "../env.js";
+import { HTTPException } from 'hono/http-exception';
+import { DISCORD_BOT_TOKEN, STEAM_API_KEY } from '../env.js';
 
+const STEAM_URL = 'https://api.steampowered.com/';
 const DISCORD_URL = 'https://discord.com/api/v10/';
+
+export async function callSteamApi(
+  endpoint: string,
+  params: { [key: string]: string } = {},
+  api: string = 'ISteamUser'
+) {
+  const url = new URL(`${STEAM_URL}${api}/${endpoint}`);
+  const search = new URLSearchParams({
+    ...params,
+    key: STEAM_API_KEY
+  });
+
+  url.search = search.toString();
+
+  const resp = await fetch(url);
+
+  if (!resp.ok) {
+    throw new HTTPException(400, { message: 'Could not reach Steam API' });
+  }
+
+  return resp;
+}
 
 export async function callDiscordApi(endpoint: string, token?: string) {
   let attempts = 0;
@@ -33,7 +56,7 @@ export async function callDiscordApi(endpoint: string, token?: string) {
         });
       }
 
-      await new Promise(res => setTimeout(res, time * 1000));
+      await new Promise((res) => setTimeout(res, time * 1000));
     } else {
       return resp;
     }

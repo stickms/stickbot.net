@@ -4,6 +4,7 @@ export type UserType = {
   id: string;
   username: string;
   token_guild: string;
+  is_admin: boolean;
 };
 
 export type GuildType = {
@@ -45,9 +46,6 @@ export type SteamProfileSummary = {
   DaysSinceLastBan: number;
   NumberOfGameBans: number;
   EconomyBan: string;
-
-  // Sourcebans
-  sourcebans?: Sourceban[];
 };
 
 export type Sourceban = {

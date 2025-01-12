@@ -8,10 +8,10 @@ export function fetchGetJson(resp: Response) {
 
 export function getDiscordAvatar(userid: string, avatar?: string) {
   const cdn = 'https://cdn.discordapp.com/';
-  
+
   if (!avatar) {
     return `${cdn}/embed/avatars/${(BigInt(userid) >> 22n) % 6n}.png`;
   }
 
-  return `${cdn}/avatars/${userid}/${avatar}.png`
+  return `${cdn}/avatars/${userid}/${avatar}.png`;
 }

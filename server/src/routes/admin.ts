@@ -4,7 +4,6 @@ import { adminGuard } from '../middleware/admin-guard.js';
 import { HTTPException } from 'hono/http-exception';
 import { db, users } from '../db/schema.js';
 import { eq, isNotNull, sql } from 'drizzle-orm';
-import { callDiscordApi } from '../lib/util.js';
 
 const admin_route = new Hono<Context>();
 
@@ -18,14 +17,14 @@ admin_route.get('/admin/validate', adminGuard, async (c) => {
 
 admin_route.get('/admin/list-users', adminGuard, async (c) => {
   const user_list = await db
-    .select({ 
-      id: users.id, 
-      username: users.username, 
+    .select({
+      id: users.id,
+      username: users.username,
       avatar: users.avatar,
       is_admin: isNotNull(users.promotedOn).mapWith(Boolean)
     })
     .from(users);
-  
+
   return c.json({
     success: true,
     data: user_list

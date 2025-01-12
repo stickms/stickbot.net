@@ -69,9 +69,7 @@ oauth_route.get('/login/discord/callback', async (c) => {
   }
 
   const tokens = await discord.validateAuthorizationCode(code);
-
   const userinfo = await callDiscordApi('users/@me', tokens.accessToken());
-
   const json = await userinfo.json();
 
   const user = db
@@ -146,7 +144,8 @@ oauth_route.get('/discord/user', authGuard, discordRefresh, async (c) => {
     success: true,
     data: {
       ...json,
-      token_guild: user.apiGuild ?? ''
+      token_guild: user.apiGuild ?? '',
+      is_admin: !!user.promotedOn
     }
   });
 });
