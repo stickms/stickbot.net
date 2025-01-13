@@ -6,6 +6,7 @@ import { fetchGetJson } from "../lib/util";
 import { type Payload } from 'youtube-dl-exec';
 import useToast from "../hooks/use-toast";
 
+// Payload doesn't include like_count (bug)
 type VideoPayload = Payload & { like_count: number };
 
 function VideoDownloader({ info }: { info?: VideoPayload }) {
@@ -39,7 +40,7 @@ function VideoDownloader({ info }: { info?: VideoPayload }) {
 
     const params = new URLSearchParams({
       query: info.original_url,
-      format: format!
+      format: format
     });
 
     url.search = params.toString();
@@ -134,6 +135,12 @@ function VideoPreview({ info }: { info?: VideoPayload }) {
     });
   };
 
+  const compactNumber = (num: number) => {
+    return Intl.NumberFormat('en-US', {
+      notation: 'compact', maximumFractionDigits: 1
+    }).format(num);
+  }
+
   return (
     <Card className='flex p-4 items-stretch justify-center gap-4 max-w-[80vw] flex-wrap mb-8'>
       <img
@@ -181,17 +188,13 @@ function VideoPreview({ info }: { info?: VideoPayload }) {
           <Flex className='gap-2 items-center'>
             <Tooltip content={info.view_count.toLocaleString('en-US')}>
               <Text className='text-sm' color='gray'>
-                {Intl.NumberFormat('en-US', {
-                  notation: 'compact', maximumFractionDigits: 1
-                }).format(info.view_count)} views
+              {compactNumber(info.view_count)} views
               </Text>
             </Tooltip>
             <Separator orientation='vertical' />
             <Tooltip content={info.like_count.toLocaleString('en-US')}>
               <Text className='text-sm' color='gray'>
-                {Intl.NumberFormat('en-US', {
-                  notation: 'compact', maximumFractionDigits: 1
-                }).format(info.like_count)} likes
+                {compactNumber(info.like_count)} likes
               </Text>
             </Tooltip>
           </Flex>
@@ -246,7 +249,7 @@ function YoutubeDl() {
 
   return (
     <Flex className='items-center justify-center flex-col gap-y-24'>
-      <Text className='mt-[20vh] text-3xl'>Youtube Video Downloader</Text>
+      <Text className='mt-[20vh] text-3xl'>Youtube Downloader</Text>
 
       <Flex className='items-center justify-center gap-4'>
         <TextField.Root 

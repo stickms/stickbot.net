@@ -2,11 +2,16 @@ import { Hono } from "hono";
 import type { Context } from "../lib/context.js";
 import { authGuard } from "../middleware/auth-guard.js";
 import { HTTPException } from "hono/http-exception";
-import { stream } from "hono/streaming";
 import { youtubeDl } from 'youtube-dl-exec';
+import { existsSync } from "fs";
 import ffmpegPath from "ffmpeg-static";
+import { resolve as resolvePath } from "path";
 
 const tools_route = new Hono<Context>();
+
+const cookies = existsSync('cookies.txt') ? resolvePath('cookies.txt') : undefined;
+
+console.log(`cookies: ${cookies}`);
 
 tools_route.get('/tools/youtube-info', async (c) => {
   const query = c.req.query('query');
@@ -22,8 +27,8 @@ tools_route.get('/tools/youtube-info', async (c) => {
     noCheckCertificates: true,
     noWarnings: true,
     preferFreeFormats: true,
-    cookies: process.env.NODE_ENV === 'production' ? 'cookies.txt' : undefined,
-    addHeader: ['referer:youtube.com', 'user-agent:googlebot']
+    cookies: cookies,
+    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:133.0) Gecko/20100101 Firefox/133.0'
   });
 
   return c.json({
@@ -61,8 +66,8 @@ tools_route.get('/tools/youtube-dl', async (c) => {
     externalDownloader: 'ffmpeg',
     externalDownloaderArgs: '-f mp4 -movflags frag_keyframe+empty_moov -c:v libx264 -preset ultrafast -crf 23',
     //postprocessorArgs: 'FFmpeg:-f mp4 -movflags frag_keyframe+empty_moov -c:v libx264 -preset ultrafast -crf 22',
-    cookies: process.env.NODE_ENV === 'production' ? 'cookies.txt' : undefined,
-    addHeader: ['referer:youtube.com', 'user-agent:googlebot']
+    cookies: cookies,
+    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:133.0) Gecko/20100101 Firefox/133.0'
   }, {
     stdio: [ 'ignore', 'pipe', 'ignore' ]
   });
@@ -75,21 +80,6 @@ tools_route.get('/tools/youtube-dl', async (c) => {
   c.header('Content-Disposition', `attachment; filename="video.mp4"`);
 
   return c.body(exec_process.stdout! as any as ReadableStream);
-  // return stream(c, async (stream) => {
-  //   stream.onAbort(() => { 
-  //     // throw new HTTPException(403, {
-  //     //   message: 'Internal stream error'
-  //     // });
-  //     //exec_process.stdout?.destroy();
-  //     //exec_process.kill('SIGKILL');
-  //     //process.kill(-exec_process.pid!);
-  //     stream.close();
-  //   });
-
-  //   for await (const chunk of exec_process.stdout!) {
-  //     await stream.write(chunk);
-  //   }
-  // });
 });
 
 export default tools_route;
