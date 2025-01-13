@@ -1,12 +1,14 @@
 import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
-import { Flex, IconButton, Link, Text, TextField, Card, Separator, Select, Button } from "@radix-ui/themes";
+import { Flex, IconButton, Link, Text, TextField, Card, Separator, Select, Button, Tooltip } from "@radix-ui/themes";
 import { useEffect, useState } from "react";
 import { API_ENDPOINT } from "../env";
 import { fetchGetJson } from "../lib/util";
 import { type Payload } from 'youtube-dl-exec';
 import useToast from "../hooks/use-toast";
 
-function VideoDownloader({ info }: { info?: Payload }) {
+type VideoPayload = Payload & { like_count: number };
+
+function VideoDownloader({ info }: { info?: VideoPayload }) {
   const { toast } = useToast();
 
   const [ format, setFormat ] = useState<string>();
@@ -113,10 +115,24 @@ function VideoDownloader({ info }: { info?: Payload }) {
   );
 }
 
-function VideoPreview({ info }: { info?: Payload }) {
+function VideoPreview({ info }: { info?: VideoPayload }) {
   if (!info) {
     return null;
   }
+
+  const videoDate = () => {
+    const year = +info.upload_date.substring(0, 4);
+    const month = +info.upload_date.substring(4, 6) - 1;
+    const day = +info.upload_date.substring(6, 8);
+
+    const date = new Date(year, month, day);
+
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
 
   return (
     <Card className='flex p-4 items-stretch justify-center gap-4 max-w-[80vw] flex-wrap mb-8'>
@@ -158,12 +174,26 @@ function VideoPreview({ info }: { info?: Payload }) {
             </Link>
             <Separator orientation='vertical' />
             <Text className='text-sm' color='gray'>
-              {(new Date(info.upload_date)).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}
+              {videoDate()}
             </Text>
+          </Flex>
+
+          <Flex className='gap-2 items-center'>
+            <Tooltip content={info.view_count.toLocaleString('en-US')}>
+              <Text className='text-sm' color='gray'>
+                {Intl.NumberFormat('en-US', {
+                  notation: 'compact', maximumFractionDigits: 1
+                }).format(info.view_count)} views
+              </Text>
+            </Tooltip>
+            <Separator orientation='vertical' />
+            <Tooltip content={info.like_count.toLocaleString('en-US')}>
+              <Text className='text-sm' color='gray'>
+                {Intl.NumberFormat('en-US', {
+                  notation: 'compact', maximumFractionDigits: 1
+                }).format(info.like_count)} likes
+              </Text>
+            </Tooltip>
           </Flex>
         </Flex>
 
@@ -178,7 +208,7 @@ function YoutubeDl() {
 
   const [query, setQuery] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
-  const [videoInfo, setVideoInfo] = useState<Payload>();
+  const [videoInfo, setVideoInfo] = useState<VideoPayload>();
 
   const handleSearch = () => {
     if (!query.trim()) {

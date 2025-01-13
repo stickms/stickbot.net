@@ -67,32 +67,29 @@ tools_route.get('/tools/youtube-dl', async (c) => {
     stdio: [ 'ignore', 'pipe', 'ignore' ]
   });
 
+  exec_process.catch((error) => {
+    console.log(error);
+  });
+
   c.header('Content-Type', 'video/mp4');
   c.header('Content-Disposition', `attachment; filename="video.mp4"`);
 
-  return stream(c, async (stream) => {
-    stream.onAbort(() => { 
-      // throw new HTTPException(403, {
-      //   message: 'Internal stream error'
-      // });
-      //exec_process.stdout?.destroy();
-      //exec_process.kill('SIGKILL');
-      //process.kill(-exec_process.pid!);
-      stream.close();
-    });
+  return c.body(exec_process.stdout! as any as ReadableStream);
+  // return stream(c, async (stream) => {
+  //   stream.onAbort(() => { 
+  //     // throw new HTTPException(403, {
+  //     //   message: 'Internal stream error'
+  //     // });
+  //     //exec_process.stdout?.destroy();
+  //     //exec_process.kill('SIGKILL');
+  //     //process.kill(-exec_process.pid!);
+  //     stream.close();
+  //   });
 
-    exec_process.stdout?.on('error', () => {
-      stream.close();
-    })
-
-    exec_process.on('error', () => {
-      stream.close();
-    })
-
-    for await (const chunk of exec_process.stdout!) {
-      await stream.write(chunk);
-    }
-  });
+  //   for await (const chunk of exec_process.stdout!) {
+  //     await stream.write(chunk);
+  //   }
+  // });
 });
 
 export default tools_route;
