@@ -56,7 +56,7 @@ tools_route.get('/tools/youtube-dl', async (c) => {
   const video_url = `http://www.youtube.com/watch?v=${video_id}`;
 
   const video_info = await ytdl.getInfo(video_url, {
-    playerClients: ['IOS'],
+    playerClients: ['IOS', 'WEB'],
     agent 
   });
 
@@ -84,7 +84,7 @@ tools_route.get('/tools/youtube-dl', async (c) => {
 
   const video_stream = ytdl(video_url, {
     format: video_format,
-    playerClients: ['IOS'],
+    playerClients: ['IOS', 'WEB'],
     agent
   }).on('error', () => {
     throw new HTTPException(403, {
@@ -94,7 +94,7 @@ tools_route.get('/tools/youtube-dl', async (c) => {
 
   const audio_stream = ytdl(video_url, {
     format: audio_format,
-    playerClients: ['IOS'],
+    playerClients: ['IOS', 'WEB'],
     agent
   }).on('error', () => {
     throw new HTTPException(403, {
