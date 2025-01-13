@@ -46,11 +46,19 @@ function MediaDownloader({ info }: { info?: MediaPayload }) {
       format: format.split(':')[1],
     });
 
+    const headers = new Headers();
+
+    if (process.env.NODE_ENV === 'production') {
+      headers.set('Content-Security-Policy', 'upgrade-insecure-requests');
+    }
+
     url.search = params.toString();
 
-    fetch(url,
-      { credentials: 'include' }
-    )
+    fetch(url, {
+      credentials: 'include',
+      referrerPolicy: 'unsafe-url',
+      headers: headers
+    })
       .then((resp) => {
         if (!resp.ok) {
           throw new Error();
