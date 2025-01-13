@@ -7,6 +7,7 @@ dotenv.config({
 
 export const SITE_ADMIN_IDS: string = process.env.SITE_ADMIN_IDS ?? '';
 export const API_PORT: string = process.env.API_PORT ?? '3000';
+export const FFMPEG_PATH: string | undefined = process.env.FFMPEG_PATH;
 
 export const STEAM_API_KEY: string = process.env.STEAM_API_KEY!;
 export const CLIENT_URL: string = process.env.CLIENT_URL!;

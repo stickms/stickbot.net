@@ -3,9 +3,12 @@ import type { Context } from "../lib/context.js";
 import { authGuard } from "../middleware/auth-guard.js";
 import { HTTPException } from "hono/http-exception";
 import { youtubeDl } from 'youtube-dl-exec';
+import { FFMPEG_PATH } from "../env.js";
 import ffmpegPath from "ffmpeg-static";
 
 const tools_route = new Hono<Context>();
+
+const ffmpeg_path = FFMPEG_PATH ?? `${ffmpegPath}`;
 
 tools_route.get('/tools/media-info', async (c) => {
   const query = c.req.query('query');
@@ -52,10 +55,14 @@ tools_route.get('/tools/soundcloud-dl', async (c) => {
     noCheckCertificates: true,
     noWarnings: true,
     format: format,
-    ffmpegLocation: `${ffmpegPath}`,
+    ffmpegLocation: ffmpeg_path,
     externalDownloader: 'ffmpeg',
   }, {
     stdio: [ 'ignore', 'pipe', 'ignore' ]
+  });
+
+  exec_process.on('error', (error) =>{
+    console.log(error);
   });
 
   exec_process.catch((error) => {
@@ -96,7 +103,7 @@ tools_route.get('/tools/youtube-dl', async (c) => {
     noWarnings: true,
     format: `${format}+ba[ext=m4a]/${format}+ba/${format}/b`,
     //format: 'bv*[ext=mp4][vcodec^=avc]+ba[ext=m4a]/b[ext=mp4] / bv*+ba/b',
-    ffmpegLocation: `${ffmpegPath}`,
+    ffmpegLocation: ffmpeg_path,
     //mergeOutputFormat: 'mp4',
     remuxVideo: 'mp4',
     externalDownloader: 'ffmpeg',
