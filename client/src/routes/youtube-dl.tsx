@@ -179,7 +179,7 @@ function YoutubeDl() {
   const [videoInfo, setVideoInfo] = useState<Payload>();
 
   const handleSearch = () => {
-    if (!query) {
+    if (!query.trim()) {
       toast({
         title: 'Error looking up video',
         description: 'Please specify a search query'
@@ -191,7 +191,7 @@ function YoutubeDl() {
     setVideoInfo(() => undefined);
     setLoading(() => true);
 
-    fetch(`${API_ENDPOINT}/tools/youtube-info?query=${query}`, 
+    fetch(`${API_ENDPOINT}/tools/youtube-info?query=${query.trim()}`, 
       { credentials: 'include' }
     )
       .then(fetchGetJson)
@@ -219,7 +219,7 @@ function YoutubeDl() {
       <Flex className='items-center justify-center gap-4'>
         <TextField.Root 
           className='w-96 max-w-[80vw]'
-          placeholder='Enter video url/id...'
+          placeholder='Enter video url...'
           maxLength={128}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
