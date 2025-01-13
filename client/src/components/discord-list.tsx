@@ -23,23 +23,21 @@ function DiscordList({ placeholder }: { placeholder?: string }) {
         placeholder={placeholder ?? 'Search by Server'}
       />
       <Select.Content>
-        <Select.Group>
-          <Select.Label>{placeholder ?? 'Search by Server'}</Select.Label>
-          {guilds.map((guild) => {
-            return (
-              <Select.Item value={guild.id} key={guild.id}>
-                <Flex className='gap-2 items-center justify-start'>
-                  <Avatar
-                    src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`}
-                    fallback={guild.name[0]}
-                    size='1'
-                  />
-                  <Text>{guild.name}</Text>
-                </Flex>
-              </Select.Item>
-            );
-          })}
-        </Select.Group>
+        <Select.Label>{placeholder ?? 'Search by Server'}</Select.Label>
+        {guilds.map((guild) => {
+          return (
+            <Select.Item value={guild.id} key={guild.id}>
+              <Flex className='gap-2 items-center justify-start'>
+                <Avatar
+                  src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`}
+                  fallback={guild.name[0]}
+                  size='1'
+                />
+                <Text>{guild.name}</Text>
+              </Flex>
+            </Select.Item>
+          );
+        })}
       </Select.Content>
     </Select.Root>
   );

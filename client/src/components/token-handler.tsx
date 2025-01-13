@@ -5,22 +5,33 @@ import {
   Flex,
   IconButton,
   Text,
-  TextField
+  TextField,
+  Tooltip
 } from '@radix-ui/themes';
 import DiscordList from './discord-list';
 import useAuth from '../hooks/use-auth';
 import { useStore } from '@nanostores/react';
 import { $guildid } from '../lib/store';
 import { useState } from 'react';
+import useToast from '../hooks/use-toast';
 
 function TokenHandler() {
   const { user, generateApiToken, revokeApiToken } = useAuth();
+  const { toast } = useToast();
   const guildid = useStore($guildid);
 
   // Only saved on FIRST TIME token generation
   const [token, setToken] = useState<string>('');
 
   const generateToken = async () => {
+    if (!guildid) {
+      toast({
+        title: 'Error: Could not generate API token',
+        description: 'Please select a guild for token generation'
+      });
+      return;
+    }
+
     const data = await generateApiToken(guildid);
     if (data) {
       setToken(() => data);
@@ -42,12 +53,14 @@ function TokenHandler() {
     return (
       <TextField.Root disabled value={token} size='3'>
         <TextField.Slot side='right'>
-          <IconButton
-            variant='ghost'
-            onClick={() => navigator.clipboard.writeText(token)}
-          >
-            <CopyIcon />
-          </IconButton>
+          <Tooltip content='click to copy token'>
+            <IconButton
+              variant='ghost'
+              onClick={() => navigator.clipboard.writeText(token)}
+            >
+              <CopyIcon />
+            </IconButton>
+          </Tooltip>
         </TextField.Slot>
       </TextField.Root>
     );

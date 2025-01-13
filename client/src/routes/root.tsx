@@ -12,6 +12,9 @@ function Root() {
           <NavLink to='/lookup'>Steam Profile Lookup</NavLink>
         </Link>
         <Link asChild>
+          <NavLink to='/youtube-dl'>Youtube Video Downloader</NavLink>
+        </Link>
+        <Link asChild>
           <NavLink to='/api-reference'>API & Reference</NavLink>
         </Link>
       </Flex>

@@ -53,7 +53,7 @@ function ProfileLookup() {
           disabled={disabled}
         >
           <TextField.Slot side='right'>
-            <IconButton size='2' variant='ghost' onClick={() => handleSearch()}>
+            <IconButton variant='ghost' onClick={handleSearch}>
               <MagnifyingGlassIcon />
             </IconButton>
           </TextField.Slot>

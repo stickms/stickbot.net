@@ -12,6 +12,7 @@ import type { Context } from './lib/context.js';
 import lookup_route from './routes/lookup.js';
 import oauth_route from './routes/oauth.js';
 import bot_route from './routes/bot.js';
+import tools_route from './routes/tools.js';
 import admin_route from './routes/admin.js';
 
 const app = new Hono<Context>();
@@ -23,7 +24,7 @@ app.use(
     credentials: true,
     allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization'],
-    exposeHeaders: ['Set-Cookie']
+    exposeHeaders: ['Set-Cookie', 'Content-Disposition', 'Content-Length']
   })
 );
 
@@ -40,9 +41,12 @@ app.use('/*', auth);
 app.route('/', lookup_route);
 app.route('/', oauth_route);
 app.route('/', bot_route);
+app.route('/', tools_route);
 app.route('/', admin_route);
 
 app.onError((error, c) => {
+  console.log(error);
+
   if (error instanceof OAuth2RequestError) {
     return c.json(
       {

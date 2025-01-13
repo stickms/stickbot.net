@@ -12,6 +12,7 @@ import ErrorPage from './routes/error-page.tsx';
 import ProfileLookup from './routes/profile-lookup.tsx';
 import AdminPortal from './routes/admin-portal.tsx';
 import OpenProfile from './routes/open-profile.tsx';
+import YoutubeDl from './routes/youtube-dl.tsx';
 
 import '@radix-ui/themes/styles.css';
 import './index.css';
@@ -25,6 +26,7 @@ createRoot(document.getElementById('root')!).render(
           <Route index element={<Root />} />
           <Route path='/lookup' element={<ProfileLookup />} />
           <Route path='/api-reference' element={<ApiReference />} />
+          <Route path='/youtube-dl' element={<YoutubeDl />} />
           <Route path='/admin-portal' element={<AdminPortal />} />
           <Route path='/openprofile/:id' element={<OpenProfile />} />
           <Route path='*' element={<ErrorPage />} />
