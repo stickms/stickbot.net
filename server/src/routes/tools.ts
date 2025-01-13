@@ -25,7 +25,7 @@ tools_route.get('/tools/youtube-info', authGuard, async (c) => {
   const video_url = `http://www.youtube.com/watch?v=${video_id}`;
 
   const info = await ytdl.getInfo(video_url, {
-    playerClients: ['IOS'],
+    playerClients: ['IOS', 'WEB'],
     agent
   });
 
