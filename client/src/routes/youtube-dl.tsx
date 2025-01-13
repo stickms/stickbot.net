@@ -118,7 +118,7 @@ function VideoPreview({ info }: { info?: videoInfo }) {
                     </Select.Label>
                     {
                       info.formats
-                        .filter((fmt) => fmt.hasVideo && fmt.mimeType?.startsWith(`video/${format}`))
+                        .filter((fmt) => fmt.hasVideo)
                         .filter((fmt, index, array) => array.findIndex((f) => f.qualityLabel === fmt.qualityLabel) === index)
                         .map((fmt) => {
                         return (
