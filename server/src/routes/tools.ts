@@ -81,9 +81,15 @@ tools_route.get('/tools/youtube-dl', async (c) => {
       stream.close();
     });
 
-    let index = 0;
+    exec_process.stdout?.on('error', () => {
+      stream.close();
+    })
+
+    exec_process.on('error', () => {
+      stream.close();
+    })
+
     for await (const chunk of exec_process.stdout!) {
-      console.log(index++);
       await stream.write(chunk);
     }
   });

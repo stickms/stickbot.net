@@ -77,7 +77,7 @@ function VideoDownloader({ info }: { info?: Payload }) {
       >
         <Select.Trigger 
           placeholder='Select video format & quality...'
-          className='w-72 mt-8'
+          className='w-72'
         />
 
         <Select.Content>
@@ -91,7 +91,7 @@ function VideoDownloader({ info }: { info?: Payload }) {
                 .map((fmt) => {
                   return (
                     <Select.Item key={fmt.format_id} value={fmt.format_id}>
-                      {fmt.format_note!}
+                      {fmt.format_note!} ({fmt.format_id})
                     </Select.Item>
                   );
                 })
@@ -119,50 +119,52 @@ function VideoPreview({ info }: { info?: Payload }) {
   }
 
   return (
-    <Card className='flex p-4 items-start justify-center gap-4 max-w-[80vw] flex-wrap mb-8'>
+    <Card className='flex p-4 items-stretch justify-center gap-4 max-w-[80vw] flex-wrap mb-8'>
       <img
-        className='w-96 h-54 object-contain rounded-lg'
+        className='w-96 object-contain rounded-lg'
         src={info.thumbnail}
         alt='Youtube video thumbnail'
       />
 
-      <Flex className='gap-2 flex-col max-w-[30rem]'>
-        <Link
-          className='text-xl'
-          href={info.original_url}
-          target='_blank'
-          rel='noopener noreferrer'
-          highContrast
-          color='gray'
-          underline='hover'
-        >
-          {info.title}
-        </Link>
-        <Flex className='gap-2 items-center'>
-          {/* <Avatar
-            size='1'
-            src={info.videoDetails.author.thumbnails?.slice(-1)[0].url}
-            fallback={'A'}
-            radius='full'
-          /> */}
-          <Link 
-            href={info.channel_url}
+      <Flex className='gap-4 flex-col max-w-[30rem] justify-between'>
+        <Flex className='gap-2 flex-col'>
+          <Link
+            className='text-xl'
+            href={info.original_url}
             target='_blank'
             rel='noopener noreferrer'
             highContrast
             color='gray'
             underline='hover'
           >
-            {info.channel}
+            {info.title}
           </Link>
-          <Separator orientation='vertical' />
-          <Text className='text-sm' color='gray'>
-            {(new Date(info.upload_date)).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            })}
-          </Text>
+          <Flex className='gap-2 items-center'>
+            {/* <Avatar
+              size='1'
+              src={info.videoDetails.author.thumbnails?.slice(-1)[0].url}
+              fallback={'A'}
+              radius='full'
+            /> */}
+            <Link 
+              href={info.channel_url}
+              target='_blank'
+              rel='noopener noreferrer'
+              highContrast
+              color='gray'
+              underline='hover'
+            >
+              {info.channel}
+            </Link>
+            <Separator orientation='vertical' />
+            <Text className='text-sm' color='gray'>
+              {(new Date(info.upload_date)).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
+            </Text>
+          </Flex>
         </Flex>
 
         <VideoDownloader info={info} />
