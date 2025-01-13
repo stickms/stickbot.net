@@ -25,7 +25,7 @@ tools_route.get('/tools/youtube-info', authGuard, async (c) => {
   const video_url = `http://www.youtube.com/watch?v=${video_id}`;
 
   const info = await ytdl.getInfo(video_url, {
-    playerClients: ['ANDROID'],
+    playerClients: ['IOS'],
     agent
   });
 
@@ -56,7 +56,7 @@ tools_route.get('/tools/youtube-dl', authGuard, async (c) => {
   const video_url = `http://www.youtube.com/watch?v=${video_id}`;
 
   const video_info = await ytdl.getInfo(video_url, {
-    playerClients: ['ANDROID'],
+    playerClients: ['IOS'],
     agent 
   });
 
@@ -84,13 +84,13 @@ tools_route.get('/tools/youtube-dl', authGuard, async (c) => {
 
   const video_stream = ytdl(video_url, {
     format: video_format,
-    playerClients: ['ANDROID'],
+    playerClients: ['IOS'],
     agent
   });
 
   const audio_stream = ytdl(video_url, {
     format: audio_format,
-    playerClients: ['ANDROID'],
+    playerClients: ['IOS'],
     agent
   });
 
