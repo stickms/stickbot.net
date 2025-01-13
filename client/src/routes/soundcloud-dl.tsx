@@ -1,5 +1,3 @@
-// UNUSED (SINCE YOUTUBE SUCKS)
-
 import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
 import { Flex, IconButton, Link, Text, TextField, Card, Separator, Select, Button, Tooltip } from "@radix-ui/themes";
 import { useEffect, useState } from "react";
@@ -9,9 +7,9 @@ import { type Payload } from 'youtube-dl-exec';
 import useToast from "../hooks/use-toast";
 
 // Payload doesn't include like_count (bug)
-type VideoPayload = Payload & { like_count: number };
+type MediaPayload = Payload & { like_count: number };
 
-function VideoDownloader({ info }: { info?: VideoPayload }) {
+function MediaDownloader({ info }: { info?: MediaPayload }) {
   const { toast } = useToast();
 
   const [ format, setFormat ] = useState<string>();
@@ -26,11 +24,11 @@ function VideoDownloader({ info }: { info?: VideoPayload }) {
     return null;
   }
 
-  const downloadVideo = () => {
+  const downloadMedia = () => {
     if(!format) {
       toast({
-        title: 'Could not download video',
-        description: 'Please select a video format'
+        title: 'Could not download media',
+        description: 'Please select a valid format'
       });
 
       return;
@@ -38,11 +36,14 @@ function VideoDownloader({ info }: { info?: VideoPayload }) {
 
     setDownloading(true);
 
-    const url = new URL(`${API_ENDPOINT}/tools/youtube-dl/`);
+    const extension = format.split(':')[0];
+
+    const url = new URL(`${API_ENDPOINT}/tools/soundcloud-dl/`);
 
     const params = new URLSearchParams({
       query: info.original_url,
-      format: format
+      ext: extension,
+      format: format.split(':')[1],
     });
 
     url.search = params.toString();
@@ -60,7 +61,7 @@ function VideoDownloader({ info }: { info?: VideoPayload }) {
       .then((blob) => {
         const a = document.createElement('a');
         a.href = window.URL.createObjectURL(blob);
-        a.download = `video.mp4`;
+        a.download = `audio.${extension}`;
         document.body.appendChild(a);
         a.click();    
         a.remove();
@@ -68,12 +69,17 @@ function VideoDownloader({ info }: { info?: VideoPayload }) {
       .catch((e) => {
         console.log(e);
         toast({
-          title: 'Error when downloading video',
+          title: 'Error when downloading media',
           description: 'Please try again later'
         })
       })
       .finally(() => setDownloading(false));
   }
+
+  // All possible file extensions from soundcloud
+  const extensions = [
+    ... new Set(info.formats.map((fmt) => fmt.ext))
+  ];
 
   return (
     <Flex className='flex-col gap-2'>
@@ -81,49 +87,56 @@ function VideoDownloader({ info }: { info?: VideoPayload }) {
         onValueChange={setFormat}
       >
         <Select.Trigger 
-          placeholder='Select video format & quality...'
+          placeholder='Select format & quality...'
           className='w-72'
         />
 
         <Select.Content>
-          <Select.Group>
-            <Select.Label>
-              MP4
-            </Select.Label>
-            {
-              info.formats
-                .filter((fmt) => fmt.format_note && fmt.vcodec.startsWith('avc'))
-                .map((fmt) => {
-                  return (
-                    <Select.Item key={fmt.format_id} value={fmt.format_id}>
-                      {fmt.format_note!} ({fmt.format_id})
-                    </Select.Item>
-                  );
-                })
-            }
-          </Select.Group>
+          {
+            extensions.map((ext) => {
+              return (
+                <Select.Group key={ext}>
+                  <Select.Label>{ext.toUpperCase()}</Select.Label>
+                  {
+                    info.formats
+                      .filter((fmt) => fmt.ext === ext)
+                      .map((fmt) => {
+                        return (
+                          <Select.Item
+                            key={fmt.format_id}
+                            value={`${ext}:${fmt.format_id}`}
+                          >
+                            {fmt.abr} bitrate ({fmt.format_id})
+                          </Select.Item>
+                        );
+                      })
+                  }
+                </Select.Group>
+              );
+            })
+          }
         </Select.Content>
 
       </Select.Root>
 
       <Button
           className='w-40'
-          onClick={downloadVideo}
+          onClick={downloadMedia}
           disabled={downloading}
           loading={downloading}
         >
-          Download Video
+          Download Audio
         </Button>
     </Flex>
   );
 }
 
-function VideoPreview({ info }: { info?: VideoPayload }) {
+function MediaPreview({ info }: { info?: MediaPayload }) {
   if (!info) {
     return null;
   }
 
-  const videoDate = () => {
+  const uploadDate = () => {
     const year = +info.upload_date.substring(0, 4);
     const month = +info.upload_date.substring(4, 6) - 1;
     const day = +info.upload_date.substring(6, 8);
@@ -146,9 +159,9 @@ function VideoPreview({ info }: { info?: VideoPayload }) {
   return (
     <Card className='flex p-4 items-stretch justify-center gap-4 max-w-[80vw] flex-wrap mb-8'>
       <img
-        className='w-96 object-contain rounded-lg'
+        className='h-52 object-contain rounded-lg'
         src={info.thumbnail}
-        alt='Youtube video thumbnail'
+        alt='Thumbnail art'
       />
 
       <Flex className='gap-4 flex-col max-w-[30rem] justify-between'>
@@ -172,18 +185,18 @@ function VideoPreview({ info }: { info?: VideoPayload }) {
               radius='full'
             /> */}
             <Link 
-              href={info.channel_url}
+              href={info.uploader_url}
               target='_blank'
               rel='noopener noreferrer'
               highContrast
               color='gray'
               underline='hover'
             >
-              {info.channel}
+              {info.uploader}
             </Link>
             <Separator orientation='vertical' />
             <Text className='text-sm' color='gray'>
-              {videoDate()}
+              {uploadDate()}
             </Text>
           </Flex>
 
@@ -202,41 +215,41 @@ function VideoPreview({ info }: { info?: VideoPayload }) {
           </Flex>
         </Flex>
 
-        <VideoDownloader info={info} />
+        <MediaDownloader info={info} />
       </Flex>
     </Card>
   );
 }
 
-function YoutubeDl() {
+function SoundcloudDl() {
   const { toast } = useToast();
 
   const [query, setQuery] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
-  const [videoInfo, setVideoInfo] = useState<VideoPayload>();
+  const [mediaInfo, setMediaInfo] = useState<MediaPayload>();
 
   const handleSearch = () => {
     if (!query.trim()) {
       toast({
-        title: 'Error looking up video',
+        title: 'Error looking up soundcloud link',
         description: 'Please specify a search query'
       });
 
       return;
     }
 
-    setVideoInfo(() => undefined);
+    setMediaInfo(() => undefined);
     setLoading(() => true);
 
-    fetch(`${API_ENDPOINT}/tools/youtube-info?query=${query.trim()}`, 
+    fetch(`${API_ENDPOINT}/tools/media-info?query=${query.trim()}`, 
       { credentials: 'include' }
     )
       .then(fetchGetJson)
-      .then((data) => setVideoInfo(data['data']))
+      .then((data) => setMediaInfo(data['data']))
       .catch(() => {
         toast({
-          title: 'Error looking up video',
-          description: 'Make sure video exists and isn\'t private or age/region restricted'
+          title: 'Error looking up link',
+          description: 'Make sure link exists and isn\'t private or age/region restricted'
         });
       })
       .finally(() => setLoading(() => false));
@@ -251,12 +264,12 @@ function YoutubeDl() {
 
   return (
     <Flex className='items-center justify-center flex-col gap-y-24'>
-      <Text className='mt-[20vh] text-3xl'>Youtube Downloader</Text>
+      <Text className='mt-[20vh] text-3xl'>Soundcloud Downloader</Text>
 
       <Flex className='items-center justify-center gap-4'>
         <TextField.Root 
           className='w-96 max-w-[80vw]'
-          placeholder='Enter video url...'
+          placeholder='Enter Soundcloud url...'
           maxLength={128}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -271,9 +284,9 @@ function YoutubeDl() {
         </TextField.Root>
       </Flex>
 
-      <VideoPreview info={videoInfo} />
+      <MediaPreview info={mediaInfo} />
     </Flex>
   );
 }
 
-export default YoutubeDl;
+export default SoundcloudDl;

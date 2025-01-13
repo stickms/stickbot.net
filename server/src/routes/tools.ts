@@ -3,22 +3,16 @@ import type { Context } from "../lib/context.js";
 import { authGuard } from "../middleware/auth-guard.js";
 import { HTTPException } from "hono/http-exception";
 import { youtubeDl } from 'youtube-dl-exec';
-import { existsSync } from "fs";
 import ffmpegPath from "ffmpeg-static";
-import { resolve as resolvePath } from "path";
 
 const tools_route = new Hono<Context>();
 
-const cookies = existsSync('cookies.txt') ? resolvePath('cookies.txt') : undefined;
-
-console.log(`cookies: ${cookies}`);
-
-tools_route.get('/tools/youtube-info', async (c) => {
+tools_route.get('/tools/media-info', async (c) => {
   const query = c.req.query('query');
 
   if (!query) {
     throw new HTTPException(400, {
-      message: 'Please supply a video link'
+      message: 'Please supply a media link'
     });
   }
 
@@ -26,9 +20,7 @@ tools_route.get('/tools/youtube-info', async (c) => {
     dumpSingleJson: true,
     noCheckCertificates: true,
     noWarnings: true,
-    preferFreeFormats: true,
-    cookies: cookies,
-    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:133.0) Gecko/20100101 Firefox/133.0'
+    preferFreeFormats: true
   });
 
   return c.json({
@@ -36,6 +28,50 @@ tools_route.get('/tools/youtube-info', async (c) => {
     data: resp, // Payload type
   });
 })
+
+tools_route.get('/tools/soundcloud-dl', async (c) => {
+  const query = c.req.query('query');
+  const format = c.req.query('format');
+  const ext = c.req.query('ext');
+
+  if (!query) {
+    throw new HTTPException(400, {
+      message: 'Please supply a video link'
+    });
+  }
+
+  if (!format) {
+    throw new HTTPException(400, {
+      message: 'Please supply a video format code'
+    });
+  }
+
+  const exec_process = youtubeDl.exec(query, {
+    output: '-',
+    quiet: true,
+    noCheckCertificates: true,
+    noWarnings: true,
+    format: format,
+    ffmpegLocation: `${ffmpegPath}`,
+    externalDownloader: 'ffmpeg',
+  }, {
+    stdio: [ 'ignore', 'pipe', 'ignore' ]
+  });
+
+  exec_process.catch((error) => {
+    console.log(error);
+  });
+
+  if (ext === 'mp3') {
+    c.header('Content-Type', 'audio/mpeg');
+  } else if (ext === 'opus') {
+    c.header('Content-Type', 'audio/opus');
+  }
+
+  c.header('Content-Disposition', `attachment; filename="audio.${ext}"`);
+
+  return c.body(exec_process.stdout! as any as ReadableStream);
+});
 
 tools_route.get('/tools/youtube-dl', async (c) => {
   const query = c.req.query('query');
@@ -66,7 +102,6 @@ tools_route.get('/tools/youtube-dl', async (c) => {
     externalDownloader: 'ffmpeg',
     externalDownloaderArgs: '-f mp4 -movflags frag_keyframe+empty_moov -c:v libx264 -preset ultrafast -crf 23',
     //postprocessorArgs: 'FFmpeg:-f mp4 -movflags frag_keyframe+empty_moov -c:v libx264 -preset ultrafast -crf 22',
-    cookies: cookies,
     userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:133.0) Gecko/20100101 Firefox/133.0'
   }, {
     stdio: [ 'ignore', 'pipe', 'ignore' ]
