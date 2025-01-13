@@ -47,7 +47,7 @@ function MediaDownloader({ info }: { info?: MediaPayload }) {
     });
 
     const headers = new Headers();
-    headers.set('Update-Insecure-Requests', '1');
+    headers.set('Upgrade-Insecure-Requests', '1');
     headers.set('Content-Security-Policy', 'upgrade-insecure-requests');
 
     url.search = params.toString();
