@@ -70,7 +70,6 @@ tools_route.get('/tools/soundcloud-dl', async (c) => {
     c.header('Content-Type', 'audio/opus');
   }
 
-  c.header('Content-Security-Policy', 'upgrade-insecure-requests');
   c.header('Content-Disposition', `attachment; filename="audio.${ext}"`);
 
   return c.body(exec_process.stdout! as any as ReadableStream);

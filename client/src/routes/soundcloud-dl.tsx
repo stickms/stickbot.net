@@ -46,11 +46,15 @@ function MediaDownloader({ info }: { info?: MediaPayload }) {
       format: format.split(':')[1],
     });
 
+    const headers = new Headers();
+    headers.set('Update-Insecure-Requests', '1');
+    headers.set('Content-Security-Policy', 'upgrade-insecure-requests');
+
     url.search = params.toString();
 
     fetch(url, {
       credentials: 'include',
-      referrerPolicy: 'unsafe-url'
+      headers: headers
     })
       .then((resp) => {
         if (!resp.ok) {

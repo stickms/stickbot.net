@@ -23,8 +23,8 @@ app.use(
     origin: (origin) => origin,
     credentials: true,
     allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowHeaders: ['Content-Type', 'Authorization'],
-    exposeHeaders: ['Set-Cookie', 'Content-Type', 'Content-Disposition', 'Content-Length', 'Content-Security-Policy']
+    allowHeaders: ['Content-Type', 'Authorization', 'Content-Security-Policy', 'Upgrade-Insecure-Requests'],
+    exposeHeaders: ['Set-Cookie', 'Content-Type', 'Content-Disposition', 'Content-Length', 'Content-Security-Policy', 'Upgrade-Insecure-Requests']
   })
 );
 
