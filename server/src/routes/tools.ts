@@ -25,7 +25,7 @@ tools_route.get('/tools/youtube-info', authGuard, async (c) => {
   const video_url = `http://www.youtube.com/watch?v=${video_id}`;
 
   const info = await ytdl.getInfo(video_url, {
-    playerClients: ['IOS'],
+    playerClients: ['ANDROID'],
     agent
   });
 
@@ -35,7 +35,7 @@ tools_route.get('/tools/youtube-info', authGuard, async (c) => {
   })
 })
 
-tools_route.get('/tools/youtube-dl', async (c) => {
+tools_route.get('/tools/youtube-dl', authGuard, async (c) => {
   const query = c.req.query('query');
   const itag = c.req.query('itag');
 
@@ -56,7 +56,7 @@ tools_route.get('/tools/youtube-dl', async (c) => {
   const video_url = `http://www.youtube.com/watch?v=${video_id}`;
 
   const video_info = await ytdl.getInfo(video_url, {
-    playerClients: ['IOS'],
+    playerClients: ['ANDROID'],
     agent 
   });
 
@@ -84,22 +84,14 @@ tools_route.get('/tools/youtube-dl', async (c) => {
 
   const video_stream = ytdl(video_url, {
     format: video_format,
-    playerClients: ['IOS'],
+    playerClients: ['ANDROID'],
     agent
-  }).on('error', () => {
-    throw new HTTPException(403, {
-      message: 'Video stream error'
-    });
   });
 
   const audio_stream = ytdl(video_url, {
     format: audio_format,
-    playerClients: ['IOS'],
+    playerClients: ['ANDROID'],
     agent
-  }).on('error', () => {
-    throw new HTTPException(403, {
-      message: 'Audio stream error'
-    });
   });
 
   c.header('Content-Type', video_format.mimeType!);
