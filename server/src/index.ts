@@ -45,6 +45,8 @@ app.route('/', tools_route);
 app.route('/', admin_route);
 
 app.onError((error, c) => {
+  console.log(error);
+  
   if (error instanceof OAuth2RequestError) {
     return c.json(
       {

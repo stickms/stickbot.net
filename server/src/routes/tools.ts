@@ -3,7 +3,6 @@ import type { Context } from "../lib/context.js";
 import { authGuard } from "../middleware/auth-guard.js";
 import { HTTPException } from "hono/http-exception";
 import { stream } from "hono/streaming";
-import { existsSync, readFileSync } from "fs";
 import { youtubeDl } from 'youtube-dl-exec';
 import ffmpegPath from "ffmpeg-static";
 
@@ -23,6 +22,7 @@ tools_route.get('/tools/youtube-info', authGuard, async (c) => {
     noCheckCertificates: true,
     noWarnings: true,
     preferFreeFormats: true,
+    cookies: process.env.NODE_ENV === 'production' ? 'cookies.txt' : undefined,
     addHeader: ['referer:youtube.com', 'user-agent:googlebot']
   });
 
@@ -42,7 +42,7 @@ tools_route.get('/tools/youtube-dl', authGuard, async (c) => {
     });
   }
 
-  const process = youtubeDl.exec(query, {
+  const exec_process = youtubeDl.exec(query, {
     output: '-',
     quiet: true,
     noCheckCertificates: true,
@@ -52,6 +52,7 @@ tools_route.get('/tools/youtube-dl', authGuard, async (c) => {
     ffmpegLocation: `${ffmpegPath}`,
     mergeOutputFormat: 'mp4',
     recodeVideo: 'mp4',
+    cookies: process.env.NODE_ENV === 'production' ? 'cookies.txt' : undefined,
     addHeader: ['referer:youtube.com', 'user-agent:googlebot']
   }, {
     stdio: [ 'ignore', 'pipe', 'ignore' ]
@@ -67,7 +68,7 @@ tools_route.get('/tools/youtube-dl', authGuard, async (c) => {
       });
     });
 
-    for await (const chunk of process.stdout!) {
+    for await (const chunk of exec_process.stdout!) {
       await stream.write(chunk);
     }
   });
