@@ -1,8 +1,5 @@
 import { HTTPException } from 'hono/http-exception';
 import { DISCORD_BOT_TOKEN, STEAM_API_KEY } from '../env.js';
-import { type Readable } from 'stream';
-import cp from 'child_process';
-import ffmpegPath from 'ffmpeg-static';
 
 const STEAM_URL = 'https://api.steampowered.com/';
 const DISCORD_URL = 'https://discord.com/api/v10/';
@@ -68,37 +65,4 @@ export async function callDiscordApi(endpoint: string, token?: string) {
   throw new HTTPException(400, {
     message: 'Could not reach Discord API'
   });
-}
-
-export async function combineVideoAudioStream(video: Readable, audio: Readable, callback: (chunk: any) => Promise<any>) {
-  if (!`${ffmpegPath}`) {
-    throw new Error('Could not find ffmpeg');
-  }
-
-  const ffmpeg = cp.spawn(`${ffmpegPath}`, [
-    // supress non-crucial messages
-    '-loglevel', '8', '-hide_banner',
-    // input audio and video by pipe
-    '-i', 'pipe:3', '-i', 'pipe:4',
-    // map audio and video correspondingly
-    '-map', '0:a', '-map', '1:v',
-    // no need to change the codec
-    '-c', 'copy',
-    '-movflags', 'frag_keyframe+empty_moov',
-    // output mp4 and pipe
-    '-f', 'mp4', 'pipe:5'
-  ], {
-    windowsHide: true,
-    stdio: [
-      'inherit', 'inherit', 'inherit',
-      'pipe', 'pipe', 'pipe'
-    ]
-  });
-
-  audio.pipe(ffmpeg.stdio[3] as NodeJS.WritableStream);
-  video.pipe(ffmpeg.stdio[4] as NodeJS.WritableStream);
-
-  for await (const chunk of (ffmpeg.stdio as any)[5]) {
-    await callback(chunk);
-  }
 }

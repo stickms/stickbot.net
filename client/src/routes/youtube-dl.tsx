@@ -1,29 +1,31 @@
 import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
-import { Avatar, Flex, IconButton, Link, Text, TextField, Card, Separator, Select, Button } from "@radix-ui/themes";
-import { type videoInfo } from '@distube/ytdl-core';
+import { Flex, IconButton, Link, Text, TextField, Card, Separator, Select, Button } from "@radix-ui/themes";
 import { useEffect, useState } from "react";
 import { API_ENDPOINT } from "../env";
 import { fetchGetJson } from "../lib/util";
+import { type Payload } from 'youtube-dl-exec';
 import useToast from "../hooks/use-toast";
 
-function VideoPreview({ info }: { info?: videoInfo }) {
+function VideoDownloader({ info }: { info?: Payload }) {
   const { toast } = useToast();
+
   const [ format, setFormat ] = useState<string>();
   const [ downloading, setDownloading ] = useState<boolean>(false);
 
   useEffect(() => {
+    setFormat(undefined);
     setDownloading(false);
-  }, [ info?.videoDetails.videoId ])
+  }, [ info?.original_url ]);
 
   if (!info) {
     return null;
   }
 
-  const downloadVideo = async () => {
-    if (!format) {
+  const downloadVideo = () => {
+    if(!format) {
       toast({
         title: 'Could not download video',
-        description: 'Please select a video format and try again'
+        description: 'Please select a video format'
       });
 
       return;
@@ -31,24 +33,24 @@ function VideoPreview({ info }: { info?: videoInfo }) {
 
     setDownloading(true);
 
-    const url = new URL(`${API_ENDPOINT}/tools/youtube-dl`);
+    const url = new URL(`${API_ENDPOINT}/tools/youtube-dl/`);
+
     const params = new URLSearchParams({
-      query: info.videoDetails.videoId,
-      itag: format,
+      query: info.original_url,
+      format: format!
     });
 
     url.search = params.toString();
 
-    fetch(url, {
-      method: 'GET',
-      credentials: 'include'
-    })
-      .then((res) => {
-        if (!res.ok) {
+    fetch(url,
+      { credentials: 'include' }
+    )
+      .then((resp) => {
+        if (!resp.ok) {
           throw new Error();
         }
 
-        return res.blob()
+        return resp.blob();
       })
       .then((blob) => {
         const a = document.createElement('a');
@@ -58,86 +60,48 @@ function VideoPreview({ info }: { info?: videoInfo }) {
         a.click();    
         a.remove();
       })
-      .catch((e) => console.log(e))
+      .catch((e) => {
+        console.log(e);
+        toast({
+          title: 'Error when downloading video',
+          description: 'Please try again later'
+        })
+      })
       .finally(() => setDownloading(false));
   }
 
-  const video_formats = [ 'mp4' ];
-
   return (
-    <Card className='flex p-4 items-start justify-center gap-4 max-w-[80vw] flex-wrap mb-8'>
-      <img
-        className='w-96 h-54 object-contain rounded-lg'
-        src={info.videoDetails.thumbnails.slice(-1)[0].url}
-        alt='Youtube video thumbnail'
-      />
+    <Flex className='flex-col gap-2'>
+      <Select.Root
+        onValueChange={setFormat}
+      >
+        <Select.Trigger 
+          placeholder='Select video format & quality...'
+          className='w-72 mt-8'
+        />
 
-      <Flex className='gap-2 flex-col max-w-[30rem]'>
-        <Text className='text-xl'>
-          {info.videoDetails.title}
-        </Text>
-        <Flex className='gap-2 items-center'>
-          <Avatar
-            size='1'
-            src={info.videoDetails.author.thumbnails?.slice(-1)[0].url}
-            fallback={'A'}
-            radius='full'
-          />
-          <Link 
-            href={info.videoDetails.author.channel_url}
-            target='_blank'
-            rel='noopener noreferrer'
-            highContrast
-            color='gray'
-            underline='hover'
-          >
-            {info.videoDetails.author.name}
-          </Link>
-          <Separator orientation='vertical' />
-          <Text className='text-sm' color='gray'>
-            {(new Date(info.videoDetails.uploadDate)).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            })}
-          </Text>
-        </Flex>
-
-        <Select.Root onValueChange={setFormat}>
-          <Select.Trigger 
-            placeholder='Select video format & quality...'
-            className='w-72 mt-8'
-          />
-          <Select.Content>
+        <Select.Content>
+          <Select.Group>
+            <Select.Label>
+              MP4
+            </Select.Label>
             {
-              video_formats.map((format) => {
-                return (
-                  <Select.Group key={format}>
-                    <Select.Label>
-                      {format.toUpperCase()}
-                    </Select.Label>
-                    {
-                      info.formats
-                        .filter((fmt) => fmt.hasVideo)
-                        .filter((fmt, index, array) => array.findIndex((f) => f.qualityLabel === fmt.qualityLabel) === index)
-                        .map((fmt) => {
-                        return (
-                          <Select.Item
-                            key={fmt.itag.toString()}
-                            value={fmt.itag.toString()}
-                          >
-                            {fmt.qualityLabel}
-                          </Select.Item>
-                        );
-                      })
-                    }
-                  </Select.Group>
-                );
-              })
+              info.formats
+                .filter((fmt) => fmt.format_note && fmt.vcodec.startsWith('avc'))
+                .map((fmt) => {
+                  return (
+                    <Select.Item key={fmt.format_id} value={fmt.format_id}>
+                      {fmt.format_note!}
+                    </Select.Item>
+                  );
+                })
             }
-          </Select.Content>
-        </Select.Root>
-        <Button
+          </Select.Group>
+        </Select.Content>
+
+      </Select.Root>
+
+      <Button
           className='w-40'
           onClick={downloadVideo}
           disabled={downloading}
@@ -145,6 +109,63 @@ function VideoPreview({ info }: { info?: videoInfo }) {
         >
           Download Video
         </Button>
+    </Flex>
+  );
+}
+
+function VideoPreview({ info }: { info?: Payload }) {
+  if (!info) {
+    return null;
+  }
+
+  return (
+    <Card className='flex p-4 items-start justify-center gap-4 max-w-[80vw] flex-wrap mb-8'>
+      <img
+        className='w-96 h-54 object-contain rounded-lg'
+        src={info.thumbnail}
+        alt='Youtube video thumbnail'
+      />
+
+      <Flex className='gap-2 flex-col max-w-[30rem]'>
+        <Link
+          className='text-xl'
+          href={info.original_url}
+          target='_blank'
+          rel='noopener noreferrer'
+          highContrast
+          color='gray'
+          underline='hover'
+        >
+          {info.title}
+        </Link>
+        <Flex className='gap-2 items-center'>
+          {/* <Avatar
+            size='1'
+            src={info.videoDetails.author.thumbnails?.slice(-1)[0].url}
+            fallback={'A'}
+            radius='full'
+          /> */}
+          <Link 
+            href={info.channel_url}
+            target='_blank'
+            rel='noopener noreferrer'
+            highContrast
+            color='gray'
+            underline='hover'
+          >
+            {info.channel}
+          </Link>
+          <Separator orientation='vertical' />
+          <Text className='text-sm' color='gray'>
+            {(new Date(info.upload_date)).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}
+          </Text>
+        </Flex>
+
+        <VideoDownloader info={info} />
       </Flex>
     </Card>
   );
@@ -155,7 +176,7 @@ function YoutubeDl() {
 
   const [query, setQuery] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
-  const [videoInfo, setVideoInfo] = useState<videoInfo>();
+  const [videoInfo, setVideoInfo] = useState<Payload>();
 
   const handleSearch = () => {
     if (!query) {
