@@ -46,18 +46,11 @@ function MediaDownloader({ info }: { info?: MediaPayload }) {
       format: format.split(':')[1],
     });
 
-    const headers = new Headers();
-
-    if (process.env.NODE_ENV === 'production') {
-      headers.set('Content-Security-Policy', 'upgrade-insecure-requests');
-    }
-
     url.search = params.toString();
 
     fetch(url, {
       credentials: 'include',
-      referrerPolicy: 'unsafe-url',
-      headers: headers
+      referrerPolicy: 'unsafe-url'
     })
       .then((resp) => {
         if (!resp.ok) {
@@ -114,7 +107,7 @@ function MediaDownloader({ info }: { info?: MediaPayload }) {
                             key={fmt.format_id}
                             value={`${ext}:${fmt.format_id}`}
                           >
-                            {fmt.abr} bitrate ({fmt.format_id})
+                            {fmt.abr} kbps ({fmt.format_id})
                           </Select.Item>
                         );
                       })

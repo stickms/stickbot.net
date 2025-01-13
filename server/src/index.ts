@@ -24,7 +24,7 @@ app.use(
     credentials: true,
     allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization'],
-    exposeHeaders: ['Set-Cookie', 'Content-Type', 'Content-Disposition', 'Content-Length']
+    exposeHeaders: ['Set-Cookie', 'Content-Type', 'Content-Disposition', 'Content-Length', 'Content-Security-Policy']
   })
 );
 

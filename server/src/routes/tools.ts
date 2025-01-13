@@ -37,15 +37,9 @@ tools_route.get('/tools/soundcloud-dl', async (c) => {
   const format = c.req.query('format');
   const ext = c.req.query('ext');
 
-  if (!query) {
+  if (!query || !format || !ext) {
     throw new HTTPException(400, {
-      message: 'Please supply a video link'
-    });
-  }
-
-  if (!format) {
-    throw new HTTPException(400, {
-      message: 'Please supply a video format code'
+      message: 'Please supply a media query, format, and ext'
     });
   }
 
@@ -57,6 +51,7 @@ tools_route.get('/tools/soundcloud-dl', async (c) => {
     format: format,
     ffmpegLocation: ffmpeg_path,
     externalDownloader: 'ffmpeg',
+    externalDownloaderArgs: `-vn -f ${ext}`,
   }, {
     stdio: [ 'ignore', 'pipe', 'ignore' ]
   });
@@ -75,6 +70,7 @@ tools_route.get('/tools/soundcloud-dl', async (c) => {
     c.header('Content-Type', 'audio/opus');
   }
 
+  c.header('Content-Security-Policy', 'upgrade-insecure-requests');
   c.header('Content-Disposition', `attachment; filename="audio.${ext}"`);
 
   return c.body(exec_process.stdout! as any as ReadableStream);
