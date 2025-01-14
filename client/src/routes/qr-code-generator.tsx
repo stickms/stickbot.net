@@ -1,5 +1,5 @@
-import { Button, Card, Flex, Select, Skeleton, Text, TextField } from "@radix-ui/themes";
-import { useRef, useState } from "react";
+import { Card, Flex, Select, Skeleton, Text, TextField, Box } from "@radix-ui/themes";
+import { useEffect, useRef, useState } from "react";
 import { QRCodeToDataURLOptions, toDataURL } from 'qrcode';
 import useToast from "../hooks/use-toast";
 
@@ -13,16 +13,19 @@ function QrCode({ data }: { data?: string }) {
   const [ width, setWidth ] = useState<number>(256);
   const [ margin, setMargin ] = useState<number>(1);
   const [ errorCorrection, setErrorCorrection ] = useState<string>('M');
+  const [ lightColor, setLightColor ] = useState<string>('#ffffffff');
+  const [ darkColor, setDarkColor ] = useState<string>('#000000ff');
 
-  const generateCode = () => {
+  useEffect(() => {
     if (!imageRef.current || !data) {
+      setGenerated(false);
       return;
     }
 
-    if (width > 1024 || width < 32) {
+    if (width > 2048 || width < 32) {
       toast({
         title: 'Invalid QR Code Specs',
-        description: 'Width must be >= 32px and <= 1024px'
+        description: 'Width must be >= 32px and <= 2048px'
       });
       return;
     }
@@ -42,8 +45,11 @@ function QrCode({ data }: { data?: string }) {
       rendererOpts: {
         quality: 1
       },
+      color: {
+        light: lightColor,
+        dark: darkColor
+      },
       errorCorrectionLevel: errorCorrection
-
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -59,7 +65,9 @@ function QrCode({ data }: { data?: string }) {
         });
       })
       .finally(() => setGenerated(true));
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, errorCorrection, margin, type, width, lightColor, darkColor]);
+
 
   return (
     <Card className='flex p-4 items-stretch justify-center gap-4 max-w-[80vw] flex-wrap mb-8'>
@@ -118,6 +126,28 @@ function QrCode({ data }: { data?: string }) {
         </Flex>
 
         <Flex className='items-center justify-between gap-4'>
+          <Text>Light Color</Text>
+          <Box style={{backgroundColor: lightColor}} className={`rounded-lg h-8`}>
+            <input
+              type='color'
+              className='opacity-0 cursor-pointer'
+              onChange={(e) => setLightColor(e.target.value)}
+            />
+          </Box>
+        </Flex>
+
+        <Flex className='items-center justify-between gap-4'>
+          <Text>Dark Color</Text>
+          <Box style={{backgroundColor: darkColor}} className={`rounded-lg h-8`}>
+            <input
+              type='color'
+              className='opacity-0 cursor-pointer'
+              onChange={(e) => setDarkColor(e.target.value)}
+            />
+          </Box>
+        </Flex>
+
+        <Flex className='items-center justify-between gap-4'>
           <Text>File Type</Text>
           <Select.Root
             onValueChange={setType}
@@ -134,13 +164,6 @@ function QrCode({ data }: { data?: string }) {
             </Select.Content>
           </Select.Root>
         </Flex>
-
-        <Button
-          onClick={generateCode}
-          disabled={!data}
-        >
-          Generate!
-        </Button>
       </Flex>
     </Card>
   );
