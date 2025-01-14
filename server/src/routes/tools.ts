@@ -3,9 +3,11 @@ import type { Context } from "../lib/context.js";
 import { authGuard } from "../middleware/auth-guard.js";
 import { HTTPException } from "hono/http-exception";
 import { youtubeDl } from 'youtube-dl-exec';
-import { FFMPEG_PATH } from "../env.js";
+import { CLIENT_URL, FFMPEG_PATH } from "../env.js";
 import ffmpegPath from "ffmpeg-static";
-import { stream } from "hono/streaming";
+import { db, links } from "../db/schema.js";
+import { eq } from "drizzle-orm";
+import { encodeBase64urlNoPadding } from "@oslojs/encoding";
 
 const tools_route = new Hono<Context>();
 
@@ -115,6 +117,72 @@ tools_route.get('/tools/youtube-dl', async (c) => {
   c.header('Content-Disposition', `attachment; filename="video.mp4"`);
 
   return c.body(exec_process.stdout! as any as ReadableStream);
+});
+
+tools_route.get('/tools/url/:id', async (c) => {
+  const id = c.req.param('id');
+
+  const entry = db
+    .select()
+    .from(links)
+    .where(eq(links.id, id))
+    .get();
+  
+  if (!entry) {
+    return c.redirect(`${CLIENT_URL}/404`);
+  }
+
+  if (entry.expiresAt && new Date() > entry.expiresAt) {
+    return c.redirect(`${CLIENT_URL}/404`);
+  }
+
+  return c.redirect(entry.url);
+});
+
+tools_route.post('/tools/shorten-url', async (c) => {
+  const user = c.get('user');
+  const url = c.req.query('url');
+  const expires = c.req.query('expires');
+
+  if (!url || !expires) {
+    throw new HTTPException(400, {
+      message: 'Please specify a url and link expiry'
+    });
+  }
+
+  const bytes = new Uint8Array(4);
+  crypto.getRandomValues(bytes);
+
+  let expiration: Date | null = null;
+  if (expires !== 'none') {
+    expiration = new Date();
+    expiration.setDate(expiration.getDate() + +expires);
+  }
+  
+  const entry = db
+    .insert(links)
+    .values({
+      id: encodeBase64urlNoPadding(bytes),
+      url: url,
+      expiresAt: expiration,
+      userId: user?.id
+    })
+    .returning()
+    .get();
+
+  if (!entry) {
+    throw new HTTPException(404, {
+      message: 'Could not generate URL'
+    });
+  }
+
+  return c.json({
+    success: true,
+    data: {
+      id: entry.id,
+      url: `${CLIENT_URL}/l/${entry.id}`
+    }
+  });
 });
 
 export default tools_route;

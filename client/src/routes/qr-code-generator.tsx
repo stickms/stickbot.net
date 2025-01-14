@@ -156,7 +156,7 @@ function QrCodeGenerator() {
       <Flex className='items-center justify-center gap-4'>
         <TextField.Root 
           className='w-96 max-w-[80vw]'
-          placeholder='Data...'
+          placeholder='Enter text or url...'
           maxLength={128}
           value={data}
           onChange={(e) => setData(e.target.value)}

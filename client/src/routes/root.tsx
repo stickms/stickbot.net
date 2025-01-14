@@ -12,6 +12,9 @@ function Root() {
           <NavLink to='/lookup'>Steam Profile Lookup</NavLink>
         </Link>
         <Link asChild>
+          <NavLink to='/url-shortener'>URL Shortener</NavLink>
+        </Link>
+        <Link asChild>
           <NavLink to='/qr-code-generator'>QR Code Generator</NavLink>
         </Link>
         <Link asChild>

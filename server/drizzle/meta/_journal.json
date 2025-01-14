@@ -29,6 +29,20 @@
       "when": 1736661282568,
       "tag": "0003_abandoned_gorilla_man",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1736878719469,
+      "tag": "0004_stiff_red_ghost",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1736881081213,
+      "tag": "0005_amusing_archangel",
+      "breakpoints": true
     }
   ]
 }

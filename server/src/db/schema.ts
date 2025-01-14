@@ -38,5 +38,17 @@ export const sessions = sqliteTable('sessions', {
   }).notNull()
 });
 
+export const links = sqliteTable('links', {
+  id: text('id').primaryKey(),
+  url: text('url').notNull(),
+  // NULL expiresAt = never expires
+  expiresAt: integer('expires_at', {
+    mode: 'timestamp'
+  }),
+  userId: text('user_id')
+    .references(() => users.id, { onDelete: 'cascade' }),
+});
+
 export type User = InferSelectModel<typeof users>;
 export type Session = InferSelectModel<typeof sessions>;
+export type Link = InferSelectModel<typeof links>;
