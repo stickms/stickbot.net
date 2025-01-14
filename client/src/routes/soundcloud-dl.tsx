@@ -46,38 +46,11 @@ function MediaDownloader({ info }: { info?: MediaPayload }) {
       format: format.split(':')[1],
     });
 
-    const headers = new Headers();
-    headers.set('Upgrade-Insecure-Requests', '1');
-
     url.search = params.toString();
 
-    fetch(url, {
-      credentials: 'include',
-      headers: headers
-    })
-      .then((resp) => {
-        if (!resp.ok) {
-          throw new Error();
-        }
+    window.location.href = url.toString();
 
-        return resp.blob();
-      })
-      .then((blob) => {
-        const a = document.createElement('a');
-        a.href = window.URL.createObjectURL(blob);
-        a.download = `audio.${extension}`;
-        document.body.appendChild(a);
-        a.click();    
-        a.remove();
-      })
-      .catch((e) => {
-        console.log(e);
-        toast({
-          title: 'Error when downloading media',
-          description: 'Please try again later'
-        })
-      })
-      .finally(() => setDownloading(false));
+    setTimeout(() => setDownloading(false), 2_500);
   }
 
   // All possible file extensions from soundcloud

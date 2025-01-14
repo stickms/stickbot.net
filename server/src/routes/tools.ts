@@ -5,6 +5,7 @@ import { HTTPException } from "hono/http-exception";
 import { youtubeDl } from 'youtube-dl-exec';
 import { FFMPEG_PATH } from "../env.js";
 import ffmpegPath from "ffmpeg-static";
+import { stream } from "hono/streaming";
 
 const tools_route = new Hono<Context>();
 
