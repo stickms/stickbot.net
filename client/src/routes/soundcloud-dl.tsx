@@ -48,7 +48,6 @@ function MediaDownloader({ info }: { info?: MediaPayload }) {
 
     const headers = new Headers();
     headers.set('Upgrade-Insecure-Requests', '1');
-    headers.set('Content-Security-Policy', 'upgrade-insecure-requests');
 
     url.search = params.toString();
 
@@ -250,7 +249,17 @@ function SoundcloudDl() {
       { credentials: 'include' }
     )
       .then(fetchGetJson)
-      .then((data) => setMediaInfo(data['data']))
+      .then((data) => {
+        const payload: MediaPayload = data['data'];
+
+        if (payload.webpage_url_domain !== 'soundcloud.com' ||
+          payload._type !== 'video'
+        ) {
+          throw new Error();
+        }
+
+        setMediaInfo(payload);
+      })
       .catch(() => {
         toast({
           title: 'Error looking up link',
