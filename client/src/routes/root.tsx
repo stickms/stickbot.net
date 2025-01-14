@@ -3,11 +3,9 @@ import { NavLink } from 'react-router-dom';
 
 function Root() {
   return (
-    <Flex className='items-center justify-center min-h-[30rem] h-screen flex-col gap-y-24'>
-      <Flex className='items-center justify-center'>
-        <Text className='text-3xl'>Stickbot.net</Text>
-      </Flex>
-      <Flex className='items-center justify-center flex-col gap-y-4'>
+    <Flex className='items-center justify-center min-h-screen'>
+      <Flex className='items-center justify-center my-16 flex-col gap-y-4'>
+        <Text className='text-3xl mb-20'>Stickbot.net</Text>
         <Link asChild>
           <NavLink to='/lookup'>Steam Profile Lookup</NavLink>
         </Link>

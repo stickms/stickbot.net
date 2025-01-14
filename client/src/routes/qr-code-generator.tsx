@@ -127,10 +127,10 @@ function QrCode({ data }: { data?: string }) {
 
         <Flex className='items-center justify-between gap-4'>
           <Text>Light Color</Text>
-          <Box style={{backgroundColor: lightColor}} className={`rounded-lg h-8`}>
+          <Box style={{backgroundColor: lightColor}} className={`rounded-lg h-8 w-16`}>
             <input
               type='color'
-              className='opacity-0 cursor-pointer'
+              className='opacity-0 cursor-pointer size-full'
               onChange={(e) => setLightColor(e.target.value)}
             />
           </Box>
@@ -138,10 +138,10 @@ function QrCode({ data }: { data?: string }) {
 
         <Flex className='items-center justify-between gap-4'>
           <Text>Dark Color</Text>
-          <Box style={{backgroundColor: darkColor}} className={`rounded-lg h-8`}>
+          <Box style={{backgroundColor: darkColor}} className={`rounded-lg h-8 w-16`}>
             <input
               type='color'
-              className='opacity-0 cursor-pointer'
+              className='opacity-0 cursor-pointer size-full'
               onChange={(e) => setDarkColor(e.target.value)}
             />
           </Box>

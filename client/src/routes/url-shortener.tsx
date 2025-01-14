@@ -108,7 +108,7 @@ function UrlShortener() {
       </Flex>
 
       {shortenedUrl && (
-        <Flex className='gap-2 items-center justify-center'>
+        <Flex className='gap-2 items-center justify-center mb-24'>
           <Link
             href={shortenedUrl}
             target='_blank'
@@ -126,22 +126,10 @@ function UrlShortener() {
             </IconButton>
           </Tooltip>
         </Flex>
-        // <TextField.Root
-        //   type='url'
-        //   className='w-60'
-        //   value={shortenedUrl}
-        //   disabled
-        // >
-        //   <TextField.Slot side='right'>
-        //     <IconButton
-        //       variant='ghost'
-        //       onClick={() => navigator.clipboard.writeText(shortenedUrl)}
-        //     >
-        //       <CopyIcon />
-        //     </IconButton>
-        //   </TextField.Slot>
-        // </TextField.Root>
       )}
+
+      // For padding purposes
+      {!shortenedUrl && <Separator orientation='vertical' className='hidden mb-24' />}
     </Flex>
   );
 }
