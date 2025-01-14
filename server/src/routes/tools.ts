@@ -23,7 +23,8 @@ tools_route.get('/tools/media-info', async (c) => {
     dumpSingleJson: true,
     noCheckCertificates: true,
     noWarnings: true,
-    preferFreeFormats: true
+    preferFreeFormats: true,
+    skipDownload: true
   });
 
   return c.json({

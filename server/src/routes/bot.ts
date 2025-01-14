@@ -193,7 +193,7 @@ bot_route.post('/bot/addtag', validateToken, validateSteamId, async (c) => {
   });
 });
 
-bot_route.delete(
+bot_route.post(
   '/bot/removetag',
   validateToken,
   validateSteamId,

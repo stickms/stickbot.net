@@ -7,7 +7,7 @@ function ApiReference() {
   return (
     <Flex className='items-center justify-center flex-col gap-y-20 pb-8'>
       <Flex className='mt-[20vh] flex-wrap items-center justify-center gap-y-6 text-center'>
-        <Text className='text-3xl w-full'>API Reference</Text>
+        <Text className='text-3xl w-full text-center'>API Reference</Text>
         <Code size='3'>{API_ENDPOINT}/</Code>
       </Flex>
 
@@ -65,7 +65,7 @@ function ApiReference() {
 
       <ApiEndpointInfo
         name='/bot/removetag/'
-        method='DELETE'
+        method='POST'
         queries={[
           {
             name: 'token',

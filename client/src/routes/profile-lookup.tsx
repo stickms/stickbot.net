@@ -41,7 +41,7 @@ function ProfileLookup() {
 
   return (
     <Flex className='flex-col items-center justify-center gap-y-24 md:max-h-screen'>
-      <Text className='mt-[20vh] text-3xl'>Steam Profile Lookup</Text>
+      <Text className='mt-[20vh] text-3xl text-center'>Steam Profile Lookup</Text>
       <Flex className='flex-wrap gap-4 items-center justify-center max-w-[80vw]'>
         <TextField.Root
           className='w-96 max-w-[80vw]'

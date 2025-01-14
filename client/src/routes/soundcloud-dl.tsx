@@ -278,7 +278,7 @@ function SoundcloudDl() {
 
   return (
     <Flex className='items-center justify-center flex-col gap-y-24'>
-      <Text className='mt-[20vh] text-3xl'>Soundcloud Downloader</Text>
+      <Text className='mt-[20vh] text-3xl text-center'>Soundcloud Downloader</Text>
 
       <Flex className='items-center justify-center gap-4'>
         <TextField.Root 
