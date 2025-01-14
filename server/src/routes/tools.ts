@@ -65,12 +65,8 @@ tools_route.get('/tools/soundcloud-dl', async (c) => {
     console.log(error);
   });
 
-  if (ext === 'mp3') {
-    c.header('Content-Type', 'audio/mpeg');
-  } else if (ext === 'opus') {
-    c.header('Content-Type', 'audio/opus');
-  }
 
+  c.header('Content-Type', 'application/octet-stream; charset=utf-8');
   c.header('Content-Disposition', `attachment; filename="audio.${ext}"`);
 
   return c.body(exec_process.stdout! as any as ReadableStream);

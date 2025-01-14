@@ -60,15 +60,11 @@ function MediaDownloader({ info }: { info?: MediaPayload }) {
           throw new Error();
         }
 
-        return Promise.all([resp.blob(), resp.headers.get('Content-Type')!]);
+        return resp.blob();
       })
-      .then((data) => {
-        const converted = new Blob([data[0]], {
-          type: data[1]
-        });
-
+      .then((blob) => {
         const a = document.createElement('a');
-        a.href = window.URL.createObjectURL(converted);
+        a.href = window.URL.createObjectURL(blob);
         a.download = `audio.${extension}`;
         document.body.appendChild(a);
         a.click();    
