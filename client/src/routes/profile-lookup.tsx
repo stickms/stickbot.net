@@ -1,7 +1,6 @@
 import {
   Flex,
   IconButton,
-  ScrollArea,
   TextField,
   Text
 } from '@radix-ui/themes';
@@ -40,8 +39,8 @@ function ProfileLookup() {
   };
 
   return (
-    <Flex className='flex-col items-center justify-center gap-y-24 md:max-h-screen'>
-      <Text className='mt-32 text-3xl text-center'>Steam Profile Lookup</Text>
+    <Flex className='flex-col items-center gap-y-20 min-h-screen'>
+      <Text className='mt-40 text-3xl text-center'>Steam Profile Lookup</Text>
       <Flex className='flex-wrap gap-4 items-center justify-center max-w-[80vw]'>
         <TextField.Root
           className='w-96 max-w-[80vw]'
@@ -60,23 +59,18 @@ function ProfileLookup() {
         </TextField.Root>
         <DiscordList />
       </Flex>
-      <ScrollArea
-        scrollbars='vertical'
-        type='auto'
-        className='w-[720px] max-w-[80vw] mb-6 md:mb-0'
-      >
-        <Flex className='items-center justify-center flex-col'>
-          {profiles.map((p, i) => {
-            return i >= 5 ? null : (
-              <SteamProfile
-                key={profiles.length - i}
-                steamid={p}
-                setDisabled={setDisabled}
-              />
-            );
-          })}
-        </Flex>
-      </ScrollArea>
+      <Flex className='items-center justify-center flex-col mb-4 max-w-[80vw]'>
+        {!profiles.length && <SteamProfile skeleton />}
+        {profiles.map((p, i) => {
+          return i >= 5 ? null : (
+            <SteamProfile
+              key={profiles.length - i}
+              steamid={p}
+              setDisabled={setDisabled}
+            />
+          );
+        })}
+      </Flex>
     </Flex>
   );
 }

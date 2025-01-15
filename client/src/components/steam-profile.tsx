@@ -17,8 +17,9 @@ import { $guildid } from '../lib/store';
 import { fetchGetJson, parseSteamID } from '../lib/util';
 
 type SteamProfileProps = {
-  steamid: string;
-  setDisabled: (disabled: boolean) => void;
+  steamid?: string;
+  setDisabled?: (disabled: boolean) => void;
+  skeleton?: boolean;
 };
 
 function SteamIdList({ summary }: { summary: SteamProfileSummary }) {
@@ -241,25 +242,10 @@ function Placeholder() {
 
   return (
     <Box className='min-w-36 flex-grow'>
-      <Box className='w-full'>
-        <Skeleton>
-          <Text size='2' weight='bold'>
-            PLACEHOLDER
-          </Text>
-        </Skeleton>
-      </Box>
-      <Box className='w-full whitespace-pre-line'>
-        {randomtext.map((text, i) => {
-          return (
-            <Skeleton>
-              <Text key={i} size='2'>
-                {text}
-                {'\n'}
-              </Text>
-            </Skeleton>
-          );
-        })}
-      </Box>
+      <Skeleton className='w-28 h-[17px] my-[6.5px]' />
+      <Skeleton className='w-28 h-[17px] my-[6.5px]' />
+      <Skeleton className='w-28 h-[17px] my-[6.5px]' />
+      <Skeleton className='w-28 h-[17px] my-[6.5px]' />
     </Box>
   );
 }
@@ -271,7 +257,7 @@ type TagList = {
   };
 };
 
-function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
+function SteamProfile({ steamid, setDisabled, skeleton }: SteamProfileProps) {
   const guildid = useStore($guildid);
 
   const [summary, setSummary] = useState<SteamProfileSummary>();
@@ -286,7 +272,7 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
       setTags(() => undefined);
       setError(() => undefined);
 
-      let query = steamid.trim();
+      let query = steamid!.trim();
 
       try {
         const url = new URL(query);
@@ -338,36 +324,34 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
       return summary_json['data'];
     };
 
+    if (skeleton) {
+      return;
+    }
+
     getPlayerData()
       .then((summ) => setSummary(summ))
       .catch((error) => setError(error))
-      .finally(() => setDisabled(false));
+      .finally(() => setDisabled!(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [steamid, guildid]);
 
   return (
-    <Card className='my-2 min-h-[300px] w-[calc(100%-32px)]'>
+    <Card className='my-2 min-h-[300px] w-[680px]'>
       {error && (
-        <Box>
-          <Box className='w-full'>
-            <Text size='3' weight='bold' color='ruby'>
-              ❌ Error
-            </Text>
-          </Box>
+        <Box className='whitespace-pre-line'>
+          <Text size='3' weight='bold' color='ruby'>
+            ❌ Error{'\n'}
+          </Text>
           <Text size='3'>{error.toString()}</Text>
         </Box>
       )}
 
       {!error && !summary && (
         <Flex className='gap-3 items-start'>
-          <Skeleton className='w-10 h-10 ' />
+          <Skeleton className='size-20 flex-shrink-0' />
           <Box>
             <Box className='w-full'>
-              <Skeleton>
-                <Text size='3' weight='bold'>
-                  SETAM USER
-                </Text>
-              </Skeleton>
+              <Skeleton className='w-40 h-[19px] mb-1' />
             </Box>
             <Flex className='gap-5 flex-wrap'>
               <Placeholder />
@@ -381,7 +365,7 @@ function SteamProfile({ steamid, setDisabled }: SteamProfileProps) {
 
       {!error && summary && (
         <Flex className='gap-3 items-start'>
-          <Avatar src={summary.avatarfull} fallback='T' />
+          <Avatar src={summary.avatarfull} fallback='T' size='6' />
           <Box>
             <Box className='w-full'>
               <Link
