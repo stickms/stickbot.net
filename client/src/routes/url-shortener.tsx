@@ -128,7 +128,7 @@ function UrlShortener() {
         </Flex>
       )}
 
-      // For padding purposes
+      {/* For padding purposes */}
       {!shortenedUrl && <Separator orientation='vertical' className='hidden mb-24' />}
     </Flex>
   );
