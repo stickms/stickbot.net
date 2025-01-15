@@ -1,5 +1,5 @@
-import { Avatar, Button, DropdownMenu, Flex, Link } from '@radix-ui/themes';
-import { DiscordLogoIcon } from '@radix-ui/react-icons';
+import { Avatar, Button, DropdownMenu, Flex, IconButton, Link } from '@radix-ui/themes';
+import { DiscordLogoIcon, GitHubLogoIcon } from '@radix-ui/react-icons';
 import { API_ENDPOINT } from '../env';
 import { useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
@@ -60,14 +60,23 @@ function Header() {
   return (
     <Flex className='fixed top-0 w-full justify-between items-center z-50 bg-inherit'>
       {/* Left */}
-      <Flex className='pl-6 py-4'>
+      <Flex className='pl-6 py-4 items-center'>
         <Link asChild color='gray' highContrast underline='hover'>
           <NavLink to='/'>Stickbot.net</NavLink>
         </Link>
       </Flex>
 
       {/* Right */}
-      <Flex className='pr-6 py-4'>
+      <Flex className='pr-6 py-4 gap-4 items-center'>
+        <Link
+          href="https://github.com/stickms/stickbot.net"
+          target='_blank'
+          rel='noopener noreferrer'
+        >
+          <IconButton variant='surface'>
+            <GitHubLogoIcon />
+          </IconButton>
+        </Link>
         <DiscordLogin />
       </Flex>
     </Flex>
