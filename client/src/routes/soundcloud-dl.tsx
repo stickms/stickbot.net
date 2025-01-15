@@ -1,5 +1,5 @@
 import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
-import { Flex, IconButton, Link, Text, TextField, Card, Separator, Select, Button, Tooltip } from "@radix-ui/themes";
+import { Flex, IconButton, Link, Text, TextField, Card, Separator, Select, Button, Tooltip, Skeleton } from "@radix-ui/themes";
 import { useEffect, useState } from "react";
 import { API_ENDPOINT } from "../env";
 import { fetchGetJson } from "../lib/util";
@@ -110,7 +110,24 @@ function MediaDownloader({ info }: { info?: MediaPayload }) {
 
 function MediaPreview({ info }: { info?: MediaPayload }) {
   if (!info) {
-    return null;
+    return (
+      <Card className='flex p-4 items-stretch justify-center gap-4 max-w-[80vw] flex-wrap'>
+        <Skeleton className='size-52' />
+
+        <Flex className='gap-4 flex-col max-w-[30rem] justify-between'>
+          <Flex className='gap-2 flex-col'>
+            <Skeleton className='w-full h-7' />
+            <Skeleton className='w-full h-6' />
+            <Skeleton className='w-full h-5' />
+          </Flex>
+
+          <Flex className='flex-col gap-2'>
+            <Skeleton className='w-72 h-8' />
+            <Skeleton className='w-40 h-8' />
+          </Flex>
+        </Flex>
+      </Card>
+    );
   }
 
   const uploadDate = () => {
@@ -134,7 +151,7 @@ function MediaPreview({ info }: { info?: MediaPayload }) {
   }
 
   return (
-    <Card className='flex p-4 items-stretch justify-center gap-4 max-w-[80vw] flex-wrap mb-8'>
+    <Card className='flex p-4 items-stretch justify-center gap-4 max-w-[80vw] flex-wrap'>
       <img
         className='h-52 object-contain rounded-lg'
         src={info.thumbnail}
@@ -250,28 +267,30 @@ function SoundcloudDl() {
   };
 
   return (
-    <Flex className='items-center justify-center flex-col gap-y-24'>
-      <Text className='mt-[20vh] text-3xl text-center'>Soundcloud Downloader</Text>
+    <Flex className='items-center justify-center min-h-screen'>
+      <Flex className='my-16 items-center justify-center flex-col gap-y-24'>
+        <Text className='text-3xl text-center'>Soundcloud Downloader</Text>
 
-      <Flex className='items-center justify-center gap-4'>
-        <TextField.Root 
-          className='w-96 max-w-[80vw]'
-          placeholder='Enter Soundcloud url...'
-          maxLength={128}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={handleKeyPress}
-          disabled={loading}
-        >
-          <TextField.Slot side='right'>
-            <IconButton variant='ghost' onClick={handleSearch}>
-              <MagnifyingGlassIcon />
-            </IconButton>
-          </TextField.Slot>
-        </TextField.Root>
+        <Flex className='items-center justify-center gap-4'>
+          <TextField.Root 
+            className='w-96 max-w-[80vw]'
+            placeholder='Enter Soundcloud url...'
+            maxLength={128}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={handleKeyPress}
+            disabled={loading}
+          >
+            <TextField.Slot side='right'>
+              <IconButton variant='ghost' onClick={handleSearch}>
+                <MagnifyingGlassIcon />
+              </IconButton>
+            </TextField.Slot>
+          </TextField.Root>
+        </Flex>
+
+        <MediaPreview info={mediaInfo} />
       </Flex>
-
-      <MediaPreview info={mediaInfo} />
     </Flex>
   );
 }

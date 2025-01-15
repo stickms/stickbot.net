@@ -70,7 +70,7 @@ function QrCode({ data }: { data?: string }) {
 
 
   return (
-    <Card className='flex p-4 items-stretch justify-center gap-4 max-w-[80vw] flex-wrap mb-8'>
+    <Card className='flex p-4 items-stretch justify-center gap-4 max-w-[80vw] flex-wrap'>
       {!generated && <Skeleton className='w-72 h-72' />}
 
       <img
@@ -173,20 +173,22 @@ function QrCodeGenerator() {
   const [data, setData] = useState<string>();
 
   return (
-    <Flex className='items-center justify-center flex-col gap-y-16'>
-      <Text className='mt-[20vh] text-3xl text-center'>QR Code Generator</Text>
+    <Flex className='items-center justify-center min-h-screen'>
+      <Flex className='my-16 items-center justify-center flex-col gap-y-16'>
+        <Text className='text-3xl text-center'>QR Code Generator</Text>
 
-      <Flex className='items-center justify-center gap-4'>
-        <TextField.Root 
-          className='w-96 max-w-[80vw]'
-          placeholder='Enter text or url...'
-          maxLength={128}
-          value={data}
-          onChange={(e) => setData(e.target.value)}
-        />
+        <Flex className='items-center justify-center gap-4'>
+          <TextField.Root 
+            className='w-96 max-w-[80vw]'
+            placeholder='Enter text or url...'
+            maxLength={128}
+            value={data}
+            onChange={(e) => setData(e.target.value)}
+          />
+        </Flex>
+
+        <QrCode data={data} />
       </Flex>
-
-      <QrCode data={data} />
     </Flex>
   );
 }

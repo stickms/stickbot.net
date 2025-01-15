@@ -1,5 +1,5 @@
 import { ArrowRightIcon, CopyIcon } from "@radix-ui/react-icons";
-import { Flex, IconButton, Link, Select, Separator, Text, TextField, Tooltip } from "@radix-ui/themes";
+import { Flex, IconButton, Link, Select, Separator, Skeleton, Text, TextField, Tooltip } from "@radix-ui/themes";
 import { useState } from "react";
 import { API_ENDPOINT } from "../env";
 import { fetchGetJson } from "../lib/util";
@@ -66,70 +66,71 @@ function UrlShortener() {
   };
 
   return (
-    <Flex className='items-center justify-center flex-col gap-y-24'>
-      <Text className='mt-[20vh] text-3xl text-center'>URL Shortener</Text>
+    <Flex className='items-center justify-center min-h-screen'>
+      <Flex className='items-center justify-center my-16 flex-col gap-y-24'>
+        <Text className='mt-16 text-3xl text-center'>URL Shortener</Text>
 
-      <Flex className='items-center justify-center gap-4 max-w-[80vw]'>
-        <TextField.Root 
-          className='w-96 max-w-[80vw]'
-          placeholder='Enter url...'
-          maxLength={256}
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          onKeyDown={handleKeyPress}
-          disabled={loading}
-        >
-          <TextField.Slot side='right'>
-            <IconButton
-              variant='ghost'
-              onClick={shortenUrl}
-              loading={loading}
-            >
-              <ArrowRightIcon />
-            </IconButton>
-          </TextField.Slot>
-        </TextField.Root>
-        
-        <Select.Root value={expires} onValueChange={setExpires}>
-          <Tooltip content='Link Expires After'>
-            <Select.Trigger />
-          </Tooltip>
-          <Select.Content>
-            <Select.Group>
-              <Select.Label>Expires After</Select.Label>
-              <Select.Item value='1'>1 day</Select.Item>
-              <Select.Item value='7'>1 week</Select.Item>
-              <Select.Item value='30'>1 month</Select.Item>
-              <Select.Item value='365'>1 year</Select.Item>
-              <Select.Item value='never'>Never</Select.Item>
-            </Select.Group>
-          </Select.Content>
-        </Select.Root>
-      </Flex>
-
-      {shortenedUrl && (
-        <Flex className='gap-2 items-center justify-center mb-24'>
-          <Link
-            href={shortenedUrl}
-            target='_blank'
-            rel='noopener noreferrer'
+        <Flex className='items-center justify-center gap-4 max-w-[80vw]'>
+          <TextField.Root 
+            className='w-96 max-w-[80vw]'
+            placeholder='Enter url to shorten...'
+            maxLength={256}
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            onKeyDown={handleKeyPress}
+            disabled={loading}
           >
-            {shortenedUrl}
-          </Link>
+            <TextField.Slot side='right'>
+              <IconButton
+                variant='ghost'
+                onClick={shortenUrl}
+                loading={loading}
+              >
+                <ArrowRightIcon />
+              </IconButton>
+            </TextField.Slot>
+          </TextField.Root>
+          
+          <Select.Root value={expires} onValueChange={setExpires}>
+            <Tooltip content='Link Expires After'>
+              <Select.Trigger />
+            </Tooltip>
+            <Select.Content>
+              <Select.Group>
+                <Select.Label>Expires After</Select.Label>
+                <Select.Item value='1'>1 day</Select.Item>
+                <Select.Item value='7'>1 week</Select.Item>
+                <Select.Item value='30'>1 month</Select.Item>
+                <Select.Item value='365'>1 year</Select.Item>
+                <Select.Item value='never'>Never</Select.Item>
+              </Select.Group>
+            </Select.Content>
+          </Select.Root>
+        </Flex>
+
+        <Flex className='gap-2 items-center justify-center mb-16'>
+          <Skeleton loading={!shortenedUrl}>
+            <Link
+              href={shortenedUrl}
+              target='_blank'
+              rel='noopener noreferrer'
+            >
+              {/* Placeholder until skeleton disappears */}
+              {shortenedUrl ?? 'GENERATED LINK HERE'}
+            </Link>
+          </Skeleton>
           <Separator orientation='vertical' />
           <Tooltip content='Copy Link'>
             <IconButton
               variant='outline'
-              onClick={() => navigator.clipboard.writeText(shortenedUrl)}
+              onClick={() => shortenedUrl && navigator.clipboard.writeText(shortenedUrl)}
+              disabled={!shortenedUrl}
             >
               <CopyIcon />
             </IconButton>
           </Tooltip>
         </Flex>
-      )}
-
-      {/* For padding purposes */}
-      {!shortenedUrl && <Separator orientation='vertical' className='hidden mb-24' />}
+      </Flex>
     </Flex>
   );
 }
