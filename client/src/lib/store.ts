@@ -7,7 +7,12 @@ const default_user: UserType = {
   id: '',
   username: '',
   token_guild: '',
-  is_admin: false
+  is_admin: false,
+  sync: {
+    room: '',
+    is_host: false,
+    is_leader: false
+  }
 };
 
 export const $user = persistentMap<UserType>('user:', default_user, {
@@ -22,8 +27,8 @@ export const $guilds = persistentAtom<GuildType[]>('guilds:', [], {
 
 export const $guildid = atom<string>('');
 
-export function setUser(user: UserType) {
-  $user.set(user);
+export function setUser(user: Partial<UserType>) {
+  $user.set({ ...$user.get(), ...user });
 }
 
 export function clearUser() {

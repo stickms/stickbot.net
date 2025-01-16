@@ -14,6 +14,7 @@ import oauth_route from './routes/oauth.js';
 import bot_route from './routes/bot.js';
 import tools_route from './routes/tools.js';
 import admin_route from './routes/admin.js';
+import sync_route, { injectWebSocket } from './routes/sync.js';
 
 const app = new Hono<Context>();
 
@@ -43,6 +44,7 @@ app.route('/', oauth_route);
 app.route('/', bot_route);
 app.route('/', tools_route);
 app.route('/', admin_route);
+app.route('/', sync_route);
 
 app.onError((error, c) => {
   if (error instanceof OAuth2RequestError) {
@@ -77,7 +79,9 @@ app.onError((error, c) => {
 const port = parseInt(API_PORT);
 console.log(`Server is running on port ${port}`);
 
-serve({
+const server = serve({
   fetch: app.fetch,
   port
 });
+
+injectWebSocket(server);

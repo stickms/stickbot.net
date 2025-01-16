@@ -16,6 +16,8 @@ import SoundcloudDl from './routes/soundcloud-dl.tsx';
 import QrCodeGenerator from './routes/qr-code-generator.tsx';
 import UrlShortener from './routes/url-shortener.tsx';
 import OpenUrl from './routes/open-url.tsx';
+import WatchTogether from './routes/watch-together.tsx';
+import SyncRoom from './routes/sync-room.tsx';
 
 import '@radix-ui/themes/styles.css';
 import './index.css';
@@ -32,6 +34,8 @@ createRoot(document.getElementById('root')!).render(
           <Route path='/url-shortener' element={<UrlShortener />} />
           <Route path='/qr-code-generator' element={<QrCodeGenerator />} />
           <Route path='/soundcloud-dl' element={<SoundcloudDl />} />
+          <Route path='/watch-together' element={<WatchTogether />} />
+          <Route path='/sync/room/:roomid' element={<SyncRoom />} />
           <Route path='/admin-portal' element={<AdminPortal />} />
           <Route path='/openprofile/:id' element={<OpenProfile />} />
           <Route path='/l/:id' element={<OpenUrl />} />

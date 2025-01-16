@@ -59,7 +59,7 @@ function ProfileLookup() {
         </TextField.Root>
         <DiscordList />
       </Flex>
-      <Flex className='items-center justify-center flex-col mb-4 max-w-[80vw]'>
+      <Flex className='items-center justify-center flex-col mb-4'>
         {!profiles.length && <SteamProfile skeleton />}
         {profiles.map((p, i) => {
           return i >= 5 ? null : (

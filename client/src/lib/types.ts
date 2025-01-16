@@ -5,6 +5,12 @@ export type UserType = {
   username: string;
   token_guild: string;
   is_admin: boolean;
+
+  sync: {
+    room: string;
+    is_host: boolean;
+    is_leader: boolean;
+  }
 };
 
 export type GuildType = {
@@ -12,6 +18,21 @@ export type GuildType = {
   id: string;
   name: string;
 };
+
+export type SyncRoom = {
+  id: string;
+  name: string;
+  host: string;
+  leaders: string[];
+  users: string[];
+
+  meta: {
+    queue: string[];
+    curtime: number;
+    playing: boolean;
+    messages: string[];
+  }
+}
 
 // Steam Types
 

@@ -19,6 +19,9 @@ function Root() {
           <NavLink to='/soundcloud-dl'>Soundcloud Downloader</NavLink>
         </Link>
         <Link asChild>
+          <NavLink to='/watch-together'>Watch Together (WIP)</NavLink>
+        </Link>
+        <Link asChild>
           <NavLink to='/api-reference'>API & Reference</NavLink>
         </Link>
       </Flex>

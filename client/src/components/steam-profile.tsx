@@ -336,7 +336,7 @@ function SteamProfile({ steamid, setDisabled, skeleton }: SteamProfileProps) {
   }, [steamid, guildid]);
 
   return (
-    <Card className='my-2 min-h-[300px] w-[680px]'>
+    <Card className='my-2 min-h-[300px] w-[680px] max-w-[80vw]'>
       {error && (
         <Box className='whitespace-pre-line'>
           <Text size='3' weight='bold' color='ruby'>
