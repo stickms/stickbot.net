@@ -288,8 +288,8 @@ function SyncRoom() {
   }
 
   return (
-    <Flex className='items-center justify-center min-h-screen'>
-      <Flex className='my-32 mx-[5vw] items-center justify-center gap-12 flex-wrap-reverse'>
+    <Flex className='items-start justify-center min-h-screen'>
+      <Flex className='mt-16 md:mt-40 mb-8 mx-12 items-end justify-center gap-12 flex-wrap-reverse'>
         {/* Chat */}
         <Card className='flex flex-wrap w-[600px] max-w-[80vw] h-[400px] p-1'>
           {/* User List */}
