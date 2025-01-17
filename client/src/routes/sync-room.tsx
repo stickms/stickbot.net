@@ -1,6 +1,6 @@
 import { Box, Card, Flex, IconButton, Link, ScrollArea, Separator, Text, TextField } from "@radix-ui/themes";
 import { MutableRefObject, useCallback, useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { type SyncRoom } from "../lib/types";
 import { API_ENDPOINT } from "../env";
 import { fetchGetJson } from "../lib/util";
@@ -42,10 +42,11 @@ function SyncRoom() {
   const { user } = useAuth();
   const { roomid } = useParams();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const webSocket = useRef<WebSocket | null>(null);
-  const [room, setRoom] = useState<SyncRoom | null>();
 
+  const [room, setRoom] = useState<SyncRoom | null>();
   const [playing, setPlaying] = useState<boolean>(false);
 
   const player = useRef<ReactPlayer>(null);
@@ -203,11 +204,8 @@ function SyncRoom() {
   });
   
   if (room === null) {
-    return (
-      <Flex className='items-center justify-center min-h-screen'>
-        <Text className='text-3xl'>Room Not Found</Text>
-      </Flex>
-    );
+    navigate('/watch-together');
+    return null;
   }
 
   if (!room) {
