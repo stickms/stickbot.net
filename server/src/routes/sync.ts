@@ -5,6 +5,7 @@ import type { Context } from "../lib/context.js";
 import { authGuard } from "../middleware/auth-guard.js";
 import { HTTPException } from "hono/http-exception";
 import { SITE_ADMIN_IDS } from "../env.js";
+import { encodeBase64urlNoPadding } from "@oslojs/encoding";
 
 const sync_route = new Hono<Context>();
 
@@ -212,7 +213,42 @@ sync_route.get('/sync/rooms/:roomid', authGuard, async (c) => {
 });
 
 sync_route.post('/sync/rooms/create', authGuard, async (c) => {
+  const user = c.get('user')!;
+  const { name } = await c.req.json();
 
+  if (!name) {
+    throw new HTTPException(400, {
+      message: 'Please specify a name'
+    });
+  }
+
+  const bytes = new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+
+  const room: SyncRoom = {
+    id: encodeBase64urlNoPadding(bytes),
+    host: user.id,
+    leaders: [],
+    name: name,
+
+    meta: {
+      queue: [],
+      start_time: 0,
+      stop_time: 0,
+      playing: false,
+      messages: [],
+    }
+  }
+
+  rooms = [ room, ...rooms ];
+
+  return c.json({
+    success: true,
+    data: {
+      room,
+      roomid: room.id
+    }
+  });
 });
 
 sync_route.post('/sync/rooms/:roomid/join', authGuard, async (c) => {
