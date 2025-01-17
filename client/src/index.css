@@ -13,3 +13,23 @@
 	--cursor-slider-thumb-active: grabbing;
 	--cursor-switch: pointer;
 }
+
+/* Credits: https://github.com/radix-ui/themes/pull/622 */
+.rt-TextAreaInput {
+	/* Remove outline on Firefox */
+	@supports (-moz-appearance: none) {
+		&:focus {
+			outline: none;
+		}
+	}
+}
+
+.rt-TextFieldInput {
+	/* Remove outline on Firefox */
+	@supports (-moz-appearance: none) {
+		&:focus {
+			outline: none;
+		}
+	}
+}
+

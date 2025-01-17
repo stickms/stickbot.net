@@ -10,16 +10,16 @@ function Root() {
           <NavLink to='/lookup'>Steam Profile Lookup</NavLink>
         </Link>
         <Link asChild>
-          <NavLink to='/url-shortener'>URL Shortener</NavLink>
-        </Link>
-        <Link asChild>
-          <NavLink to='/qr-code-generator'>QR Code Generator</NavLink>
+          <NavLink to='/watch-together'>Watch Together (WIP)</NavLink>
         </Link>
         <Link asChild>
           <NavLink to='/soundcloud-dl'>Soundcloud Downloader</NavLink>
         </Link>
         <Link asChild>
-          <NavLink to='/watch-together'>Watch Together (WIP)</NavLink>
+          <NavLink to='/url-shortener'>URL Shortener</NavLink>
+        </Link>
+        <Link asChild>
+          <NavLink to='/qr-code-generator'>QR Code Generator</NavLink>
         </Link>
         <Link asChild>
           <NavLink to='/api-reference'>API & Reference</NavLink>

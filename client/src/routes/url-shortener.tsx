@@ -1,6 +1,6 @@
 import { ArrowRightIcon, CopyIcon } from "@radix-ui/react-icons";
 import { Flex, IconButton, Link, Select, Separator, Skeleton, Text, TextField, Tooltip } from "@radix-ui/themes";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { API_ENDPOINT } from "../env";
 import { fetchGetJson } from "../lib/util";
 import useToast from "../hooks/use-toast";
@@ -8,13 +8,18 @@ import useToast from "../hooks/use-toast";
 function UrlShortener() {
   const { toast } = useToast();
 
-  const [ url, setUrl ] = useState<string>('');
+  const url_input = useRef<HTMLInputElement>(null);
+
   const [ loading, setLoading ] = useState<boolean>(false);
   const [ shortenedUrl, setShortenedUrl ] = useState<string>();
   const [ expires, setExpires ] = useState<string>('7');
 
   const shortenUrl = () => {
-    const parse = URL.parse(url);
+    if (!url_input.current) {
+      return;
+    }
+
+    const parse = URL.parse(url_input.current.value.trim());
 
     if (!parse) {
       toast({
@@ -37,7 +42,7 @@ function UrlShortener() {
     setLoading(true);
 
     const params = new URLSearchParams({
-      url,
+      url: parse.toString(),
       expires
     });
 
@@ -58,26 +63,18 @@ function UrlShortener() {
       .finally(() => setLoading(false));
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.stopPropagation();
-      shortenUrl();
-    }
-  };
-
   return (
     <Flex className='items-center justify-center min-h-screen'>
       <Flex className='items-center justify-center my-16 flex-col gap-y-24'>
         <Text className='mt-16 text-3xl text-center'>URL Shortener</Text>
 
         <Flex className='items-center justify-center gap-4 max-w-[80vw]'>
-          <TextField.Root 
+          <TextField.Root
+            ref={url_input}
             className='w-96 max-w-[80vw]'
             placeholder='Enter url to shorten...'
             maxLength={256}
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            onKeyDown={handleKeyPress}
+            onKeyDown={(e) => e.key === 'Enter' && shortenUrl()}
             disabled={loading}
           >
             <TextField.Slot side='right'>

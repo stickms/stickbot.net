@@ -1,6 +1,6 @@
 import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
 import { Flex, IconButton, Link, Text, TextField, Card, Separator, Select, Button, Tooltip, Skeleton } from "@radix-ui/themes";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { API_ENDPOINT } from "../env";
 import { fetchGetJson } from "../lib/util";
 import { type Payload } from 'youtube-dl-exec';
@@ -214,12 +214,19 @@ function MediaPreview({ info }: { info?: MediaPayload }) {
 function SoundcloudDl() {
   const { toast } = useToast();
 
-  const [query, setQuery] = useState<string>('');
+  const url_input = useRef<HTMLInputElement>(null);
+
   const [loading, setLoading] = useState<boolean>(false);
   const [mediaInfo, setMediaInfo] = useState<MediaPayload>();
 
   const handleSearch = () => {
-    if (!query.trim()) {
+    if (!url_input.current) {
+      return;
+    }
+
+    const query = url_input.current.value.trim();
+
+    if (!query) {
       toast({
         title: 'Error looking up soundcloud link',
         description: 'Please specify a search query'
@@ -231,7 +238,7 @@ function SoundcloudDl() {
     setMediaInfo(() => undefined);
     setLoading(() => true);
 
-    fetch(`${API_ENDPOINT}/tools/media-info?query=${query.trim()}`, 
+    fetch(`${API_ENDPOINT}/tools/media-info?query=${query}`, 
       { credentials: 'include' }
     )
       .then(fetchGetJson)
@@ -255,26 +262,18 @@ function SoundcloudDl() {
       .finally(() => setLoading(() => false));
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.stopPropagation();
-      handleSearch();
-    }
-  };
-
   return (
     <Flex className='items-center justify-center min-h-screen'>
       <Flex className='my-16 items-center justify-center flex-col gap-y-24'>
         <Text className='text-3xl text-center'>Soundcloud Downloader</Text>
 
         <Flex className='items-center justify-center gap-4'>
-          <TextField.Root 
+          <TextField.Root
+            ref={url_input}
             className='w-96 max-w-[80vw]'
             placeholder='Enter Soundcloud url...'
             maxLength={128}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={handleKeyPress}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             disabled={loading}
           >
             <TextField.Slot side='right'>
