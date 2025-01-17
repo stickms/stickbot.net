@@ -94,18 +94,11 @@ function SyncRoom() {
                 }
               });
             }
-    
-            if (message.join) {
+
+            if (message.users) {
               setRoom((rm) => !rm ? rm : {
                 ...rm,
-                users: [ ...rm.users, message.user ]
-              });
-            }
-    
-            if (message.leave) {
-              setRoom((rm) => !rm ? rm : {
-                ...rm,
-                users: rm.users.filter((user) => !user.startsWith(message.user))
+                users: message.users
               });
             }
     

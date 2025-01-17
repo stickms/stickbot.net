@@ -28,7 +28,6 @@ type SyncRoom = {
   name: string;
   host: string;
   leaders: string[];
-  users: string[];      // id:username
 
   meta: {
     queue: string[];
@@ -45,7 +44,6 @@ let rooms: SyncRoom[] = [{
   name: 'Sync Room Test',
   host: SITE_ADMIN_IDS.split(',')[0],
   leaders: [],
-  users: [],
   meta: {
     queue: [],
     start_time: Date.now(),
@@ -66,33 +64,26 @@ function handleJoinLeave(source: SyncClient | undefined, message: any) {
     return;
   }
 
-  if (message.join) {
-    if (room.users.includes(message.user)) {
-      return;
-    }
+  let users = clients
+    .filter((client) => (
+      !!client.id && client.room === room.id
+    ))
+    .map((client) => `${client.id}:${client.username}`);
   
-    rooms = rooms.map((room) => {
-      return room.id !== source.room ? room : { 
-        ...room, 
-        users: [ ...room.users, message.user ]
-      };
-    });
+  if (message.join) {
+    users.push(message.user);
   } else {
-    rooms = rooms.map((room) => {
-      return room.id !== source.room ? room : { 
-        ...room, 
-        users: room.users.filter((user) => !user.startsWith(message.user))
-      };
-    });
+    const index = users.findIndex((user) => user.startsWith(message.user));
+    users.splice(index, 1)
   }
+
+  users = [ ...new Set(users) ];
 
   clients
     .filter((client) => client.room === source.room)
     .forEach((client) => client.ws.send(JSON.stringify({
       source: source.id,
-      join: message.join,       // One of these
-      leave: message.leave,     // should be undefined
-      user: message.user
+      users
     })));
 }
 
@@ -149,9 +140,6 @@ sync_route.get('/sync/ws', upgradeWebSocket((c) => {
       const message = JSON.parse(event.data.toString());
 
       if (message.id) {
-        // Prevent duplicate clients
-        clients = clients.filter((client) => client.id !== message.id);
-
         clients = clients.map((client) => {
           return client.ws !== ws ? client : {
             ...client,
@@ -175,15 +163,6 @@ sync_route.get('/sync/ws', upgradeWebSocket((c) => {
       }
     },
     onClose(event, ws) {
-      const source = clients.find((client) => client.ws === ws);
-
-      rooms = rooms.map((room) => {
-        return room.id !== source?.id ? room : {
-          ...room,
-          users: room.users.filter((user) => user !== source.id)
-        }
-      })
-
       clients = clients.filter((client) => client.ws !== ws);
     }
   }
@@ -211,10 +190,17 @@ sync_route.get('/sync/rooms/:roomid', authGuard, async (c) => {
     });
   }
 
+  let users = clients
+    .filter((client) => !!client.id && client.room === room.id)
+    .map((client) => `${client.id}:${client.username}`);
+
+  users = [ ...new Set(users) ];
+
   return c.json({
     success: true,
     data: {
       ...room,
+      users,
       meta: {
         ...room.meta,
         curtime: room.meta.stop_time ?? Math.floor((Date.now() - room.meta.start_time) / 1000)
