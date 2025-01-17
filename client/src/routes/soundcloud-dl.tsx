@@ -70,27 +70,23 @@ function MediaDownloader({ info }: { info?: MediaPayload }) {
 
         <Select.Content>
           {
-            extensions.map((ext) => {
-              return (
-                <Select.Group key={ext}>
-                  <Select.Label>{ext.toUpperCase()}</Select.Label>
-                  {
-                    info.formats
-                      .filter((fmt) => fmt.ext === ext)
-                      .map((fmt) => {
-                        return (
-                          <Select.Item
-                            key={fmt.format_id}
-                            value={`${ext}:${fmt.format_id}`}
-                          >
-                            {fmt.abr} kbps ({fmt.format_id})
-                          </Select.Item>
-                        );
-                      })
-                  }
-                </Select.Group>
-              );
-            })
+            extensions.map((ext) => (
+              <Select.Group key={ext}>
+                <Select.Label>{ext.toUpperCase()}</Select.Label>
+                {
+                  info.formats
+                    .filter((fmt) => fmt.ext === ext)
+                    .map((fmt) => (
+                      <Select.Item
+                        key={fmt.format_id}
+                        value={`${ext}:${fmt.format_id}`}
+                      >
+                        {fmt.abr} kbps ({fmt.format_id})
+                      </Select.Item>
+                    ))
+                }
+              </Select.Group>
+            ))
           }
         </Select.Content>
 

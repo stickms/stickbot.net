@@ -114,8 +114,14 @@ function handlePlayPause(source: SyncClient | undefined, message: any) {
     })));
 }
 
-function handleChat(source: SyncClient | undefined, message: any) {
+function handleSkip(source: SyncClient | undefined, message: any) {
   if (!source?.room) {
+    return;
+  }
+
+  const room = rooms.find((room) => room.id === source.room);
+
+  if (!room || room.host !== source.id) {
     return;
   }
 
@@ -156,10 +162,6 @@ sync_route.get('/sync/ws', upgradeWebSocket((c) => {
 
       if (message.play || message.pause) {
         handlePlayPause(source, message);
-      }
-      
-      if (message.chat) {
-        handleChat(source, message);
       }
     },
     onClose(event, ws) {
@@ -274,7 +276,7 @@ sync_route.post('/sync/rooms/:roomid/message', authGuard, async (c) => {
 sync_route.post('/sync/rooms/:roomid/queue', authGuard, async (c) => {
   const user = c.get('user')!;
   const roomid = c.req.param('roomid');
-  const { add, remove } = await c.req.json();
+  const { add, remove, auth } = await c.req.json();
 
   if (!add && !remove) {
     throw new HTTPException(400, {

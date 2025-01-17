@@ -54,6 +54,10 @@ function SyncRoom() {
   const chat_box = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    if (webSocket.current) {
+      return;
+    }
+
     fetch(`${API_ENDPOINT}/sync/rooms/${roomid}`, {
       credentials: 'include'
     })
@@ -242,6 +246,23 @@ function SyncRoom() {
     }));
   };
 
+  const onFinished = () => {
+    if (!player.current || !player.current.getCurrentTime()) {
+      return;
+    }
+
+    if (room.host !== user.id) {
+      return;
+    }
+
+    webSocket.current?.send(JSON.stringify({
+      play: true,
+      curtime: 0
+    }));
+
+    queueRemove(0);
+  }
+
   const queueAdd = () => {
     if (!media_queue.current) {
       return;
@@ -337,9 +358,9 @@ function SyncRoom() {
 
           {/* Messages */}
           <Box className='h-[90%] basis-[67%] p-1 flex-grow'>
-            <ScrollArea ref={message_area} type='always' scrollbars='vertical' className='pr-3 whitespace-pre-line break-all'>
+            <ScrollArea ref={message_area} type='always' scrollbars='vertical' className='pr-3 whitespace-pre-line'>
               {room.meta.messages.map((msg, i) => (
-                <Text key={i} className='text-sm'>
+                <Text key={i} className='text-sm break-all'>
                   {msg.substring(0, msg.indexOf(':'))}
                   <Text color='gray'>
                     {msg.substring(msg.indexOf(':')) + '\n'}
@@ -370,7 +391,7 @@ function SyncRoom() {
         </Card>
 
         {/* Media Player */}
-        <Flex className='flex-col gap-2'>
+        <Flex className='flex-col gap-2 max-w-[min(80vw,_600px)]'>
           {/* Player */}
           <ReactPlayer
             style={{backgroundColor: 'var(--gray-2)', outline: 'none'}}
@@ -385,6 +406,9 @@ function SyncRoom() {
             onReady={onReady}
             onPlay={onPlay}
             onPause={onPause}
+
+            onEnded={onFinished}
+            onError={(e) => console.log(e)}
           />
 
           {/* URL Entry */}
@@ -411,9 +435,9 @@ function SyncRoom() {
                 <Text className='text-sm text-center'>Media Queue</Text>
                 <Separator size='4' />
                 {room.meta.queue.map((entry, i) => (
-                  <Flex key={Math.random().toString()} className='items-center justify-evenly flex-grow'>
+                  <Flex key={Math.random().toString()} className='items-center justify-evenly gap-2'>
                     <Link 
-                      className='text-xs text-center'
+                      className='text-xs text-center break-all'
                       href={entry}
                     >
                       {i + 1}. {entry}

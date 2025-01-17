@@ -45,14 +45,12 @@ function SteamIdList({ summary }: { summary: SteamProfileSummary }) {
         </Text>
       </Box>
       <Box className='w-full whitespace-pre-line'>
-        {idlist.map((id) => {
-          return (
-            <Text key={id} size='2'>
-              {id}
-              {'\n'}
-            </Text>
-          );
-        })}
+        {idlist.map((id) => (
+          <Text key={id} size='2'>
+            {id}
+            {'\n'}
+          </Text>
+        ))}
       </Box>
     </Box>
   );
@@ -90,12 +88,10 @@ function AlertList({
     }
   ]
     .filter((x) => x.valid)
-    .map((x) => {
-      return {
-        color: 'red',
-        text: x.label
-      };
-    });
+    .map((x) => ({
+      color: 'red',
+      text: x.label
+    }));
 
   alertlist.push(...banlist);
 
@@ -139,18 +135,16 @@ function AlertList({
         </Text>
       </Box>
       <Box className='w-full whitespace-pre-line'>
-        {alertlist.map((alert) => {
-          return (
-            <Box className='w-full' key={alert.text}>
-              <Badge
-                size='2'
-                color={alert.color as ComponentProps<typeof Badge>['color']}
-              >
-                {alert.text}
-              </Badge>
-            </Box>
-          );
-        })}
+        {alertlist.map((alert) => (
+          <Box className='w-full' key={alert.text}>
+            <Badge
+              size='2'
+              color={alert.color as ComponentProps<typeof Badge>['color']}
+            >
+              {alert.text}
+            </Badge>
+          </Box>
+        ))}
       </Box>
     </Box>
   );
@@ -173,20 +167,18 @@ function QuickLinks({ summary }: { summary: SteamProfileSummary }) {
         </Text>
       </Box>
       <Box className='w-full whitespace-pre-line'>
-        {Object.entries(quicklinks).map(([k, v]) => {
-          return (
-            <Link
-              key={k}
-              size='2'
-              href={`${v}${summary.steamid}`}
-              target='_blank'
-              rel='noopener noreferrer'
-            >
-              {k}
-              {'\n'}
-            </Link>
-          );
-        })}
+        {Object.entries(quicklinks).map(([k, v]) => (
+          <Link
+            key={k}
+            size='2'
+            href={`${v}${summary.steamid}`}
+            target='_blank'
+            rel='noopener noreferrer'
+          >
+            {k}
+            {'\n'}
+          </Link>
+        ))}
       </Box>
     </Box>
   );
@@ -207,27 +199,24 @@ function Sourcebans({
       <Box className='w-full whitespace-pre-line'>
         {sourcebans === undefined && <Spinner size='3' />}
         {sourcebans === null && <Text size='2'>❌ Error: Could not fetch sourcebans</Text>}
-        {sourcebans && sourcebans.length == 0 && (
+        {sourcebans && !sourcebans.length && (
           <Badge size='2' color='green'>
             None
           </Badge>
         )}
-        {sourcebans &&
-          sourcebans.length > 0 &&
-          sourcebans.map((s, index) => {
-            return (
-              <Link
-                key={index}
-                size='2'
-                href={s.url}
-                target='_blank'
-                rel='noopener noreferrer'
-              >
-                {`${s.url.split('/')[2]} - ${s.reason}`}
-                {'\n'}
-              </Link>
-            );
-          })}
+        {!!sourcebans?.length &&
+          sourcebans.map((s, index) => (
+            <Link
+              key={index}
+              size='2'
+              href={s.url}
+              target='_blank'
+              rel='noopener noreferrer'
+            >
+              {`${s.url.split('/')[2]} - ${s.reason}`}
+              {'\n'}
+            </Link>
+          ))}
       </Box>
     </Box>
   );

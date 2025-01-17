@@ -4,7 +4,7 @@ import {
   TextField,
   Text
 } from '@radix-ui/themes';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import SteamProfile from '../components/steam-profile';
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import DiscordList from '../components/discord-list';
@@ -13,12 +13,12 @@ import useToast from '../hooks/use-toast';
 function ProfileLookup() {
   const { toast } = useToast();
 
-  const [query, setQuery] = useState<string>('');
+  const input = useRef<HTMLInputElement>(null);
   const [disabled, setDisabled] = useState<boolean>(false);
   const [profiles, setProfiles] = useState<string[]>([]);
 
   const handleSearch = () => {
-    if (query === '') {
+    if (!input.current?.value.trim()) {
       toast({
         title: 'Error: Could not lookup profile',
         description: 'Please enter a Steam ID or profile URL'
@@ -26,16 +26,9 @@ function ProfileLookup() {
       return;
     }
 
-    setProfiles((prev) => [query, ...prev]);
-    setQuery('');
+    setProfiles((prev) => [ input.current!.value.trim(), ...prev ]);
+    input.current.value = '';
     setDisabled(true);
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.stopPropagation();
-      handleSearch();
-    }
   };
 
   return (
@@ -43,12 +36,11 @@ function ProfileLookup() {
       <Text className='mt-40 text-3xl text-center'>Steam Profile Lookup</Text>
       <Flex className='flex-wrap gap-4 items-center justify-center max-w-[80vw]'>
         <TextField.Root
+          ref={input}
           className='w-96 max-w-[80vw]'
           placeholder='Lookup a Steam Profile...'
-          value={query}
           maxLength={128}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={handleKeyPress}
+          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           disabled={disabled}
         >
           <TextField.Slot side='right'>

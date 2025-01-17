@@ -93,13 +93,11 @@ function VideoDownloader({ info }: { info?: VideoPayload }) {
             {
               info.formats
                 .filter((fmt) => fmt.format_note && fmt.vcodec.startsWith('avc'))
-                .map((fmt) => {
-                  return (
-                    <Select.Item key={fmt.format_id} value={fmt.format_id}>
-                      {fmt.format_note!} ({fmt.format_id})
-                    </Select.Item>
-                  );
-                })
+                .map((fmt) => (
+                  <Select.Item key={fmt.format_id} value={fmt.format_id}>
+                    {fmt.format_note!} ({fmt.format_id})
+                  </Select.Item>
+                ))
             }
           </Select.Group>
         </Select.Content>

@@ -48,16 +48,14 @@ function ApiEndpointInfo({ ...props }: EndpointInfoProps) {
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {props.params.map((param) => {
-              return (
-                <Table.Row>
-                  <Table.RowHeaderCell>
-                    <Code>{param.name}</Code>
-                  </Table.RowHeaderCell>
-                  <Table.Cell>{param.description}</Table.Cell>
-                </Table.Row>
-              );
-            })}
+            {props.params.map((param) => (
+              <Table.Row>
+                <Table.RowHeaderCell>
+                  <Code>{param.name}</Code>
+                </Table.RowHeaderCell>
+                <Table.Cell>{param.description}</Table.Cell>
+              </Table.Row>
+            ))}
           </Table.Body>
         </Table.Root>
       )}
@@ -72,21 +70,19 @@ function ApiEndpointInfo({ ...props }: EndpointInfoProps) {
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {props.queries.map((query) => {
-              return (
-                <Table.Row>
-                  <Table.RowHeaderCell>
-                    <Code>{query.name}</Code>
-                  </Table.RowHeaderCell>
-                  <Table.Cell>{query.description}</Table.Cell>
-                  <Table.Cell>
-                    <Flex className='justify-center'>
-                      {!query.optional ? <CheckIcon /> : ''}
-                    </Flex>
-                  </Table.Cell>
-                </Table.Row>
-              );
-            })}
+            {props.queries.map((query) => (
+              <Table.Row>
+                <Table.RowHeaderCell>
+                  <Code>{query.name}</Code>
+                </Table.RowHeaderCell>
+                <Table.Cell>{query.description}</Table.Cell>
+                <Table.Cell>
+                  <Flex className='justify-center'>
+                    {!query.optional ? <CheckIcon /> : ''}
+                  </Flex>
+                </Table.Cell>
+              </Table.Row>
+            ))}
           </Table.Body>
         </Table.Root>
       )}

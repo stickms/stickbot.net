@@ -7,25 +7,23 @@ function Toaster() {
 
   return (
     <Flex className='fixed bottom-6 right-6 items-center justify-center flex-wrap gap-y-4 flex-col'>
-      {toasts.map((toast) => {
-        return (
-          <Callout.Root
-            key={toast.id}
-            data-open={toast.open}
-            className='w-96 max-w-[min(30rem,calc(100vw-3rem))] ml-6 transition ease-in-out duration-200 data-[open=false]:translate-x-[calc(100%+1.5rem)] data-[open=true]:translate-x-0'
-          >
-            <Callout.Icon>
-              <InfoCircledIcon />
-            </Callout.Icon>
-            {toast.title && <Callout.Text>{toast.title}</Callout.Text>}
-            {toast.description && (
-              <Callout.Text className='text-xs'>
-                {toast.description}
-              </Callout.Text>
-            )}
-          </Callout.Root>
-        );
-      })}
+      {toasts.map((toast) => (
+        <Callout.Root
+          key={toast.id}
+          data-open={toast.open}
+          className='w-96 max-w-[min(30rem,calc(100vw-3rem))] ml-6 transition ease-in-out duration-200 data-[open=false]:translate-x-[calc(100%+1.5rem)] data-[open=true]:translate-x-0'
+        >
+          <Callout.Icon>
+            <InfoCircledIcon />
+          </Callout.Icon>
+          {toast.title && <Callout.Text>{toast.title}</Callout.Text>}
+          {toast.description && (
+            <Callout.Text className='text-xs'>
+              {toast.description}
+            </Callout.Text>
+          )}
+        </Callout.Root>
+      ))}
     </Flex>
   );
 }

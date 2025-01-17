@@ -134,45 +134,43 @@ function UserList() {
                 u.username?.includes(userQuery)
               );
             })
-            .map((u) => {
-              return (
-                <Box key={u.id}>
-                  <Flex className='items-center justify-between gap-4'>
-                    <HoverCard.Root>
-                      <HoverCard.Trigger>
-                        <Link
-                          asChild
-                          highContrast
-                          underline='hover'
-                          onClick={() => navigator.clipboard.writeText(u.id)}
-                        >
-                          <button>{u.username ?? 'Username N/A'}</button>
-                        </Link>
-                      </HoverCard.Trigger>
-                      <UserCard user={u} />
-                    </HoverCard.Root>
-                    <Flex className='gap-2 items-center justify-center'>
-                      {u.is_admin && (
-                        <Tooltip content='Website Admin'>
-                          <Badge>A</Badge>
-                        </Tooltip>
-                      )}
-                      <Tooltip content={!u.is_admin ? 'Promote' : 'Demote'}>
-                        <IconButton
-                          size='1'
-                          onClick={() => modifyAdmin(u)}
-                          disabled={modifying || u.id === user.id}
-                        >
-                          {!u.is_admin && <PlusIcon />}
-                          {u.is_admin && <MinusIcon />}
-                        </IconButton>
+            .map((u) => (
+              <Box key={u.id}>
+                <Flex className='items-center justify-between gap-4'>
+                  <HoverCard.Root>
+                    <HoverCard.Trigger>
+                      <Link
+                        asChild
+                        highContrast
+                        underline='hover'
+                        onClick={() => navigator.clipboard.writeText(u.id)}
+                      >
+                        <button>{u.username ?? 'Username N/A'}</button>
+                      </Link>
+                    </HoverCard.Trigger>
+                    <UserCard user={u} />
+                  </HoverCard.Root>
+                  <Flex className='gap-2 items-center justify-center'>
+                    {u.is_admin && (
+                      <Tooltip content='Website Admin'>
+                        <Badge>A</Badge>
                       </Tooltip>
-                    </Flex>
+                    )}
+                    <Tooltip content={!u.is_admin ? 'Promote' : 'Demote'}>
+                      <IconButton
+                        size='1'
+                        onClick={() => modifyAdmin(u)}
+                        disabled={modifying || u.id === user.id}
+                      >
+                        {!u.is_admin && <PlusIcon />}
+                        {u.is_admin && <MinusIcon />}
+                      </IconButton>
+                    </Tooltip>
                   </Flex>
-                  <Separator size='4' className='my-1' />
-                </Box>
-              );
-            })}
+                </Flex>
+                <Separator size='4' className='my-1' />
+              </Box>
+            ))}
         </Box>
       </ScrollArea>
     </Flex>
