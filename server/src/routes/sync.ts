@@ -9,7 +9,7 @@ import { SITE_ADMIN_IDS } from "../env.js";
 const sync_route = new Hono<Context>();
 
 export const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({
-  app: sync_route as any
+  app: sync_route as any,
 });
 
 type SyncClient = {

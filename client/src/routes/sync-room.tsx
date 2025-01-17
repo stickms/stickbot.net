@@ -1,5 +1,5 @@
 import { Box, Card, Flex, IconButton, Link, ScrollArea, Separator, Text, TextField } from "@radix-ui/themes";
-import { useEffect, useRef, useState } from "react";
+import { MutableRefObject, useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { type SyncRoom } from "../lib/types";
 import { API_ENDPOINT } from "../env";
@@ -10,13 +10,41 @@ import ReactPlayer from 'react-player';
 import { Cross1Icon, PaperPlaneIcon, PlusIcon } from "@radix-ui/react-icons";
 import useToast from "../hooks/use-toast";
 
+function connect(
+  socketRef: MutableRefObject<WebSocket | null>,
+  setSocket: (socket: WebSocket | null) => void,
+  openCallback: (socket: WebSocket, event: Event) => unknown,
+  messageCallback: (socket: WebSocket, event: MessageEvent<string>) => unknown,
+) {
+  const client = hc(`${API_ENDPOINT}/sync`);
+  const socket = client.ws.$ws(0);
+
+  socket.addEventListener('open', (e) => openCallback(socket, e));
+  socket.addEventListener('message', (e) => messageCallback(socket, e));
+
+  socket.addEventListener('close', () => {
+    if (socketRef.current) {
+      console.error('WebSocket unexpectedly closed, reconnecting in 1s...');
+      setTimeout(() => {
+        connect(socketRef, setSocket, openCallback, messageCallback);
+      }, 1_000);
+    }
+  });
+
+  socket.addEventListener('error', () => {
+    console.error('WebSocket error encountered, closing...');
+  });
+
+  setSocket(socket);
+}
+
 function SyncRoom() {
   const { user } = useAuth();
   const { roomid } = useParams();
   const { toast } = useToast();
 
+  const webSocket = useRef<WebSocket | null>(null);
   const [room, setRoom] = useState<SyncRoom | null>();
-  const [webSocket, setWebSocket] = useState<WebSocket>();
 
   const [playing, setPlaying] = useState<boolean>(false);
 
@@ -26,90 +54,6 @@ function SyncRoom() {
   const chat_box = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const setupSocket = () => {
-      const client = hc(`${API_ENDPOINT}/sync`);
-      const socket = client.ws.$ws(0);
-
-      socket.addEventListener('open', () => {
-        socket.send(JSON.stringify({
-          id: user.id,
-          username: user.username,
-          room: roomid
-        }));
-
-        socket.send(JSON.stringify({
-          join: true,
-          user: `${user.id}:${user.username}`
-        }))
-      });
-
-      socket.addEventListener('message', (event: MessageEvent<string>) => {
-        const message = JSON.parse(event.data);
-        console.log(message);
-
-        if (message.chat) {
-          setRoom((rm) => !rm ? rm : {
-            ...rm,
-            meta: {
-              ...rm.meta,
-              messages: [...rm.meta.messages, message.chat ]
-            }
-          });
-        }
-
-        if (message.join) {
-          setRoom((rm) => !rm ? rm : {
-            ...rm,
-            users: [ ...rm.users, message.user ]
-          });
-        }
-
-        if (message.leave) {
-          setRoom((rm) => !rm ? rm : {
-            ...rm,
-            users: rm.users.filter((user) => !user.startsWith(message.user))
-          });
-        }
-
-        if (message.queue_add) {
-          setRoom((rm) => !rm ? rm : {
-            ...rm,
-            meta: {
-              ...rm.meta,
-              queue: [ ...rm.meta.queue, message.queue_add ]
-            }
-          });
-        }
-
-        if (message.queue_remove) {
-          setRoom((rm) => !rm ? rm : {
-            ...rm,
-            meta: {
-              ...rm.meta,
-              queue: rm.meta.queue.filter((_,i) => i !== +message.queue_remove)
-            }
-          });
-        }
-
-        // We don't need to adhere to our own play/pause messages
-        if (message.source !== user.id) {
-          if (message.play) {
-            setPlaying(true);
-            player.current?.seekTo(message.curtime, 'seconds');
-          }
-
-          if (message.pause) {
-            setPlaying(false);
-            player.current?.seekTo(message.curtime, 'seconds');
-          }
-        }
-      });
-
-      return socket;
-    };
-
-    let socket: WebSocket | null = null;
-
     fetch(`${API_ENDPOINT}/sync/rooms/${roomid}`, {
       credentials: 'include'
     })
@@ -117,8 +61,88 @@ function SyncRoom() {
       .then((data) => {
         setRoom(data['data']);
         setPlaying(!!data['data']['meta']?.['playing']);
-        socket = setupSocket();
-        setWebSocket(socket);
+        
+        connect(
+          webSocket,
+          (socket) => {
+            webSocket.current = socket;
+          },
+          (socket) => {
+            console.log('open!');
+
+            socket.send(JSON.stringify({
+              id: user.id,
+              username: user.username,
+              room: roomid
+            }));
+    
+            socket.send(JSON.stringify({
+              join: true,
+              user: `${user.id}:${user.username}`
+            }))
+          },
+          (_, event) => {
+            const message = JSON.parse(event.data);
+            console.log(message);
+    
+            if (message.chat) {
+              setRoom((rm) => !rm ? rm : {
+                ...rm,
+                meta: {
+                  ...rm.meta,
+                  messages: [...rm.meta.messages, message.chat ]
+                }
+              });
+            }
+    
+            if (message.join) {
+              setRoom((rm) => !rm ? rm : {
+                ...rm,
+                users: [ ...rm.users, message.user ]
+              });
+            }
+    
+            if (message.leave) {
+              setRoom((rm) => !rm ? rm : {
+                ...rm,
+                users: rm.users.filter((user) => !user.startsWith(message.user))
+              });
+            }
+    
+            if (message.queue_add) {
+              setRoom((rm) => !rm ? rm : {
+                ...rm,
+                meta: {
+                  ...rm.meta,
+                  queue: [ ...rm.meta.queue, message.queue_add ]
+                }
+              });
+            }
+    
+            if (message.queue_remove) {
+              setRoom((rm) => !rm ? rm : {
+                ...rm,
+                meta: {
+                  ...rm.meta,
+                  queue: rm.meta.queue.filter((_,i) => i !== +message.queue_remove)
+                }
+              });
+            }
+    
+            // We don't need to adhere to our own play/pause messages
+            if (message.source !== user.id) {
+              if (message.play) {
+                setPlaying(true);
+                player.current?.seekTo(message.curtime, 'seconds');
+              }
+    
+              if (message.pause) {
+                setPlaying(false);
+                player.current?.seekTo(message.curtime, 'seconds');
+              }
+            }    
+          }
+        )
 
         if (message_area.current) {
           message_area.current.scrollTop = message_area.current.scrollHeight;
@@ -145,7 +169,6 @@ function SyncRoom() {
           }
 
           if (playing !== room_data.meta.playing) {
-            console.log('changed playing');
             setPlaying(!!room_data.meta.playing);
           }
 
@@ -154,17 +177,33 @@ function SyncRoom() {
           }
         })
           .catch(() => setRoom(null));
-    }, 15_000) // Every 15 seconds
-
-    return () => {
-      socket?.send(JSON.stringify({
-        leave: true,
-        user: user.id
-      }))
-
-      socket?.close();
-    }
+    }, 15_000); // Every 15 seconds
   }, [ roomid, user.id ]);
+
+  const disconnect = useCallback(() => {
+    if (!webSocket.current || webSocket.current.readyState !== 1) {
+      return;
+    }
+
+    webSocket.current.send(JSON.stringify({
+      leave: true,
+      user: user.id
+    }))
+
+    webSocket.current.close();
+
+    webSocket.current = null;
+  }, [ webSocket, user.id ]);
+
+  useEffect(() => {
+    return () => {
+      disconnect();
+    }
+  }, [disconnect]);
+
+  window.addEventListener('beforeunload', () => {
+    disconnect();
+  });
   
   if (room === null) {
     return (
@@ -191,7 +230,7 @@ function SyncRoom() {
 
     setPlaying(true);
 
-    webSocket?.send(JSON.stringify({
+    webSocket.current?.send(JSON.stringify({
       play: true,
       curtime: Math.floor(player.current.getCurrentTime())
     }));
@@ -204,7 +243,7 @@ function SyncRoom() {
 
     setPlaying(false);
 
-    webSocket?.send(JSON.stringify({
+    webSocket.current?.send(JSON.stringify({
       pause: true,
       curtime: Math.floor(player.current.getCurrentTime())
     }));
@@ -296,7 +335,7 @@ function SyncRoom() {
           <Box className='h-[90%] basis-[33%] max-w-[150px] flex-shrink p-1 whitespace-pre-line'>
             <ScrollArea className='pr-3 pl-1' scrollbars='vertical' type='always'>
               {room.users.map((user) => (
-                <Text className='text-sm break-all'>
+                <Text key={user} className='text-sm break-all'>
                   {user.substring(user.indexOf(':')+1)}{'\n'}
                 </Text>
               ))}
@@ -306,8 +345,8 @@ function SyncRoom() {
           {/* Messages */}
           <Box className='h-[90%] basis-[67%] p-1 flex-grow'>
             <ScrollArea ref={message_area} type='always' scrollbars='vertical' className='pr-3 whitespace-pre-line break-all'>
-              {room.meta.messages.map((msg) => (
-                <Text className='text-sm'>
+              {room.meta.messages.map((msg, i) => (
+                <Text key={i} className='text-sm'>
                   {msg.substring(0, msg.indexOf(':'))}
                   <Text color='gray'>
                     {msg.substring(msg.indexOf(':')) + '\n'}
@@ -341,7 +380,7 @@ function SyncRoom() {
         <Flex className='flex-col gap-2'>
           {/* Player */}
           <ReactPlayer
-            style={{backgroundColor: 'var(--gray-2)'}}
+            style={{backgroundColor: 'var(--gray-2)', outline: 'none'}}
             width={'min(80vw, 600px)'}
             ref={player}
             url={room.meta.queue[0]}
