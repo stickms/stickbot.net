@@ -27,8 +27,10 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Helmet>
       <meta property='og:title' content='Stickbot.net' />
+      <meta property='og:type' content='website' />
       <meta property='og:url' content='https://stickbot.net' />
       <meta property='og:image' content={`${window.location.origin}/stick.png`} />
+      <meta property='og:description' content='' />
     </Helmet>
     <Theme accentColor='iris' appearance='dark' grayColor='sand' radius='large'>
       <Router>
