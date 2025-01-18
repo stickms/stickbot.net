@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Theme } from '@radix-ui/themes';
+import { Helmet } from 'react-helmet';
 
 import Header from './components/header.tsx';
 import Toaster from './components/toaster.tsx';
@@ -24,6 +25,11 @@ import './index.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
+    <Helmet>
+      <meta property='og:title' content='Stickbot.net' />
+      <meta property='og:url' content='https://stickbot.net' />
+      <meta property='og:image' content={`${window.location.origin}/stick.png`} />
+    </Helmet>
     <Theme accentColor='iris' appearance='dark' grayColor='sand' radius='large'>
       <Router>
         <Header />
