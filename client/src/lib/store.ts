@@ -8,11 +8,6 @@ const default_user: UserType = {
   username: '',
   token_guild: '',
   is_admin: false,
-  sync: {
-    room: '',
-    is_host: false,
-    is_leader: false
-  }
 };
 
 export const $user = persistentMap<UserType>('user:', default_user, {

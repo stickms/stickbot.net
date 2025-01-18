@@ -1,7 +1,7 @@
 import sqlite from 'better-sqlite3';
 import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
-import type { InferSelectModel } from 'drizzle-orm';
+import { sql, type InferSelectModel } from 'drizzle-orm';
 
 export const connection = sqlite('sqlite.db');
 export const db = drizzle(connection);
@@ -38,6 +38,15 @@ export const sessions = sqliteTable('sessions', {
   }).notNull()
 });
 
+export const rooms = sqliteTable('rooms', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  host: text('host').references(() => users.id, { onDelete: 'cascade' }),
+  leaders: text('leaders', {
+    mode: 'json'
+  }).notNull().$type<string[]>().default(sql`'[]`)
+});
+
 export const links = sqliteTable('links', {
   id: text('id').primaryKey(),
   url: text('url').notNull(),
@@ -51,4 +60,5 @@ export const links = sqliteTable('links', {
 
 export type User = InferSelectModel<typeof users>;
 export type Session = InferSelectModel<typeof sessions>;
+export type Room = InferSelectModel<typeof rooms>;
 export type Link = InferSelectModel<typeof links>;

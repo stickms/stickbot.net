@@ -33,9 +33,98 @@ function connect(
 
   socket.addEventListener('error', () => {
     console.error('WebSocket error encountered, closing...');
+    socket.close();
+    socketRef.current = null;
   });
 
   setSocket(socket);
+}
+
+function ChatBox({ roomid, users, messages } : { roomid: string, users: string[], messages: string[] }) {
+  const { toast } = useToast();
+
+  const message_area = useRef<HTMLDivElement>(null);
+  const chat_box = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (message_area.current) {
+      message_area.current.scrollTop = message_area.current.scrollHeight;
+    }
+  }, []);
+
+  const sendChatMessage = () => {
+    if (!chat_box.current) {
+      return;
+    }
+
+    if (!chat_box.current.value.trim()) {
+      return;
+    }
+
+    fetch(`${API_ENDPOINT}/sync/rooms/${roomid}/message`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        message: chat_box.current.value.trim()
+      })
+    })
+      .then(fetchGetJson)
+      .catch(() => {
+        toast({
+          title: 'Error sending message',
+          description: 'Please try again later'
+        });
+      })
+      .finally(() => chat_box.current!.value = '');
+  }
+
+  return (
+    <Card className='flex flex-wrap w-[600px] max-w-[80vw] h-[400px] p-1'>
+      {/* User List */}
+      <Box className='h-[90%] basis-[33%] max-w-[150px] flex-shrink p-1 whitespace-pre-line'>
+        <ScrollArea className='pr-3 pl-1' scrollbars='vertical' type='always'>
+          {users.map((user) => (
+            <Text key={user} className='text-sm break-all'>
+              {user.substring(user.indexOf(':')+1)}{'\n'}
+            </Text>
+          ))}
+        </ScrollArea>
+      </Box>
+
+      {/* Messages */}
+      <Box className='h-[90%] basis-[67%] p-1 flex-grow'>
+        <ScrollArea ref={message_area} type='always' scrollbars='vertical' className='pr-3 whitespace-pre-line'>
+          {messages.map((msg, i) => (
+            <Text key={i} className='text-sm break-all'>
+              {msg.substring(0, msg.indexOf(':'))}
+              <Text color='gray'>
+                {msg.substring(msg.indexOf(':')) + '\n'}
+              </Text>
+            </Text>
+          ))}
+        </ScrollArea>
+      </Box>
+
+      {/* Message Entry Box */}
+      <Flex className='h-[10%] w-[100%] p-1'>
+        <TextField.Root
+          ref={chat_box}
+          className='size-full'
+          placeholder='Enter chat message...'
+          onKeyDown={(e) => e.key === 'Enter' && sendChatMessage()}
+        >
+          <TextField.Slot side='right'>
+            <IconButton
+              variant='ghost'
+              onClick={sendChatMessage}
+            >
+              <PaperPlaneIcon />
+            </IconButton>
+          </TextField.Slot>
+        </TextField.Root>
+      </Flex>
+    </Card>
+  );
 }
 
 function SyncRoom() {
@@ -46,13 +135,10 @@ function SyncRoom() {
 
   const webSocket = useRef<WebSocket | null>(null);
 
-  const [room, setRoom] = useState<SyncRoom | null>();
-  const [playing, setPlaying] = useState<boolean>(false);
+  const [room, setRoom] = useState<SyncRoom>();
 
   const player = useRef<ReactPlayer>(null);
   const media_queue = useRef<HTMLInputElement>(null);
-  const message_area = useRef<HTMLDivElement>(null);
-  const chat_box = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (webSocket.current) {
@@ -65,7 +151,6 @@ function SyncRoom() {
       .then(fetchGetJson)
       .then((data) => {
         setRoom(data['data']);
-        setPlaying(!!data['data']['meta']?.['playing']);
         
         connect(
           webSocket,
@@ -95,7 +180,7 @@ function SyncRoom() {
                 ...rm,
                 meta: {
                   ...rm.meta,
-                  messages: [...rm.meta.messages, message.chat ]
+                  messages: message.chat
                 }
               });
             }
@@ -106,48 +191,45 @@ function SyncRoom() {
                 users: message.users
               });
             }
-    
-            if (message.queue_add) {
+
+            if (message.queue) {
               setRoom((rm) => !rm ? rm : {
                 ...rm,
                 meta: {
                   ...rm.meta,
-                  queue: [ ...rm.meta.queue, message.queue_add ]
+                  queue: message.queue
                 }
               });
             }
     
-            if (message.queue_remove) {
+            if (message.play && !player.current?.props.playing) {
               setRoom((rm) => !rm ? rm : {
                 ...rm,
                 meta: {
                   ...rm.meta,
-                  queue: rm.meta.queue.filter((_,i) => i !== +message.queue_remove)
+                  playing: true
                 }
               });
+
+              player.current?.seekTo(message.curtime, 'seconds');
             }
-    
-            // We don't need to adhere to our own play/pause messages
-            if (message.source !== user.id) {
-              if (message.play) {
-                setPlaying(true);
-                player.current?.seekTo(message.curtime, 'seconds');
-              }
-    
-              if (message.pause) {
-                setPlaying(false);
-                player.current?.seekTo(message.curtime, 'seconds');
-              }
-            }    
+  
+            if (message.pause && !!player.current?.props.playing) {
+              setRoom((rm) => !rm ? rm : {
+                ...rm,
+                meta: {
+                  ...rm.meta,
+                  playing: false
+                }
+              });
+
+              player.current?.seekTo(message.curtime, 'seconds');
+            }
           }
         )
-
-        if (message_area.current) {
-          message_area.current.scrollTop = message_area.current.scrollHeight;
-        }
       })
       .catch(() => {
-        setRoom(null);
+        navigate('/watch-together');;
       });
 
     // "Heartbeat" - periodically check server status in case we get desynced
@@ -158,23 +240,17 @@ function SyncRoom() {
         .then(fetchGetJson)
         .then((data) => {
           const room_data: SyncRoom = data['data'];
-          setRoom(room_data);
+          if (room != room_data) {
+            setRoom(room_data);
 
-          if (player.current && room_data.meta.playing) {
-            if (Math.abs(room_data.meta.curtime - player.current?.getCurrentTime()) > 2.5) {
-              player.current.seekTo(room_data.meta.curtime)
+            if (player.current) {
+              if (Math.abs(room_data.meta.curtime - player.current.getCurrentTime()) > 2.5) {
+                player.current.seekTo(room_data.meta.curtime)
+              }  
             }  
           }
-
-          if (playing !== room_data.meta.playing) {
-            setPlaying(!!room_data.meta.playing);
-          }
-
-          if (message_area.current) {
-            message_area.current.scrollTop = message_area.current.scrollHeight;
-          }
         })
-          .catch(() => setRoom(null));
+          .catch(() => navigate('/watch-together'));
     }, 15_000); // Every 15 seconds
   }, [ roomid, user.id ]);
 
@@ -202,13 +278,8 @@ function SyncRoom() {
   window.addEventListener('beforeunload', () => {
     disconnect();
   });
-  
-  if (room === null) {
-    navigate('/watch-together');
-    return null;
-  }
 
-  if (!room) {
+  if (!room || !roomid) {
     return null;
   }
 
@@ -219,46 +290,89 @@ function SyncRoom() {
   };
 
   const onPlay = () => {
-    if (!player.current || playing) {
+    if (!player.current || room.meta.playing) {
       return;
     }
 
-    setPlaying(true);
-
-    webSocket.current?.send(JSON.stringify({
-      play: true,
-      curtime: Math.floor(player.current.getCurrentTime())
-    }));
+    setRoom((rm) => !rm ? rm : {
+      ...rm,
+      meta: {
+        ...rm.meta,
+        playing: true
+      }
+    });
+    mediaPlay();
   };
 
   const onPause = () => {
-    if (!player.current || !playing) {
+    console.log('pause');
+
+    if (!player.current || !room.meta.playing) {
       return;
     }
 
-    setPlaying(false);
-
-    webSocket.current?.send(JSON.stringify({
-      pause: true,
-      curtime: Math.floor(player.current.getCurrentTime())
-    }));
+    setRoom((rm) => !rm ? rm : {
+      ...rm,
+      meta: {
+        ...rm.meta,
+        playing: false
+      }
+    });
+    mediaPause();
   };
 
   const onFinished = () => {
+    console.log('finished');
+
     if (!player.current || !player.current.getCurrentTime()) {
       return;
     }
 
-    if (room.host !== user.id) {
+    player.current.seekTo(0);
+    queueRemove(room.meta.queue[0]?.split(':')[0]);
+    mediaPlay(0);
+  }
+
+  const mediaPlay = (curtime?: number) => {
+    if (!player.current) {
       return;
     }
 
-    webSocket.current?.send(JSON.stringify({
-      play: true,
-      curtime: 0
-    }));
+    fetch(`${API_ENDPOINT}/sync/rooms/${roomid}/play`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        curtime: curtime ?? Math.floor(player.current.getCurrentTime())
+      })
+    })
+      .then(fetchGetJson)
+      .catch(() => {
+        toast({
+          title: 'Error sending play request to server',
+          description: 'Please try again later'
+        });
+      });
+  };
 
-    queueRemove(0);
+  const mediaPause = () => {
+    if (!player.current) {
+      return;
+    }
+
+    fetch(`${API_ENDPOINT}/sync/rooms/${roomid}/pause`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        curtime: Math.floor(player.current.getCurrentTime())
+      })
+    })
+      .then(fetchGetJson)
+      .catch(() => {
+        toast({
+          title: 'Error sending pause request to server',
+          description: 'Please try again later'
+        });
+      });
   }
 
   const queueAdd = () => {
@@ -293,7 +407,7 @@ function SyncRoom() {
       .finally(() => media_queue.current!.value = '');
   }
 
-  const queueRemove = (index: number) => {
+  const queueRemove = (index: string) => {
     console.log(`remove ${index}`);
 
     fetch(`${API_ENDPOINT}/sync/rooms/${roomid}/queue`, {
@@ -312,81 +426,11 @@ function SyncRoom() {
       })
   }
 
-  const sendChatMessage = () => {
-    if (!chat_box.current) {
-      return;
-    }
-
-    if (!chat_box.current.value.trim()) {
-      return;
-    }
-
-    fetch(`${API_ENDPOINT}/sync/rooms/${roomid}/message`, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({
-        message: chat_box.current.value.trim()
-      })
-    })
-      .then(fetchGetJson)
-      .catch(() => {
-        toast({
-          title: 'Error sending message',
-          description: 'Please try again later'
-        });
-      })
-      .finally(() => chat_box.current!.value = '');
-  }
-
   return (
     <Flex className='items-start justify-center min-h-screen'>
       <Flex className='mt-16 md:mt-40 mb-8 mx-12 items-end justify-center gap-12 flex-wrap-reverse'>
         {/* Chat */}
-        <Card className='flex flex-wrap w-[600px] max-w-[80vw] h-[400px] p-1'>
-          {/* User List */}
-          <Box className='h-[90%] basis-[33%] max-w-[150px] flex-shrink p-1 whitespace-pre-line'>
-            <ScrollArea className='pr-3 pl-1' scrollbars='vertical' type='always'>
-              {room.users.map((user) => (
-                <Text key={user} className='text-sm break-all'>
-                  {user.substring(user.indexOf(':')+1)}{'\n'}
-                </Text>
-              ))}
-            </ScrollArea>
-          </Box>
-
-          {/* Messages */}
-          <Box className='h-[90%] basis-[67%] p-1 flex-grow'>
-            <ScrollArea ref={message_area} type='always' scrollbars='vertical' className='pr-3 whitespace-pre-line'>
-              {room.meta.messages.map((msg, i) => (
-                <Text key={i} className='text-sm break-all'>
-                  {msg.substring(0, msg.indexOf(':'))}
-                  <Text color='gray'>
-                    {msg.substring(msg.indexOf(':')) + '\n'}
-                  </Text>
-                </Text>
-              ))}
-            </ScrollArea>
-          </Box>
-
-          {/* Message Entry Box */}
-          <Flex className='h-[10%] w-[100%] p-1'>
-            <TextField.Root
-              ref={chat_box}
-              className='size-full'
-              placeholder='Enter chat message...'
-              onKeyDown={(e) => e.key === 'Enter' && sendChatMessage()}
-            >
-              <TextField.Slot side='right'>
-                <IconButton
-                  variant='ghost'
-                  onClick={sendChatMessage}
-                >
-                  <PaperPlaneIcon />
-                </IconButton>
-              </TextField.Slot>
-            </TextField.Root>
-          </Flex>
-        </Card>
+        <ChatBox roomid={roomid} users={room.users} messages={room.meta.messages} />
 
         {/* Media Player */}
         <Flex className='flex-col gap-2 max-w-[min(80vw,_600px)]'>
@@ -395,8 +439,8 @@ function SyncRoom() {
             style={{backgroundColor: 'var(--gray-2)', outline: 'none'}}
             width={'min(80vw, 600px)'}
             ref={player}
-            url={room.meta.queue[0]}
-            playing={playing}
+            url={room.meta.queue[0]?.substring(room.meta.queue[0].indexOf(':') + 1)}
+            playing={room.meta.playing}
             muted={true}
             controls={true}
             pip={false}
@@ -433,18 +477,18 @@ function SyncRoom() {
                 <Text className='text-sm text-center'>Media Queue</Text>
                 <Separator size='4' />
                 {room.meta.queue.map((entry, i) => (
-                  <Flex key={Math.random().toString()} className='items-center justify-evenly gap-2'>
+                  <Flex key={entry.split(':')[0]} className='items-center justify-evenly gap-2'>
                     <Link 
                       className='text-xs text-center break-all'
-                      href={entry}
+                      href={entry.substring(entry.indexOf(':') + 1)}
                     >
-                      {i + 1}. {entry}
+                      {i + 1}. {entry.substring(entry.indexOf(':') + 1)}
                     </Link>
 
                     <IconButton 
                       variant='outline' 
                       size='1'
-                      onClick={() => queueRemove(i)}
+                      onClick={() => queueRemove(entry.split(':')[0])}
                     >
                       <Cross1Icon />
                     </IconButton>

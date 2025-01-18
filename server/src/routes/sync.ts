@@ -32,6 +32,7 @@ type SyncRoom = {
 
   meta: {
     queue: string[];
+    queue_counter: number; // Not shared, internal counter
     start_time: number; // MS since UTC epoch
     stop_time?: number; // If set, overrides start_time
     playing: boolean;
@@ -47,6 +48,7 @@ let rooms: SyncRoom[] = [{
   leaders: [],
   meta: {
     queue: [],
+    queue_counter: 0,
     start_time: Date.now(),
     stop_time: 0,
     playing: false,
@@ -88,55 +90,6 @@ function handleJoinLeave(source: SyncClient | undefined, message: any) {
     })));
 }
 
-function handlePlayPause(source: SyncClient | undefined, message: any) {
-  if (!source?.room) {
-    return;
-  }
-
-  rooms = rooms.map((room) => {
-    return room.id !== source.room ? room : { 
-      ...room, 
-      meta: {
-        ...room.meta,
-        playing: message.play,
-        start_time: Date.now() - (message.curtime * 1000),
-        stop_time: !message.play ? message.curtime : undefined
-      } 
-    };
-  });
-
-  clients
-    .filter((client) => client.room === source.room)
-    .forEach((client) => client.ws.send(JSON.stringify({
-      source: source.id,
-      play: message.play,       // One of these should
-      pause: message.pause,     // should be undefined
-      curtime: message.curtime
-    })));
-}
-
-function handleSkip(source: SyncClient | undefined, message: any) {
-  if (!source?.room) {
-    return;
-  }
-
-  const room = rooms.find((room) => room.id === source.room);
-
-  if (!room || room.host !== source.id) {
-    return;
-  }
-
-  rooms = rooms.map((room) => {
-    return room.id !== source.room ? room : { 
-      ...room, 
-      meta: {
-        ...room.meta,
-        messages: [ ...room.meta.messages ]
-      } 
-    };
-  });
-}
-
 sync_route.get('/sync/ws', upgradeWebSocket((c) => {
   return {
     onOpen(event, ws) {
@@ -161,9 +114,9 @@ sync_route.get('/sync/ws', upgradeWebSocket((c) => {
         handleJoinLeave(source, message);
       }
 
-      if (message.play || message.pause) {
-        handlePlayPause(source, message);
-      }
+      // if (message.play || message.pause) {
+      //   handlePlayPause(source, message);
+      // }
     },
     onClose(event, ws) {
       clients = clients.filter((client) => client.ws !== ws);
@@ -233,6 +186,7 @@ sync_route.post('/sync/rooms/create', authGuard, async (c) => {
 
     meta: {
       queue: [],
+      queue_counter: 0,
       start_time: 0,
       stop_time: 0,
       playing: false,
@@ -252,7 +206,6 @@ sync_route.post('/sync/rooms/create', authGuard, async (c) => {
 });
 
 sync_route.post('/sync/rooms/:roomid/join', authGuard, async (c) => {
-  const user = c.get('user')!;
   const roomid = c.req.param('roomid');
 
   const room = rooms.find((room) => room.id === roomid);
@@ -261,6 +214,77 @@ sync_route.post('/sync/rooms/:roomid/join', authGuard, async (c) => {
       message: 'Room not found'
     });
   }
+
+  return c.json({
+    success: true
+  });
+});
+
+sync_route.post('/sync/rooms/:roomid/play', authGuard, async (c) => {
+  const user = c.get('user')!;
+  const roomid = c.req.param('roomid');
+  const { curtime } = await c.req.json();
+
+  if (curtime === undefined) {
+    throw new HTTPException(400, {
+      message: 'Please specify the current video time'
+    });
+  }
+
+  rooms = rooms.map((room) => {
+    return room.id !== roomid ? room : { 
+      ...room, 
+      meta: {
+        ...room.meta,
+        playing: true,
+        start_time: Date.now() - (curtime * 1000),
+        stop_time: undefined
+      } 
+    };
+  });
+
+  clients
+    .filter((client) => client.room === roomid)
+    .forEach((client) => client.ws.send(JSON.stringify({
+      source: user.id,
+      play: true,
+      curtime: curtime
+    })));
+
+  return c.json({
+    success: true
+  });
+});
+
+sync_route.post('/sync/rooms/:roomid/pause', authGuard, async (c) => {
+  const user = c.get('user')!;
+  const roomid = c.req.param('roomid');
+  const { curtime } = await c.req.json();
+
+  if (curtime === undefined) {
+    throw new HTTPException(400, {
+      message: 'Please specify the current video time'
+    });
+  }
+
+  rooms = rooms.map((room) => {
+    return room.id !== roomid ? room : { 
+      ...room, 
+      meta: {
+        ...room.meta,
+        playing: false,
+        stop_time: curtime
+      } 
+    };
+  });
+
+  clients
+    .filter((client) => client.room === roomid)
+    .forEach((client) => client.ws.send(JSON.stringify({
+      source: user.id,
+      pause: true,
+      curtime: curtime
+    })));
 
   return c.json({
     success: true
@@ -285,14 +309,14 @@ sync_route.post('/sync/rooms/:roomid/message', authGuard, async (c) => {
     });
   }
 
-  const chat = `${user.username}: ${message}`;
+  let chat = [ ...room.meta.messages, `${user.username}: ${message}`];
 
   rooms = rooms.map((room) => {
     return room.id !== roomid ? room : {
       ...room,
       meta: {
         ...room.meta,
-        messages: [...room.meta.messages, chat]
+        messages: chat
       }
     }
   });
@@ -312,7 +336,7 @@ sync_route.post('/sync/rooms/:roomid/message', authGuard, async (c) => {
 sync_route.post('/sync/rooms/:roomid/queue', authGuard, async (c) => {
   const user = c.get('user')!;
   const roomid = c.req.param('roomid');
-  const { add, remove, auth } = await c.req.json();
+  const { add, remove } = await c.req.json();
 
   if (!add && !remove) {
     throw new HTTPException(400, {
@@ -327,23 +351,30 @@ sync_route.post('/sync/rooms/:roomid/queue', authGuard, async (c) => {
     });
   }
 
+  let queue = room.meta.queue;
+
   if (add) {
+    queue.push(`${room.meta.queue_counter}:${add}`);
+
     rooms = rooms.map((room) => {
       return room.id !== roomid ? room : {
         ...room,
         meta: {
           ...room.meta,
-          queue: [ ...room.meta.queue, add ]
+          queue_counter: room.meta.queue_counter + 1,
+          queue
         }
       }
     });
   } else {
+    queue = queue.filter((q) => !q.startsWith(remove));
+
     rooms = rooms.map((room) => {
       return room.id !== roomid ? room : {
         ...room,
         meta: {
           ...room.meta,
-          queue: room.meta.queue.filter((_, i) => i !== +remove)
+          queue
         }
       }
     });
@@ -353,10 +384,9 @@ sync_route.post('/sync/rooms/:roomid/queue', authGuard, async (c) => {
     .filter((client) => client.room === roomid)
     .forEach((client) => client.ws.send(JSON.stringify({
       source: user.id,
-      queue_add: add,
-      queue_remove: remove
+      queue
     })));
-
+  
   return c.json({
     success: true
   });

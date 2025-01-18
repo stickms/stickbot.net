@@ -4,7 +4,7 @@ import {
   TextField,
   Text
 } from '@radix-ui/themes';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import SteamProfile from '../components/steam-profile';
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import DiscordList from '../components/discord-list';
@@ -17,6 +17,12 @@ function ProfileLookup() {
   const [disabled, setDisabled] = useState<boolean>(false);
   const [profiles, setProfiles] = useState<string[]>([]);
 
+  useEffect(() => {
+    if (!disabled && input.current) {
+      input.current.value = '';
+    }
+  }, [disabled]);
+
   const handleSearch = () => {
     if (!input.current?.value.trim()) {
       toast({
@@ -27,7 +33,6 @@ function ProfileLookup() {
     }
 
     setProfiles((prev) => [ input.current!.value.trim(), ...prev ]);
-    input.current.value = '';
     setDisabled(true);
   };
 

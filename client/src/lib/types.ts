@@ -5,12 +5,6 @@ export type UserType = {
   username: string;
   token_guild: string;
   is_admin: boolean;
-
-  sync: {
-    room: string;
-    is_host: boolean;
-    is_leader: boolean;
-  }
 };
 
 export type GuildType = {
