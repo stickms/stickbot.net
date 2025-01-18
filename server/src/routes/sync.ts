@@ -205,6 +205,31 @@ sync_route.post('/sync/rooms/create', authGuard, async (c) => {
   });
 });
 
+sync_route.delete('/sync/rooms/:roomid', authGuard, async (c) => {
+  const user = c.get('user')!;
+  const roomid = c.req.param('roomid');
+
+  const room = rooms.find((room) => room.id === roomid);
+  if (!room) {
+    throw new HTTPException(404, {
+      message: 'Room not found'
+    });
+  }
+
+  if (room.host !== user.id) {
+    throw new HTTPException(401, {
+      message: 'Unauthorized'
+    });
+  }
+
+  rooms = rooms.filter((room) => room.id !== roomid);
+
+  return c.json({
+    success: true,
+    data: rooms
+  });
+});
+
 sync_route.post('/sync/rooms/:roomid/join', authGuard, async (c) => {
   const roomid = c.req.param('roomid');
 

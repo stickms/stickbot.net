@@ -1,7 +1,7 @@
-import { Button, Card, Flex, IconButton, Link, Skeleton, Text, TextField } from "@radix-ui/themes";
+import { Button, Callout, Card, Flex, IconButton, Link, Text, TextField, Tooltip } from "@radix-ui/themes";
 import { useEffect, useRef, useState } from "react";
 import { API_ENDPOINT } from "../env";
-import { DiscordLogoIcon, EnterIcon, PlusIcon } from "@radix-ui/react-icons";
+import { Cross1Icon, DiscordLogoIcon, EnterIcon, InfoCircledIcon, PlusIcon } from "@radix-ui/react-icons";
 import { useLocation, useNavigate } from "react-router-dom";
 import useAuth from "../hooks/use-auth";
 import { fetchGetJson } from "../lib/util";
@@ -30,7 +30,7 @@ function SignIn() {
   );
 }
 
-function RoomList() {
+function RoomList({ userid }: { userid: string }) {
   const { toast } = useToast();
   const [ rooms, setRooms ] = useState<SyncRoom[]>();
   const navigate = useNavigate();
@@ -70,6 +70,23 @@ function RoomList() {
         });
       })
   };
+
+  const deleteRoom = (roomid: string) => {
+    fetch(`${API_ENDPOINT}/sync/rooms/${roomid}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    })
+      .then(fetchGetJson)
+      .then((data) => {
+        setRooms(data['data']);
+      })
+      .catch(() => {
+        toast({
+          title: 'Error deleting room',
+          description: 'Please try again later'
+        });
+      });
+  }
 
   const createRoom = () => {
     if(!inputbar.current) {
@@ -128,13 +145,35 @@ function RoomList() {
       </TextField.Root>
 
       <Flex className='items-stretch justify-center flex-wrap gap-4 mb-8 max-w-[80vw]'>
-        {!rooms && <Skeleton className='w-80 max-w-[80vw] min-h-20' />}
-        {rooms && rooms.map((room) => (
+        {!rooms?.length && (
+          <Callout.Root>
+            <Callout.Icon>
+              <InfoCircledIcon />
+            </Callout.Icon>
+            <Callout.Text>
+              No rooms found, create one to get started!
+            </Callout.Text>
+          </Callout.Root>
+        )}
+        {!!rooms?.length && rooms.map((room) => (
           <Card key={room.id} className='flex flex-col p-4 items-stretch justify-between gap-4 w-80 max-w-[80vw] min-h-20'>
-            <Text className='text-lg break-all whitespace-pre-line'>
-              {room.name + '\n'}
-              <Text color='gray' className='text-sm'>hosted by {room.host}</Text>
-            </Text>
+            <Flex className='items-start justify-between'>
+              <Text className='text-lg break-all whitespace-pre-line'>
+                {room.name + '\n'}
+                <Text color='gray' className='text-sm'>hosted by {room.host}</Text>
+              </Text>
+              {room.host === userid && (
+                <Tooltip content='Close Room'>
+                  <IconButton
+                    variant='ghost'
+                    color='red'
+                    onClick={() => deleteRoom(room.id)}
+                  >
+                    <Cross1Icon />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Flex>
             <Button
               onClick={() => joinRoom(room.id)}
             >
@@ -154,7 +193,7 @@ function WatchTogether() {
     return <SignIn />;
   }
 
-  return <RoomList />;
+  return <RoomList userid={user.id} />;
 }
 
 export default WatchTogether;
