@@ -111,16 +111,14 @@ function SyncRoom() {
             }
     
             if (message.play || message.pause) {
-              if (message.source !== user.id) {
-                setRoom((rm) => !rm ? rm : {
-                  ...rm,
-                  meta: {
-                    ...rm.meta,
-                    playing: !!message.play,
-                    curtime: message.curtime
-                  }
-                });  
-              }
+              setRoom((rm) => !rm ? rm : {
+                ...rm,
+                meta: {
+                  ...rm.meta,
+                  playing: !!message.play,
+                  curtime: message.curtime
+                }
+              });  
             }
           }
         )
