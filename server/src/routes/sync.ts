@@ -334,7 +334,7 @@ sync_route.post('/sync/rooms/:roomid/message', authGuard, async (c) => {
     });
   }
 
-  let chat = [ ...room.meta.messages, `${user.username}: ${message}`];
+  let chat = [ ...room.meta.messages, `${user.id}:${user.username}: ${message}`];
 
   rooms = rooms.map((room) => {
     return room.id !== roomid ? room : {

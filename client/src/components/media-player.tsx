@@ -41,6 +41,15 @@ function MediaPlayer({
       return;
     }
 
+    setRoom((rm) => !rm ? rm : {
+      ...rm,
+      meta: {
+        ...rm.meta,
+        playing: true,
+        curtime: curtime ?? Math.floor(player.current!.getCurrentTime())
+      }
+    });
+
     fetch(`${API_ENDPOINT}/sync/rooms/${roomid}/play`, {
       method: 'POST',
       credentials: 'include',
@@ -61,6 +70,15 @@ function MediaPlayer({
     if (!player.current) {
       return;
     }
+
+    setRoom((rm) => !rm ? rm : {
+      ...rm,
+      meta: {
+        ...rm.meta,
+        playing: false,
+        curtime: Math.floor(player.current!.getCurrentTime())
+      }
+    });
 
     fetch(`${API_ENDPOINT}/sync/rooms/${roomid}/pause`, {
       method: 'POST',
@@ -89,14 +107,6 @@ function MediaPlayer({
       return;
     }
 
-    setRoom((rm) => !rm ? rm : {
-      ...rm,
-      meta: {
-        ...rm.meta,
-        playing: true
-      }
-    });
-
     mediaPlay();
   };
 
@@ -107,14 +117,6 @@ function MediaPlayer({
       return;
     }
 
-    setRoom((rm) => !rm ? rm : {
-      ...rm,
-      meta: {
-        ...rm.meta,
-        playing: false
-      }
-    });
-    
     mediaPause();
   };
 
@@ -127,9 +129,7 @@ function MediaPlayer({
 
     player.current.seekTo(0);
     queueRemove(queue[0]?.split(':')[0]);
-    mediaPlay(0);
   }
-
 
   const queueAdd = () => {
     if (!media_queue_input.current) {
@@ -164,6 +164,11 @@ function MediaPlayer({
   }
 
   const queueRemove = (index: string) => {
+    if (queue[0].startsWith(index)) {
+      player.current?.seekTo(0);
+      mediaPlay(0);
+    }
+
     fetch(`${API_ENDPOINT}/sync/rooms/${roomid}/queue`, {
       method: 'POST',
       credentials: 'include',
@@ -192,6 +197,10 @@ function MediaPlayer({
         muted={true}
         controls={true}
         pip={false}
+
+        playbackRate={1.0}
+        light={false}
+        loop={false}
 
         onReady={onReady}
         onPlay={onPlay}

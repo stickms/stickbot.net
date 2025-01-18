@@ -111,14 +111,16 @@ function SyncRoom() {
             }
     
             if (message.play || message.pause) {
-              setRoom((rm) => !rm ? rm : {
-                ...rm,
-                meta: {
-                  ...rm.meta,
-                  playing: !!message.play,
-                  curtime: message.curtime
-                }
-              });
+              if (message.source !== user.id) {
+                setRoom((rm) => !rm ? rm : {
+                  ...rm,
+                  meta: {
+                    ...rm.meta,
+                    playing: !!message.play,
+                    curtime: message.curtime
+                  }
+                });  
+              }
             }
           }
         )
@@ -181,6 +183,7 @@ function SyncRoom() {
           roomid={roomid}
           users={room.users}
           messages={room.meta.messages}
+          host={room.host}
         />
 
         {/* Media Player */}
