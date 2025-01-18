@@ -154,11 +154,7 @@ function WatchTogether() {
     return <SignIn />;
   }
 
-  if (!user.sync.room) {
-    return <RoomList />;
-  }
-
-  return null;
+  return <RoomList />;
 }
 
 export default WatchTogether;
