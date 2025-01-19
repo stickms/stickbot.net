@@ -2,7 +2,7 @@ import { Cross1Icon, PlusIcon } from "@radix-ui/react-icons";
 import { Card, Flex, IconButton, Link, Separator, TextField, Text, AspectRatio } from "@radix-ui/themes";
 import ReactPlayer from "react-player";
 import { SyncRoom } from "../lib/types";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import useToast from "../hooks/use-toast";
 import { API_ENDPOINT } from "../env";
 import { fetchGetJson } from "../lib/util";
@@ -24,6 +24,8 @@ function MediaPlayer({
   const player = useRef<ReactPlayer>(null);
   const media_queue_input = useRef<HTMLInputElement>(null);
 
+  const [ready, setReady] = useState<boolean>(false);
+
   useEffect(() => {
     if (!player.current) {
       return;
@@ -33,7 +35,7 @@ function MediaPlayer({
       return;
     }
 
-    player.current.seekTo(curtime);
+    player.current.seekTo(curtime, 'seconds');
   }, [ player, curtime ]);
 
   const mediaPlay = (curtime?: number) => {
@@ -97,7 +99,8 @@ function MediaPlayer({
   };
 
   const onReady = (player: ReactPlayer) => {
-    if (curtime) {
+    if (!ready) {
+      setReady(true);
       player.seekTo(curtime, 'seconds');
     }
   };
@@ -182,7 +185,7 @@ function MediaPlayer({
           title: 'Error removing from queue',
           description: 'Please try again later'
         });
-      })
+      });
   }
 
   return (
