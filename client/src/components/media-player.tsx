@@ -1,5 +1,5 @@
 import { Cross1Icon, PlusIcon } from "@radix-ui/react-icons";
-import { Card, Flex, IconButton, Link, Separator, TextField, Text } from "@radix-ui/themes";
+import { Card, Flex, IconButton, Link, Separator, TextField, Text, AspectRatio } from "@radix-ui/themes";
 import ReactPlayer from "react-player";
 import { SyncRoom } from "../lib/types";
 import { useEffect, useRef } from "react";
@@ -188,27 +188,30 @@ function MediaPlayer({
   return (
     <Flex className='flex-col gap-2 w-[50vw] min-w-[min(600px,_85vw)] max-w-[85vw]'>
       {/* Player */}
-      <ReactPlayer
-        style={{backgroundColor: 'var(--gray-2)', outline: 'none'}}
-        width={'100%'}
-        ref={player}
-        url={queue[0]?.substring(queue[0].indexOf(':') + 1)}
-        playing={playing}
-        muted={true}
-        controls={true}
-        pip={false}
+      <AspectRatio ratio={16 / 9}>
+        <ReactPlayer
+          style={{backgroundColor: 'var(--gray-2)', outline: 'none'}}
+          width={'100%'}
+          height={'100%'}
+          ref={player}
+          url={queue[0]?.substring(queue[0].indexOf(':') + 1)}
+          playing={playing}
+          muted={true}
+          controls={true}
+          pip={false}
 
-        playbackRate={1.0}
-        light={false}
-        loop={false}
+          playbackRate={1.0}
+          light={false}
+          loop={false}
 
-        onReady={onReady}
-        onPlay={onPlay}
-        onPause={onPause}
+          onReady={onReady}
+          onPlay={onPlay}
+          onPause={onPause}
 
-        onEnded={onFinished}
-        onError={(e) => console.log(e)}
-      />
+          onEnded={onFinished}
+          onError={(e) => console.log(e)}
+        />
+      </AspectRatio>
 
       {/* URL Entry */}
       <TextField.Root
