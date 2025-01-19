@@ -186,11 +186,11 @@ function MediaPlayer({
   }
 
   return (
-    <Flex className='flex-col gap-2 max-w-[min(80vw,_600px)]'>
+    <Flex className='flex-col gap-2 w-[50vw] min-w-[min(600px,_85vw)] max-w-[85vw]'>
       {/* Player */}
       <ReactPlayer
         style={{backgroundColor: 'var(--gray-2)', outline: 'none'}}
-        width={'min(80vw, 600px)'}
+        width={'100%'}
         ref={player}
         url={queue[0]?.substring(queue[0].indexOf(':') + 1)}
         playing={playing}

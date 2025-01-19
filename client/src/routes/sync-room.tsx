@@ -175,7 +175,7 @@ function SyncRoom() {
 
   return (
     <Flex className='items-start justify-center min-h-screen'>
-      <Flex className='mt-16 md:mt-40 mb-8 mx-12 items-end justify-center gap-12 flex-wrap-reverse'>
+      <Flex className='mt-16 lg:mt-40 mb-8 mx-8 items-end justify-center gap-8 flex-wrap-reverse'>
         {/* Chat */}
         <ChatBox
           roomid={roomid}

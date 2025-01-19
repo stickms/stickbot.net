@@ -51,7 +51,7 @@ function ChatBox({ roomid, users, messages, host } : ChatBoxProps) {
   }
 
   return (
-    <Card className='flex flex-wrap w-[600px] max-w-[80vw] h-[400px] p-1'>
+    <Card className='flex flex-wrap w-[40vw] min-w-[min(600px,_85vw)] max-w-[85vw] h-[400px] p-1'>
       {/* User List */}
       <Box className='h-[90%] basis-[33%] max-w-[150px] flex-shrink p-1 whitespace-pre-line'>
         <ScrollArea className='pr-3 pl-1' scrollbars='vertical' type='always'>
