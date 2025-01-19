@@ -128,7 +128,7 @@ function SyncRoom() {
       });
 
     // "Heartbeat" - periodically check server status in case we get desynced
-    setInterval(() => {
+    const interval = setInterval(() => {
       fetch(`${API_ENDPOINT}/sync/rooms/${roomid}`, {
         credentials: 'include'
       })
@@ -141,6 +141,10 @@ function SyncRoom() {
         })
           .catch(() => navigate('/watch-together'));
     }, 15_000); // Every 15 seconds
+
+    return () => {
+      clearInterval(interval);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ roomid, user.id ]);
 
