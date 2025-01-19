@@ -45,6 +45,7 @@ function SyncRoom() {
   const navigate = useNavigate();
 
   const webSocket = useRef<WebSocket | null>(null);
+  const interval = useRef<NodeJS.Timeout | null>(null);
 
   const [room, setRoom] = useState<SyncRoom>();
 
@@ -126,9 +127,16 @@ function SyncRoom() {
       .catch(() => {
         navigate('/watch-together');;
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ roomid, user.id ]);
 
+  useEffect(() => {
     // "Heartbeat" - periodically check server status in case we get desynced
-    const interval = setInterval(() => {
+    if (interval.current) {
+      clearInterval(interval.current);
+    }
+
+    interval.current = setInterval(() => {
       fetch(`${API_ENDPOINT}/sync/rooms/${roomid}`, {
         credentials: 'include'
       })
@@ -143,10 +151,12 @@ function SyncRoom() {
     }, 15_000); // Every 15 seconds
 
     return () => {
-      clearInterval(interval);
+      if (interval.current) {
+        clearInterval(interval.current);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ roomid, user.id ]);
+  }, [ interval, roomid ]);
 
   const disconnect = useCallback(() => {
     if (!webSocket.current || webSocket.current.readyState !== 1) {
