@@ -1,6 +1,6 @@
 import { SITE_ADMIN_IDS } from '../env.js';
 import { callDiscordApi } from '../lib/util.js';
-import { connection, db, sessions, users } from './schema.js';
+import { connection, db, users } from './schema.js';
 
 async function seed() {
   console.log('Seeding the database...');
@@ -19,7 +19,7 @@ async function seed() {
     await db
       .insert(users)
       .values({
-        id: json['id'],
+        discordId: json['id'],
         username: json['username'],
         avatar: json['avatar'],
 
@@ -29,7 +29,7 @@ async function seed() {
         accessTokenExpiration: new Date()
       })
       .onConflictDoUpdate({
-        target: users.id,
+        target: users.discordId,
         set: {
           username: json['username'],
           avatar: json['avatar'],

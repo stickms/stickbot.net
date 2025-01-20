@@ -19,6 +19,7 @@ admin_route.get('/admin/list-users', adminGuard, async (c) => {
   const user_list = await db
     .select({
       id: users.id,
+      discord_id: users.discordId,
       username: users.username,
       avatar: users.avatar,
       is_admin: isNotNull(users.promotedOn).mapWith(Boolean)

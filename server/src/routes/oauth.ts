@@ -28,6 +28,30 @@ oauth_route.post('/validate-session', authGuard, async (c) => {
   });
 });
 
+oauth_route.post('/login/username', async (c) => {
+  const { username } = await c.req.json();
+
+  const user = db
+    .insert(users)
+    .values({
+      username: username
+    })
+    .returning()
+    .get();
+
+  if (!user) {
+    throw new HTTPException(400, { message: 'Could not create/update user' });
+  }
+
+  const sessionToken = generateSessionToken();
+  const session = await createSession(sessionToken, user.id);
+  setSessionTokenCookie(c, sessionToken, session.expiresAt);
+
+  return c.json({
+    success: true
+  });
+});
+
 oauth_route.get('/login/discord', async (c) => {
   const redirect = c.req.query('redirect') ?? '/';
 
@@ -75,7 +99,7 @@ oauth_route.get('/login/discord/callback', async (c) => {
   const user = db
     .insert(users)
     .values({
-      id: json['id'],
+      discordId: json['id'],
       username: json['username'],
       avatar: json['avatar'],
       accessToken: tokens.accessToken(),
@@ -83,7 +107,7 @@ oauth_route.get('/login/discord/callback', async (c) => {
       accessTokenExpiration: tokens.accessTokenExpiresAt()
     })
     .onConflictDoUpdate({
-      target: users.id,
+      target: users.discordId,
       set: {
         username: json['username'],
         avatar: json['avatar'],
@@ -110,7 +134,7 @@ oauth_route.post('/logout/discord', async (c) => {
   const cookie = getCookie(c);
   const { user } = await validateSessionToken(cookie['session']);
 
-  if (user) {
+  if (user?.accessToken) {
     await discord.revokeToken(user.accessToken);
   }
 
@@ -125,8 +149,19 @@ oauth_route.post('/logout/discord', async (c) => {
   });
 });
 
-oauth_route.get('/discord/user', authGuard, discordRefresh, async (c) => {
+oauth_route.get('/auth/user', authGuard, async (c) => {
   const user = c.get('user')!;
+
+  if (!user.discordId || !user.accessToken) {
+    return c.json({
+      success: true,
+      data: {
+        id: user.id,
+        username: user.username,
+        is_admin: !!user.promotedOn
+      }
+    });
+  }
 
   const userinfo = await callDiscordApi('users/@me', user.accessToken);
   const json = await userinfo.json();
@@ -143,7 +178,10 @@ oauth_route.get('/discord/user', authGuard, discordRefresh, async (c) => {
   return c.json({
     success: true,
     data: {
-      ...json,
+      id: user.id,
+      username: json['username'],
+      discord_id: json['id'],
+      avatar: json['avatar'],
       token_guild: user.apiGuild ?? '',
       is_admin: !!user.promotedOn
     }
@@ -152,6 +190,12 @@ oauth_route.get('/discord/user', authGuard, discordRefresh, async (c) => {
 
 oauth_route.get('/discord/guilds', authGuard, discordRefresh, async (c) => {
   const user = c.get('user')!;
+
+  if (!user.accessToken) {
+    throw new HTTPException(400, {
+      message: 'Please login using discord to use this'
+    });
+  }
 
   const guildinfo = await callDiscordApi('users/@me/guilds', user.accessToken);
 

@@ -8,6 +8,7 @@ import {
 import { db, users, type User } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 import type { Context } from '../lib/context.js';
+import { HTTPException } from 'hono/http-exception';
 
 export const discord = new Discord(
   DISCORD_CLIENT_ID,
@@ -17,6 +18,12 @@ export const discord = new Discord(
 
 export const discordRefresh = async (c: HonoContext<Context>, next: Next) => {
   const user = c.get('user')!;
+
+  if (!user.discordId || !user.accessTokenExpiration || !user.refreshToken) {
+    throw new HTTPException(400, {
+      message: 'Please login to discord to use this feature'
+    })
+  }
 
   if (new Date() > user.accessTokenExpiration) {
     // Will throw an error if this fails

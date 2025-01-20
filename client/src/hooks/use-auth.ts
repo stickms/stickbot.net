@@ -25,7 +25,7 @@ function useAuth() {
   }
 
   async function getUser() {
-    const resp = await fetch(`${API_ENDPOINT}/discord/user`, {
+    const resp = await fetch(`${API_ENDPOINT}/auth/user`, {
       credentials: 'include'
     });
 

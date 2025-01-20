@@ -2,6 +2,7 @@
 export type UserType = {
   avatar: string;
   id: string;
+  discord_id: string;
   username: string;
   token_guild: string;
   is_admin: boolean;

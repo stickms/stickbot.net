@@ -27,6 +27,7 @@ import { fetchGetJson, getDiscordAvatar } from '../lib/util';
 
 type UserListType = {
   id: string;
+  discord_id?: string;
   username?: string;
   avatar?: string;
   is_admin: boolean;
@@ -39,17 +40,20 @@ function UserCard({ user }: { user: UserListType }) {
         <Avatar
           size='3'
           fallback='U'
-          src={getDiscordAvatar(user.id, user.avatar)}
+          src={getDiscordAvatar(user.discord_id, user.avatar)}
         />
         <Box>
           <Text as='div'>{user.username ?? 'Username N/A'}</Text>
           <Text as='div' className='text-sm' color='gray'>
+            {'#' + user.id}
+          </Text>
+          <Text as='div' className='text-sm' color='gray'>
             {'<@'}
-            {user.id}
+            {user.discord_id}
             {'>'}
           </Text>
           <Text as='div' className='text-xs text-center' color='gray'>
-            click to copy userid
+            click to copy {user.discord_id ? 'discord id' : 'userid'}
           </Text>
         </Box>
       </Flex>
@@ -143,7 +147,7 @@ function UserList() {
                         asChild
                         highContrast
                         underline='hover'
-                        onClick={() => navigator.clipboard.writeText(u.id)}
+                        onClick={() => navigator.clipboard.writeText(u.discord_id ?? u.id)}
                       >
                         <button>{u.username ?? 'Username N/A'}</button>
                       </Link>

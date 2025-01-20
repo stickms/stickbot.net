@@ -9,8 +9,44 @@ import useToast from "../hooks/use-toast";
 import { SyncRoom } from "../lib/types";
 
 function SignIn() {
+  const username_input = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
+
   const location = useLocation();
   const redirect = `?redirect=${encodeURIComponent(location.pathname)}`;
+
+  const signIn = () => {
+    if (!username_input.current) {
+      return;
+    }
+
+    if (!username_input.current.value) {
+      toast({
+        title: 'Error signing in',
+        description: 'Please enter a username'
+      });
+
+      return;
+    }
+
+    fetch(`${API_ENDPOINT}/login/username`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        username: username_input.current.value
+      })
+    })
+      .then(fetchGetJson)
+      .then(() => {
+        window.location.reload();
+      })
+      .catch(() => {
+        toast({
+          title: 'Error signing in',
+          description: 'Please try again'
+        });
+      });
+  }
 
   return (
     <Flex className='items-center justify-center min-h-screen'>
@@ -19,6 +55,22 @@ function SignIn() {
 
         <Flex className='flex-col items-center gap-4'>
           <Text className='text-center'>Sign-in to continue</Text>
+          <TextField.Root
+            ref={username_input}
+            placeholder='Enter username...'
+            maxLength={32}
+            onKeyDown={(e) => e.key === 'Enter' && signIn()}
+          >
+            <TextField.Slot side='right'>
+              <IconButton
+                variant='ghost'
+                onClick={signIn}
+              >
+                <EnterIcon />
+              </IconButton>
+            </TextField.Slot>
+          </TextField.Root>
+          <Text>- or -</Text>
           <Link href={`${API_ENDPOINT}/login/discord${redirect}`}>
             <Button>
               <DiscordLogoIcon /> Login

@@ -5,6 +5,7 @@ import { atom } from 'nanostores';
 const default_user: UserType = {
   avatar: '',
   id: '',
+  discord_id: '',
   username: '',
   token_guild: '',
   is_admin: false,

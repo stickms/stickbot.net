@@ -55,7 +55,7 @@ function ChatBox({ roomid, users, messages, host } : ChatBoxProps) {
       <Card className='absolute grid grid-cols-[auto_1fr] grid-rows-[1fr_auto] gap-2 w-full h-[70%]'>
         <Box className='row-start-1 row-end-2 col-start-1 col-end-2 w-40 max-w-[25vw]'>
           {/* User List */}
-          <ScrollArea className='pr-3 pl-1' scrollbars='vertical' type='always'>
+          <ScrollArea className='pr-3 pl-1 whitespace-pre-line' scrollbars='vertical' type='always'>
             {users.map((user) => {
               const split = user.indexOf(':');
               const userid = user.substring(0, split);

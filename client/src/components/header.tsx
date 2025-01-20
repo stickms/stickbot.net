@@ -33,7 +33,7 @@ function DiscordLogin() {
       <DropdownMenu.Trigger>
         <Button variant='ghost'>
           <Avatar
-            src={getDiscordAvatar(user.id, user.avatar)}
+            src={getDiscordAvatar(user.discord_id, user.avatar)}
             fallback={'U'}
             size='2'
           />

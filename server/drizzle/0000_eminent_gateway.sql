@@ -23,12 +23,15 @@ CREATE TABLE `sessions` (
 --> statement-breakpoint
 CREATE TABLE `users` (
 	`id` text PRIMARY KEY NOT NULL,
+	`discord_id` text,
 	`username` text,
 	`avatar` text,
 	`promoted_on` integer,
 	`api_token` text,
 	`api_guild` text,
-	`refresh_token` text NOT NULL,
-	`access_token` text NOT NULL,
-	`access_token_expiration` integer NOT NULL
+	`refresh_token` text,
+	`access_token` text,
+	`access_token_expiration` integer
 );
+--> statement-breakpoint
+CREATE UNIQUE INDEX `users_discord_id_unique` ON `users` (`discord_id`);

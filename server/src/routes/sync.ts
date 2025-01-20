@@ -4,7 +4,6 @@ import { WSContext } from "hono/ws";
 import type { Context } from "../lib/context.js";
 import { authGuard } from "../middleware/auth-guard.js";
 import { HTTPException } from "hono/http-exception";
-import { SITE_ADMIN_IDS } from "../env.js";
 import { encodeBase64urlNoPadding } from "@oslojs/encoding";
 
 const sync_route = new Hono<Context>();
@@ -41,20 +40,7 @@ type SyncRoom = {
 };
 
 let clients: SyncClient[] = [];
-let rooms: SyncRoom[] = [{
-  id: '0',
-  name: 'Sync Room Test',
-  host: SITE_ADMIN_IDS.split(',')[0],
-  leaders: [],
-  meta: {
-    queue: [],
-    queue_counter: 0,
-    start_time: Date.now(),
-    stop_time: 0,
-    playing: false,
-    messages: []
-  }
-}];
+let rooms: SyncRoom[] = [];
 
 function handleJoinLeave(source: SyncClient | undefined, message: any) {
   if (!source?.room) {
@@ -180,7 +166,7 @@ sync_route.post('/sync/rooms/create', authGuard, async (c) => {
 
   const room: SyncRoom = {
     id: encodeBase64urlNoPadding(bytes),
-    host: user.id,
+    host: user.id.toString(),
     leaders: [],
     name: name,
 
@@ -216,7 +202,7 @@ sync_route.delete('/sync/rooms/:roomid', authGuard, async (c) => {
     });
   }
 
-  if (room.host !== user.id) {
+  if (room.host !== user.id.toString()) {
     throw new HTTPException(401, {
       message: 'Unauthorized'
     });

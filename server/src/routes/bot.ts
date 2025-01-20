@@ -24,6 +24,12 @@ bot_route.post('/bot/generate-token', authGuard, discordRefresh, async (c) => {
   const user = c.get('user')!;
   const guildid = c.req.query('guildid');
 
+  if (!user.accessToken) {
+    throw new HTTPException(400, {
+      message: 'Please login using Discord for this feature'
+    });
+  }
+
   if (!guildid) {
     throw new HTTPException(400, { message: 'Please specify a guildid' });
   }
@@ -179,7 +185,7 @@ bot_route.post('/bot/addtag', validateToken, validateSteamId, async (c) => {
     {
       $set: {
         [`tags.${user.apiGuild!}.${tag}`]: {
-          addedby: user.id,
+          addedby: `api_${user.id}`,
           date: Math.floor(Date.now() / 1000)
         }
       }

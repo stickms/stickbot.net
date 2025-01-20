@@ -5,43 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1736294445047,
-      "tag": "0000_cheerful_the_enforcers",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1736639165225,
-      "tag": "0001_abandoned_vermin",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1736646010088,
-      "tag": "0002_closed_krista_starr",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1736661282568,
-      "tag": "0003_abandoned_gorilla_man",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "6",
-      "when": 1736878719469,
-      "tag": "0004_stiff_red_ghost",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "6",
-      "when": 1736881081213,
-      "tag": "0005_amusing_archangel",
+      "when": 1737343031599,
+      "tag": "0000_eminent_gateway",
       "breakpoints": true
     }
   ]

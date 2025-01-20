@@ -27,7 +27,11 @@ export function parseSteamID(steamid: string) {
   throw new Error(`Could not parse Steam ID '${steamid}'`);
 }
 
-export function getDiscordAvatar(userid: string, avatar?: string) {
+export function getDiscordAvatar(userid?: string, avatar?: string) {
+  if (!userid) {
+    return undefined;
+  }
+
   const cdn = 'https://cdn.discordapp.com/';
 
   if (!avatar) {
