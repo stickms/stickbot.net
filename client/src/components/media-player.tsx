@@ -1,11 +1,13 @@
-import { Cross1Icon, PlusIcon } from "@radix-ui/react-icons";
-import { Card, Flex, IconButton, Link, Separator, TextField, Text, AspectRatio } from "@radix-ui/themes";
+import { PlusIcon } from "@radix-ui/react-icons";
+import { Flex, IconButton, TextField, AspectRatio } from "@radix-ui/themes";
 import ReactPlayer from "react-player";
 import { SyncRoom } from "../lib/types";
 import { useEffect, useRef, useState } from "react";
 import useToast from "../hooks/use-toast";
 import { API_ENDPOINT } from "../env";
 import { fetchGetJson } from "../lib/util";
+import MediaQueue from "./media-queue";
+import { arrayMove } from "@dnd-kit/sortable";
 
 type MediaPlayerProps = {
   roomid: string;
@@ -68,7 +70,7 @@ function MediaPlayer({
       });
   };
 
-  const mediaPause = () => {
+  const mediaPause = (curtime?: number) => {
     if (!player.current) {
       return;
     }
@@ -78,7 +80,7 @@ function MediaPlayer({
       meta: {
         ...rm.meta,
         playing: false,
-        curtime: Math.floor(player.current!.getCurrentTime())
+        curtime: curtime ?? Math.floor(player.current!.getCurrentTime())
       }
     });
 
@@ -86,7 +88,7 @@ function MediaPlayer({
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
-        curtime: Math.floor(player.current.getCurrentTime())
+        curtime: Math.floor(curtime ?? player.current.getCurrentTime())
       })
     })
       .then(fetchGetJson)
@@ -169,7 +171,11 @@ function MediaPlayer({
   const queueRemove = (index: string) => {
     if (queue[0].startsWith(index)) {
       player.current?.seekTo(0);
-      mediaPlay(0);
+      if (playing) {
+        mediaPlay(0);
+      } else {
+        mediaPause(0);
+      }
     }
 
     fetch(`${API_ENDPOINT}/sync/rooms/${roomid}/queue`, {
@@ -185,6 +191,32 @@ function MediaPlayer({
           title: 'Error removing from queue',
           description: 'Please try again later'
         });
+      });
+  }
+
+  const queueOrder = (from: number, to: number) => {
+    if (to === 0) {
+      player.current?.seekTo(0);
+      if (playing) {
+        mediaPlay(0);
+      } else {
+        mediaPause(0);
+      }
+    }
+
+    fetch(`${API_ENDPOINT}/sync/rooms/${roomid}/queue`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        order: arrayMove(queue, from, to)
+      })
+    })
+      .then(fetchGetJson)
+      .catch(() => {
+        toast({
+          title: 'Error reordering queue',
+          description: 'Please try again later'
+        })
       });
   }
 
@@ -223,6 +255,7 @@ function MediaPlayer({
         placeholder='Enter media url...'
         onKeyDown={(e) => e.key === 'Enter' && queueAdd()}
       >
+        {/* Add media button */}
         <TextField.Slot side='right'>
           <IconButton
             variant='ghost'
@@ -234,32 +267,11 @@ function MediaPlayer({
       </TextField.Root>
 
       {/* Media Queue */}
-      {
-        !!queue.length && (
-          <Card className='flex flex-col p-2 gap-2 items-stretch justify-center'>
-            <Text className='text-sm text-center'>Media Queue</Text>
-            <Separator size='4' />
-            {queue.map((entry, i) => (
-              <Flex key={entry.split(':')[0]} className='items-center justify-evenly gap-2'>
-                <Link 
-                  className='text-xs text-center break-all'
-                  href={entry.substring(entry.indexOf(':') + 1)}
-                >
-                  {i + 1}. {entry.substring(entry.indexOf(':') + 1)}
-                </Link>
-
-                <IconButton 
-                  variant='outline' 
-                  size='1'
-                  onClick={() => queueRemove(entry.split(':')[0])}
-                >
-                  <Cross1Icon />
-                </IconButton>
-              </Flex>
-            ))}
-          </Card>
-        )
-      }
+      <MediaQueue
+        internalQueue={queue}
+        queueRemove={queueRemove}
+        queueOrder={queueOrder}
+      />
     </Flex>
   );
 }

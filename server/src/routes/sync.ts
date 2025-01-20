@@ -347,9 +347,9 @@ sync_route.post('/sync/rooms/:roomid/message', authGuard, async (c) => {
 sync_route.post('/sync/rooms/:roomid/queue', authGuard, async (c) => {
   const user = c.get('user')!;
   const roomid = c.req.param('roomid');
-  const { add, remove } = await c.req.json();
+  const { add, remove, order } = await c.req.json();
 
-  if (!add && !remove) {
+  if (!add && !remove && !order) {
     throw new HTTPException(400, {
       message: 'Please supply a queue element'
     });
@@ -377,9 +377,21 @@ sync_route.post('/sync/rooms/:roomid/queue', authGuard, async (c) => {
         }
       }
     });
-  } else {
+  } else if (remove) {
     queue = queue.filter((q) => !q.startsWith(remove));
 
+    rooms = rooms.map((room) => {
+      return room.id !== roomid ? room : {
+        ...room,
+        meta: {
+          ...room.meta,
+          queue
+        }
+      }
+    });
+  } else { // Reorder elements
+    queue = order;
+    
     rooms = rooms.map((room) => {
       return room.id !== roomid ? room : {
         ...room,
