@@ -29,15 +29,15 @@ app.use(
   })
 );
 
+app.use('/*', trimTrailingSlash());
+app.use('/*', auth);
+
 app.use(
   '/bot/*-token',
   csrf({
     origin: CLIENT_URL
   })
 );
-
-app.use('/*', trimTrailingSlash());
-app.use('/*', auth);
 
 app.route('/', lookup_route);
 app.route('/', oauth_route);

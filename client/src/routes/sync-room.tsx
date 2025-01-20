@@ -1,7 +1,7 @@
 import { Flex } from "@radix-ui/themes";
 import { MutableRefObject, useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { type SyncRoom } from "../lib/types";
+import { UserType, type SyncRoom } from "../lib/types";
 import { API_ENDPOINT } from "../env";
 import { fetchGetJson } from "../lib/util";
 import { hc } from "hono/client";
@@ -10,13 +10,21 @@ import MediaPlayer from "../components/media-player";
 import ChatBox from "../components/chat-box";
 
 function connect(
+  user: UserType,
+  roomid: string,
   socketRef: MutableRefObject<WebSocket | null>,
   setSocket: (socket: WebSocket | null) => void,
   openCallback: (socket: WebSocket, event: Event) => unknown,
   messageCallback: (socket: WebSocket, event: MessageEvent<string>) => unknown,
 ) {
   const client = hc(`${API_ENDPOINT}/sync`);
-  const socket = client.ws.$ws(0);
+  const socket = client.ws.$ws({
+    query: {
+      id: user.id,
+      username: user.username,
+      room: roomid
+    }
+  });
 
   socket.addEventListener('open', (e) => openCallback(socket, e));
   socket.addEventListener('message', (e) => messageCallback(socket, e));
@@ -25,7 +33,7 @@ function connect(
     if (socketRef.current) {
       console.error('WebSocket unexpectedly closed, reconnecting in 1s...');
       setTimeout(() => {
-        connect(socketRef, setSocket, openCallback, messageCallback);
+        connect(user, roomid, socketRef, setSocket, openCallback, messageCallback);
       }, 1_000);
     }
   });
@@ -50,7 +58,7 @@ function SyncRoom() {
   const [room, setRoom] = useState<SyncRoom>();
 
   useEffect(() => {
-    if (webSocket.current) {
+    if (webSocket.current || !roomid) {
       return;
     }
 
@@ -62,19 +70,13 @@ function SyncRoom() {
         setRoom(data['data']);
         
         connect(
+          user,
+          roomid,
           webSocket,
           (socket) => {
             webSocket.current = socket;
           },
           (socket) => {
-            console.log('open!');
-
-            socket.send(JSON.stringify({
-              id: user.id,
-              username: user.username,
-              room: roomid
-            }));
-    
             socket.send(JSON.stringify({
               join: true,
               user: `${user.id}:${user.username}`

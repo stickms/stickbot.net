@@ -14,17 +14,16 @@ export const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({
 
 type SyncClient = {
   // User ID
-  id?: string;
+  id: string;
   // Username
-  username?: string;
+  username: string;
   // What room are we in?
-  room?: string;
+  room: string;
   // WebSocket Context
   ws: WSContext;
 };
 
 type SyncRoom = {
-  id: string;
   name: string;
   host: string;
   leaders: string[];
@@ -36,18 +35,32 @@ type SyncRoom = {
     stop_time?: number; // If set, overrides start_time
     playing: boolean;
     messages: string[];
-  }
+  }  
+};
+
+type SyncRoomList = {
+  [id: string]: SyncRoom;
 };
 
 let clients: SyncClient[] = [];
-let rooms: SyncRoom[] = [];
+let rooms: SyncRoomList = {};
+
+function relayToRoom(roomid: string, data: {}) {
+  clients.forEach((client) => {
+    if (client.room !== roomid) {
+      return;
+    }
+
+    client.ws.send(JSON.stringify(data));
+  });
+}
 
 function handleJoinLeave(source: SyncClient | undefined, message: any) {
   if (!source?.room) {
     return;
   }
 
-  const room = rooms.find((room) => room.id === source.room);
+  const room = rooms[source.room];
 
   if (!room) {
     return;
@@ -55,7 +68,7 @@ function handleJoinLeave(source: SyncClient | undefined, message: any) {
 
   let users = clients
     .filter((client) => (
-      !!client.id && client.room === room.id
+      !!client.id && client.room === source.room
     ))
     .map((client) => `${client.id}:${client.username}`);
   
@@ -68,33 +81,26 @@ function handleJoinLeave(source: SyncClient | undefined, message: any) {
 
   users = [ ...new Set(users) ];
 
-  clients
-    .filter((client) => client.room === source.room)
-    .forEach((client) => client.ws.send(JSON.stringify({
-      source: source.id,
-      users
-    })));
+  relayToRoom(source.room, {
+    source: source.id,
+    users
+  });
 }
 
 sync_route.get('/sync/ws', upgradeWebSocket((c) => {
   return {
     onOpen(event, ws) {
-      clients.push({ ws });
+      const { id, username, room } = c.req.query();
+      clients.push({
+        ws,
+        id,
+        username,
+        room
+      });
     },
     onMessage(event, ws) {
       const source = clients.find((client) => client.ws === ws);
       const message = JSON.parse(event.data.toString());
-
-      if (message.id) {
-        clients = clients.map((client) => {
-          return client.ws !== ws ? client : {
-            ...client,
-            id: message.id,
-            username: message.username,
-            room: message.room
-          };
-        });
-      }
 
       if (message.join || message.leave) {
         handleJoinLeave(source, message);
@@ -111,20 +117,22 @@ sync_route.get('/sync/ws', upgradeWebSocket((c) => {
 }));
 
 sync_route.get('/sync/rooms', authGuard, async (c) => {
+  const mapped = Object.entries(rooms)
+    .map(([id, room]) => ({
+      id,
+      name: room.name,
+      host: room.host
+    }));
+
   return c.json({
     success: true,
-    data: rooms.map((room) => ({
-      ...room,
-      leaders: [],    // Hide some data (e.g. private rooms)    
-      users: [],
-      meta: {}
-    }))
+    data: mapped
   });
 });
 
 sync_route.get('/sync/rooms/:roomid', authGuard, async (c) => {
   const roomid = c.req.param('roomid');
-  const room = rooms.find((room) => room.id === roomid);
+  const room = rooms[roomid];
 
   if (!room) {
     throw new HTTPException(404, {
@@ -133,7 +141,7 @@ sync_route.get('/sync/rooms/:roomid', authGuard, async (c) => {
   }
 
   let users = clients
-    .filter((client) => !!client.id && client.room === room.id)
+    .filter((client) => !!client.id && client.room === roomid)
     .map((client) => `${client.id}:${client.username}`);
 
   users = [ ...new Set(users) ];
@@ -163,9 +171,9 @@ sync_route.post('/sync/rooms/create', authGuard, async (c) => {
 
   const bytes = new Uint8Array(8);
   crypto.getRandomValues(bytes);
+  const roomid = encodeBase64urlNoPadding(bytes);
 
   const room: SyncRoom = {
-    id: encodeBase64urlNoPadding(bytes),
     host: user.id.toString(),
     leaders: [],
     name: name,
@@ -180,13 +188,12 @@ sync_route.post('/sync/rooms/create', authGuard, async (c) => {
     }
   }
 
-  rooms = [ room, ...rooms ];
+  rooms[roomid] = room;
 
   return c.json({
     success: true,
     data: {
-      room,
-      roomid: room.id
+      roomid
     }
   });
 });
@@ -195,7 +202,7 @@ sync_route.delete('/sync/rooms/:roomid', authGuard, async (c) => {
   const user = c.get('user')!;
   const roomid = c.req.param('roomid');
 
-  const room = rooms.find((room) => room.id === roomid);
+  const room = rooms[roomid];
   if (!room) {
     throw new HTTPException(404, {
       message: 'Room not found'
@@ -208,18 +215,25 @@ sync_route.delete('/sync/rooms/:roomid', authGuard, async (c) => {
     });
   }
 
-  rooms = rooms.filter((room) => room.id !== roomid);
+  delete rooms[roomid];
+
+  const mapped = Object.entries(rooms)
+    .map(([id, room]) => ({
+      id,
+      name: room.name,
+      host: room.host
+    }));
 
   return c.json({
     success: true,
-    data: rooms
+    data: mapped
   });
 });
 
 sync_route.post('/sync/rooms/:roomid/join', authGuard, async (c) => {
   const roomid = c.req.param('roomid');
 
-  const room = rooms.find((room) => room.id === roomid);
+  const room = rooms[roomid];
   if (!room) {
     throw new HTTPException(404, {
       message: 'Room not found'
@@ -242,25 +256,23 @@ sync_route.post('/sync/rooms/:roomid/play', authGuard, async (c) => {
     });
   }
 
-  rooms = rooms.map((room) => {
-    return room.id !== roomid ? room : { 
-      ...room, 
-      meta: {
-        ...room.meta,
-        playing: true,
-        start_time: Date.now() - (curtime * 1000),
-        stop_time: undefined
-      } 
-    };
-  });
+  const room = rooms[roomid];
 
-  clients
-    .filter((client) => client.room === roomid)
-    .forEach((client) => client.ws.send(JSON.stringify({
-      source: user.id,
-      play: true,
-      curtime: curtime
-    })));
+  rooms[roomid] = {
+    ...room,
+    meta: {
+      ...room.meta,
+      playing: true,
+      start_time: Date.now() - (curtime * 1000),
+      stop_time: undefined
+    }
+  };
+
+  relayToRoom(roomid, {
+    source: user.id,
+    play: true,
+    curtime: curtime
+  });
 
   return c.json({
     success: true
@@ -278,24 +290,22 @@ sync_route.post('/sync/rooms/:roomid/pause', authGuard, async (c) => {
     });
   }
 
-  rooms = rooms.map((room) => {
-    return room.id !== roomid ? room : { 
-      ...room, 
-      meta: {
-        ...room.meta,
-        playing: false,
-        stop_time: curtime
-      } 
-    };
-  });
+  const room = rooms[roomid];
 
-  clients
-    .filter((client) => client.room === roomid)
-    .forEach((client) => client.ws.send(JSON.stringify({
-      source: user.id,
-      pause: true,
-      curtime: curtime
-    })));
+  rooms[roomid] = {
+    ...room,
+    meta: {
+      ...room.meta,
+      playing: false,
+      stop_time: curtime
+    }
+  };
+
+  relayToRoom(roomid, {
+    source: user.id,
+    pause: true,
+    curtime: curtime
+  });
 
   return c.json({
     success: true
@@ -313,7 +323,7 @@ sync_route.post('/sync/rooms/:roomid/message', authGuard, async (c) => {
     });
   }
 
-  const room = rooms.find((room) => room.id === roomid);
+  const room = rooms[roomid];
   if (!room) {
     throw new HTTPException(404, {
       message: 'Room not found'
@@ -322,22 +332,18 @@ sync_route.post('/sync/rooms/:roomid/message', authGuard, async (c) => {
 
   let chat = [ ...room.meta.messages, `${user.id}:${user.username}: ${message}`];
 
-  rooms = rooms.map((room) => {
-    return room.id !== roomid ? room : {
-      ...room,
-      meta: {
-        ...room.meta,
-        messages: chat
-      }
+  rooms[roomid] = {
+    ...room,
+    meta: {
+      ...room.meta,
+      messages: chat
     }
-  });
+  };
 
-  clients
-    .filter((client) => client.room === roomid)
-    .forEach((client) => client.ws.send(JSON.stringify({
-      source: user.id,
-      chat
-    })));
+  relayToRoom(roomid, {
+    source: user.id,
+    chat
+  });
 
   return c.json({
     success: true
@@ -355,7 +361,7 @@ sync_route.post('/sync/rooms/:roomid/queue', authGuard, async (c) => {
     });
   }
 
-  const room = rooms.find((room) => room.id === roomid);
+  const room = rooms[roomid];
   if (!room) {
     throw new HTTPException(404, {
       message: 'Room not found'
@@ -366,50 +372,26 @@ sync_route.post('/sync/rooms/:roomid/queue', authGuard, async (c) => {
 
   if (add) {
     queue.push(`${room.meta.queue_counter}:${add}`);
-
-    rooms = rooms.map((room) => {
-      return room.id !== roomid ? room : {
-        ...room,
-        meta: {
-          ...room.meta,
-          queue_counter: room.meta.queue_counter + 1,
-          queue
-        }
-      }
-    });
   } else if (remove) {
     queue = queue.filter((q) => !q.startsWith(remove));
-
-    rooms = rooms.map((room) => {
-      return room.id !== roomid ? room : {
-        ...room,
-        meta: {
-          ...room.meta,
-          queue
-        }
-      }
-    });
   } else { // Reorder elements
     queue = order;
-    
-    rooms = rooms.map((room) => {
-      return room.id !== roomid ? room : {
-        ...room,
-        meta: {
-          ...room.meta,
-          queue
-        }
-      }
-    });
   }
 
-  clients
-    .filter((client) => client.room === roomid)
-    .forEach((client) => client.ws.send(JSON.stringify({
-      source: user.id,
+  rooms[roomid] = {
+    ...room,
+    meta: {
+      ...room.meta,
+      queue_counter: room.meta.queue_counter + 1,
       queue
-    })));
-  
+    }
+  };
+
+  relayToRoom(roomid, {
+    source: user.id,
+    queue
+  });
+
   return c.json({
     success: true
   });

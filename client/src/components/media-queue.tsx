@@ -112,7 +112,7 @@ function QueueItem({ content, index, queueRemove }: QueueItemProps) {
   return (
     <Card
       ref={setNodeRef}
-      className='flex items-center justify-between py-[6px] gap-2'
+      className='flex items-center justify-between py-[6px] gap-2 touch-none'
       style={style}
       {...attributes}
       {...listeners}
