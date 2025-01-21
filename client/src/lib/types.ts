@@ -14,6 +14,12 @@ export type GuildType = {
   name: string;
 };
 
+export type SyncRoomQueue = {
+  id: string;
+  url: string;
+  title: string;
+}[];
+
 export type SyncRoom = {
   id: string;
   name: string;
@@ -22,7 +28,7 @@ export type SyncRoom = {
   users: string[];
 
   meta: {
-    queue: string[];
+    queue: SyncRoomQueue;
     curtime: number;
     playing: boolean;
     messages: string[];

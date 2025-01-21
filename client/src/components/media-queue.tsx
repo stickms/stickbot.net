@@ -3,18 +3,18 @@ import { Cross1Icon } from "@radix-ui/react-icons";
 import { Card, Link, IconButton, } from "@radix-ui/themes";
 import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, pointerWithin, useSensor, useSensors } from "@dnd-kit/core";
+import { DndContext, DragEndEvent, PointerSensor, rectIntersection, useSensor, useSensors } from "@dnd-kit/core";
+import { SyncRoomQueue } from "../lib/types";
+import { restrictToParentElement } from "@dnd-kit/modifiers";
 
 type MediaQueueProps = {
-  internalQueue: string[];
+  internalQueue: SyncRoomQueue;
   queueRemove: (index: string) => void;
   queueOrder: (from: number, to: number) => void;
 };
 
 function MediaQueue({ internalQueue, queueRemove, queueOrder }: MediaQueueProps) {
-  const [activeId, setActiveId] = useState<string | number>();
-
-  const [queue, setQueue] = useState<string[]>(internalQueue);
+  const [queue, setQueue] = useState<SyncRoomQueue>(internalQueue);
 
   useEffect(() => {
     setQueue(internalQueue);
@@ -32,12 +32,6 @@ function MediaQueue({ internalQueue, queueRemove, queueOrder }: MediaQueueProps)
     return null;
   }
 
-  const handleDragStart = (event: DragStartEvent) => {
-    const { active } = event;
-    
-    setActiveId(active.id);
-  }
-
   const handleDragEnd = (event: DragEndEvent) => {
     const {active, over} = event;
 
@@ -45,64 +39,57 @@ function MediaQueue({ internalQueue, queueRemove, queueOrder }: MediaQueueProps)
       return;
     }
 
-    const start = queue.findIndex((e) => e.startsWith(active.id.toString()));
-    const end = queue.findIndex((e) => e.startsWith(over.id.toString()));
+    const start = queue.findIndex((e) => e.id === active.id.toString());
+    const end = queue.findIndex((e) => e.id === over.id.toString());
 
     setQueue(arrayMove(queue, start, end));
     queueOrder(start, end);
   }
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={pointerWithin}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-    >
-      <SortableContext 
-        items={queue}
-        strategy={verticalListSortingStrategy}
+    <div>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={rectIntersection}
+        modifiers={[ restrictToParentElement ]}
+        onDragEnd={handleDragEnd}
       >
-        {queue.map((entry, index) => {
-          return <QueueItem
-            key={entry}
-            content={entry}
-            index={index}
-            queueRemove={queueRemove}
-          />
-        })}
-      </SortableContext>
-      <DragOverlay>
-        {!!activeId && (
-          <QueueItem
-            content={queue.find((e) => e.startsWith(activeId.toString()))!}
-            index={queue.findIndex((e) => e.startsWith(activeId.toString()))!}
-            queueRemove={queueRemove}
-          />
-        )}
-      </DragOverlay>
-    </DndContext>
+        <SortableContext 
+          items={queue}
+          strategy={verticalListSortingStrategy}
+        >
+          {queue.map((entry, index) => {
+            return <QueueItem
+              key={entry.id}
+              content={entry}
+              index={index}
+              queueRemove={queueRemove}
+            />
+          })}
+        </SortableContext>
+      </DndContext>
+    </div>
   );
 }
 
 type QueueItemProps = {
-  content: string;
+  content: {
+    id: string;
+    url: string;
+    title: string;  
+  };
   index: number;
-  queueRemove: (index: string) => void
+  queueRemove: (id: string) => void
 };
 
 function QueueItem({ content, index, queueRemove }: QueueItemProps) {
-  const split = content.indexOf(':');
-  const id = content.substring(0, split);
-  const url = content.substring(split + 1);
-
   const {
     attributes,
     listeners,
     setNodeRef,
     transform,
     transition,
-  } = useSortable({ id });
+  } = useSortable({ id: content.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -112,24 +99,24 @@ function QueueItem({ content, index, queueRemove }: QueueItemProps) {
   return (
     <Card
       ref={setNodeRef}
-      className='flex items-center justify-between py-[6px] gap-2 touch-none'
+      className='flex items-center justify-between py-[6px] gap-2 touch-none mb-2'
       style={style}
       {...attributes}
       {...listeners}
     >
       <Link 
         className='text-xs text-center break-all'
-        href={url}
+        href={content.url}
         target='_blank'
         rel='noopener noreferrer'
       >
-        {index + 1}. {url}
+        {index + 1}. {content.title}
       </Link>
 
       <IconButton 
         variant='outline' 
         size='1'
-        onClick={() => queueRemove(id)}
+        onClick={() => queueRemove(content.id)}
       >
         <Cross1Icon />
       </IconButton>

@@ -7,12 +7,13 @@ import MediaQueue from "./media-queue";
 import { arrayMove } from "@dnd-kit/sortable";
 import { useStore } from "@nanostores/react";
 import { $syncsettings, setHideChat } from "../lib/store";
+import { SyncRoomQueue } from "../lib/types";
 
 type MediaPlayerProps = {
   socket: WebSocket;
   playing: boolean;
   curtime: number;
-  queue: string[];
+  queue: SyncRoomQueue;
   editRoomMeta: (meta: object) => void
 };
 
@@ -103,7 +104,7 @@ function MediaPlayer({
     }
 
     player.current.seekTo(0);
-    queueRemove(queue[0]?.split(':')[0]);
+    queueRemove(queue[0]?.id);
   }
 
   const queueAdd = () => {
@@ -129,8 +130,8 @@ function MediaPlayer({
     media_queue_input.current!.value = ''
   }
 
-  const queueRemove = (index: string) => {
-    if (queue[0].startsWith(index)) {
+  const queueRemove = (id: string) => {
+    if (queue[0].id === id) {
       player.current?.seekTo(0);
       if (playing) {
         mediaPlay(0);
@@ -141,7 +142,7 @@ function MediaPlayer({
 
     socket.send(JSON.stringify({
       command: 'queue',
-      remove: index.toString()
+      remove: id.toString()
     }));
   }
 
@@ -173,7 +174,7 @@ function MediaPlayer({
           width={'100%'}
           height={'100%'}
           ref={player}
-          url={queue[0]?.substring(queue[0].indexOf(':') + 1)}
+          url={queue[0]?.url}
           playing={playing}
           muted={true}
           controls={true}

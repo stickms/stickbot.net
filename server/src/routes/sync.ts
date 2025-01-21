@@ -5,6 +5,7 @@ import type { Context } from "../lib/context.js";
 import { authGuard } from "../middleware/auth-guard.js";
 import { HTTPException } from "hono/http-exception";
 import { encodeBase64urlNoPadding } from "@oslojs/encoding";
+import { dispositionFilename } from "../lib/util.js";
 
 const sync_route = new Hono<Context>();
 
@@ -24,7 +25,11 @@ type SyncClient = {
 };
 
 type RoomMetadata = {
-  queue: string[];
+  queue: {
+    id: string;
+    url: string;
+    title: string;
+  }[];
   queue_counter: number;      // Not shared, internal counter
   start_time: number;         // MS since UTC epoch
   stop_time?: number;         // If set, overrides start_time
@@ -110,7 +115,7 @@ function handlePlayPause(source: SyncClient, message: any) {
   });
 }
 
-function handleQueue(source: SyncClient, message: any) {
+async function handleQueue(source: SyncClient, message: any) {
   if (!source.room) {
     return;
   }
@@ -120,18 +125,43 @@ function handleQueue(source: SyncClient, message: any) {
     return
   }
 
+  editRoomMeta(source.room, {
+    queue_counter: room.meta.queue_counter + 1
+  });
+
   let queue = room.meta.queue;
 
   if (message.add) {
-    queue.push(`${room.meta.queue_counter}:${message.add}`);
+    let title: string | null = null;
+
+    const embed = await fetch(`https://noembed.com/embed?url=${message.add}`);
+    if (embed.ok) {
+      const json = await embed.json();
+      title = json['title'] ?? null;
+    }
+
+    if (!title) {
+      const resp = await fetch(message.add, {
+        method: 'HEAD'
+      });
+  
+      if (resp.ok && resp.headers.get('Content-Type')?.startsWith('video/')) {
+        title = dispositionFilename(resp.headers.get('Content-Disposition'));
+      }  
+    }
+
+    queue.push({
+      id: room.meta.queue_counter.toString(),
+      url: message.add,
+      title: title ?? message.add
+    });
   } else if (message.remove) {
-    queue = queue.filter((q) => !q.startsWith(message.remove));
+    queue = queue.filter((q) => q.id !== message.remove);
   } else { // Reorder elements
     queue = message.order;
   }
 
   editRoomMeta(source.room, {
-    queue_counter: room.meta.queue_counter + 1,
     queue
   });
 
