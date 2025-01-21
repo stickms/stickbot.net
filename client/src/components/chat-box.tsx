@@ -1,20 +1,15 @@
 import { PaperPlaneIcon } from "@radix-ui/react-icons";
 import { Text, Box, Card, IconButton, ScrollArea, TextField } from "@radix-ui/themes";
 import { useEffect, useRef } from "react";
-import useToast from "../hooks/use-toast";
-import { API_ENDPOINT } from "../env";
-import { fetchGetJson } from "../lib/util";
 
 type ChatBoxProps = {
-  roomid: string;
+  socket: WebSocket;
   users: string[];
   messages: string[];
   host: string;
 };
 
-function ChatBox({ roomid, users, messages, host } : ChatBoxProps) {
-  const { toast } = useToast();
-
+function ChatBox({ socket, users, messages, host } : ChatBoxProps) {
   const message_area = useRef<HTMLDivElement>(null);
   const chat_box = useRef<HTMLInputElement>(null);
 
@@ -26,29 +21,16 @@ function ChatBox({ roomid, users, messages, host } : ChatBoxProps) {
   }, [ messages ]);
 
   const sendChatMessage = () => {
-    if (!chat_box.current) {
+    if (!chat_box.current || !chat_box.current.value.trim()) {
       return;
     }
 
-    if (!chat_box.current.value.trim()) {
-      return;
-    }
+    socket.send(JSON.stringify({
+      command: 'chat',
+      content: chat_box.current.value.trim()
+    }));
 
-    fetch(`${API_ENDPOINT}/sync/rooms/${roomid}/message`, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({
-        message: chat_box.current.value.trim()
-      })
-    })
-      .then(fetchGetJson)
-      .catch(() => {
-        toast({
-          title: 'Error sending message',
-          description: 'Please try again later'
-        });
-      })
-      .finally(() => chat_box.current!.value = '');
+    chat_box.current!.value = '';
   }
 
   return (

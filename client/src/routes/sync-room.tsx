@@ -58,7 +58,7 @@ function SyncRoom() {
   const [room, setRoom] = useState<SyncRoom>();
 
   useEffect(() => {
-    if (webSocket.current || !roomid) {
+    if (webSocket.current || !user.id || !roomid) {
       return;
     }
 
@@ -78,8 +78,7 @@ function SyncRoom() {
           },
           (socket) => {
             socket.send(JSON.stringify({
-              join: true,
-              user: `${user.id}:${user.username}`
+              command: 'join'
             }))
           },
           (_, event) => {
@@ -166,14 +165,13 @@ function SyncRoom() {
     }
 
     webSocket.current.send(JSON.stringify({
-      leave: true,
-      user: user.id
+      command: 'leave'
     }))
 
     webSocket.current.close();
 
     webSocket.current = null;
-  }, [ webSocket, user.id ]);
+  }, [ webSocket ]);
 
   useEffect(() => {
     return () => {
@@ -185,7 +183,7 @@ function SyncRoom() {
     disconnect();
   });
 
-  if (!room || !roomid) {
+  if (!room || !roomid || !webSocket.current) {
     return null;
   }
 
@@ -194,7 +192,7 @@ function SyncRoom() {
       <Flex className='mt-16 xl:mt-40 mb-8 mx-8 items-end justify-center gap-8 flex-wrap-reverse'>
         {/* Chat */}
         <ChatBox
-          roomid={roomid}
+          socket={webSocket.current}
           users={room.users}
           messages={room.meta.messages}
           host={room.host}
@@ -202,7 +200,7 @@ function SyncRoom() {
 
         {/* Media Player */}
         <MediaPlayer
-          roomid={roomid}
+          socket={webSocket.current}
           playing={room.meta.playing}
           curtime={room.meta.curtime}
           queue={room.meta.queue}

@@ -4,13 +4,11 @@ import ReactPlayer from "react-player";
 import { SyncRoom } from "../lib/types";
 import { useEffect, useRef, useState } from "react";
 import useToast from "../hooks/use-toast";
-import { API_ENDPOINT } from "../env";
-import { fetchGetJson } from "../lib/util";
 import MediaQueue from "./media-queue";
 import { arrayMove } from "@dnd-kit/sortable";
 
 type MediaPlayerProps = {
-  roomid: string;
+  socket: WebSocket;
   playing: boolean;
   curtime: number;
   queue: string[];
@@ -18,7 +16,7 @@ type MediaPlayerProps = {
 };
 
 function MediaPlayer({
-  roomid, playing, curtime, queue, setRoom
+  socket, playing, curtime, queue, setRoom
 }: MediaPlayerProps
 ) {
   const { toast } = useToast();
@@ -54,20 +52,10 @@ function MediaPlayer({
       }
     });
 
-    fetch(`${API_ENDPOINT}/sync/rooms/${roomid}/play`, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({
-        curtime: curtime ?? Math.floor(player.current.getCurrentTime())
-      })
-    })
-      .then(fetchGetJson)
-      .catch(() => {
-        toast({
-          title: 'Error sending play request to server',
-          description: 'Please try again later'
-        });
-      });
+    socket.send(JSON.stringify({
+      command: 'play',
+      curtime: curtime ?? Math.floor(player.current.getCurrentTime())
+    }));
   };
 
   const mediaPause = (curtime?: number) => {
@@ -84,20 +72,10 @@ function MediaPlayer({
       }
     });
 
-    fetch(`${API_ENDPOINT}/sync/rooms/${roomid}/pause`, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({
-        curtime: Math.floor(curtime ?? player.current.getCurrentTime())
-      })
-    })
-      .then(fetchGetJson)
-      .catch(() => {
-        toast({
-          title: 'Error sending pause request to server',
-          description: 'Please try again later'
-        });
-      });
+    socket.send(JSON.stringify({
+      command: 'pause',
+      curtime: curtime ?? Math.floor(player.current.getCurrentTime())
+    }));
   };
 
   const onReady = (player: ReactPlayer) => {
@@ -116,8 +94,6 @@ function MediaPlayer({
   };
 
   const onPause = () => {
-    console.log('pause');
-
     if (!player.current || !playing) {
       return;
     }
@@ -151,21 +127,12 @@ function MediaPlayer({
       return;
     }
 
-    fetch(`${API_ENDPOINT}/sync/rooms/${roomid}/queue`, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({
-        add: url
-      })
-    })
-      .then(fetchGetJson)
-      .catch(() => {
-        toast({
-          title: 'Error adding to queue',
-          description: 'Please try again later'
-        });
-      })
-      .finally(() => media_queue_input.current!.value = '');
+    socket.send(JSON.stringify({
+      command: 'queue',
+      add: url
+    }));
+
+    media_queue_input.current!.value = ''
   }
 
   const queueRemove = (index: string) => {
@@ -178,20 +145,10 @@ function MediaPlayer({
       }
     }
 
-    fetch(`${API_ENDPOINT}/sync/rooms/${roomid}/queue`, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({
-        remove: index.toString()
-      })
-    })
-      .then(fetchGetJson)
-      .catch(() => {
-        toast({
-          title: 'Error removing from queue',
-          description: 'Please try again later'
-        });
-      });
+    socket.send(JSON.stringify({
+      command: 'queue',
+      remove: index.toString()
+    }));
   }
 
   const queueOrder = (from: number, to: number) => {
@@ -204,20 +161,10 @@ function MediaPlayer({
       }
     }
 
-    fetch(`${API_ENDPOINT}/sync/rooms/${roomid}/queue`, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({
-        order: arrayMove(queue, from, to)
-      })
-    })
-      .then(fetchGetJson)
-      .catch(() => {
-        toast({
-          title: 'Error reordering queue',
-          description: 'Please try again later'
-        })
-      });
+    socket.send(JSON.stringify({
+      command: 'queue',
+      order: arrayMove(queue, from, to)
+    }));
   }
 
   return (

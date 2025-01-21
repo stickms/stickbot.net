@@ -107,8 +107,7 @@ function RoomList({ userid }: { userid: string }) {
   }, []);
 
   const joinRoom = (roomid: string) => {
-    fetch(`${API_ENDPOINT}/sync/rooms/${roomid}/join`, {
-      method: 'POST',
+    fetch(`${API_ENDPOINT}/sync/rooms/${roomid}/validate`, {
       credentials: 'include'
     })
       .then(fetchGetJson)
