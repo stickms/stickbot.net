@@ -134,19 +134,20 @@ async function handleQueue(source: SyncClient, message: any) {
   if (message.add) {
     let title: string | null = null;
 
-    const embed = await fetch(`https://noembed.com/embed?url=${message.add}`);
-    if (embed.ok) {
-      const json = await embed.json();
+    const resps = await Promise.all([
+      fetch(`https://noembed.com/embed?url=${encodeURI(message.add)}`),
+      fetch(message.add, { method: 'HEAD' })
+    ]);
+
+    if (resps[0].ok) {
+      const json = await resps[0].json();
       title = json['title'] ?? null;
     }
 
-    if (!title) {
-      const resp = await fetch(message.add, {
-        method: 'HEAD'
-      });
-  
-      if (resp.ok && resp.headers.get('Content-Type')?.startsWith('video/')) {
-        title = dispositionFilename(resp.headers.get('Content-Disposition'));
+    if (!title && resps[1].ok) {
+      const headers = resps[1].headers;
+      if (headers.get('Content-Type')?.startsWith('video/')) {
+        title = dispositionFilename(headers.get('Content-Disposition'));
       }  
     }
 
@@ -158,7 +159,7 @@ async function handleQueue(source: SyncClient, message: any) {
   } else if (message.remove) {
     queue = queue.filter((q) => q.id !== message.remove);
   } else { // Reorder elements
-    queue = message.order;
+    queue = message.order.map((i: number) => queue[i]);
   }
 
   editRoomMeta(source.room, {

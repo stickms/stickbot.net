@@ -158,7 +158,7 @@ function MediaPlayer({
 
     socket.send(JSON.stringify({
       command: 'queue',
-      order: arrayMove(queue, from, to)
+      order: arrayMove(queue.map((_, i) => i), from, to)
     }));
   }
 
