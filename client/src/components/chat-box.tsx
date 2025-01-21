@@ -1,6 +1,8 @@
+import { useStore } from "@nanostores/react";
 import { PaperPlaneIcon } from "@radix-ui/react-icons";
 import { Text, Box, Card, IconButton, ScrollArea, TextField } from "@radix-ui/themes";
 import { useEffect, useRef } from "react";
+import { $hidechat } from "../lib/store";
 
 type ChatBoxProps = {
   socket: WebSocket;
@@ -10,6 +12,8 @@ type ChatBoxProps = {
 };
 
 function ChatBox({ socket, users, messages, host } : ChatBoxProps) {
+  const hide = useStore($hidechat);
+
   const message_area = useRef<HTMLDivElement>(null);
   const chat_box = useRef<HTMLInputElement>(null);
 
@@ -31,6 +35,10 @@ function ChatBox({ socket, users, messages, host } : ChatBoxProps) {
     }));
 
     chat_box.current!.value = '';
+  }
+
+  if (hide){
+    return null;
   }
 
   return (

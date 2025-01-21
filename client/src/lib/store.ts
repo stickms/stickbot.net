@@ -23,6 +23,8 @@ export const $guilds = persistentAtom<GuildType[]>('guilds:', [], {
 
 export const $guildid = atom<string>('');
 
+export const $hidechat = atom<boolean>(false);
+
 export function setUser(user: Partial<UserType>) {
   $user.set({ ...$user.get(), ...user });
 }
@@ -52,4 +54,8 @@ export function setAdmin(admin: boolean) {
     ...$user.get(),
     is_admin: admin
   });
+}
+
+export function setHideChat(hide: boolean) {
+  $hidechat.set(hide);
 }

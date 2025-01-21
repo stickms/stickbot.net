@@ -1,11 +1,13 @@
-import { PlusIcon } from "@radix-ui/react-icons";
-import { Flex, IconButton, TextField, AspectRatio } from "@radix-ui/themes";
+import { GearIcon, PlusIcon } from "@radix-ui/react-icons";
+import { Flex, IconButton, TextField, AspectRatio, DropdownMenu } from "@radix-ui/themes";
 import ReactPlayer from "react-player";
 import { SyncRoom } from "../lib/types";
 import { useEffect, useRef, useState } from "react";
 import useToast from "../hooks/use-toast";
 import MediaQueue from "./media-queue";
 import { arrayMove } from "@dnd-kit/sortable";
+import { useStore } from "@nanostores/react";
+import { $hidechat, setHideChat } from "../lib/store";
 
 type MediaPlayerProps = {
   socket: WebSocket;
@@ -19,6 +21,7 @@ function MediaPlayer({
   socket, playing, curtime, queue, setRoom
 }: MediaPlayerProps
 ) {
+  const hidechat = useStore($hidechat);
   const { toast } = useToast();
 
   const player = useRef<ReactPlayer>(null);
@@ -168,7 +171,10 @@ function MediaPlayer({
   }
 
   return (
-    <Flex className='flex-col gap-2 w-[50vw] min-w-[min(600px,_85vw)] max-w-[85vw]'>
+    <Flex
+      className='flex-col gap-2 min-w-[min(600px,_85vw)] max-w-[85vw]'
+      width={hidechat ? '60vw' : '50vw'}
+    >
       {/* Player */}
       <AspectRatio ratio={16 / 9}>
         <ReactPlayer
@@ -195,24 +201,46 @@ function MediaPlayer({
         />
       </AspectRatio>
 
-      {/* URL Entry */}
-      <TextField.Root
-        ref={media_queue_input}
-        className='w-full'
-        placeholder='Enter media url...'
-        onKeyDown={(e) => e.key === 'Enter' && queueAdd()}
-      >
-        {/* Add media button */}
-        <TextField.Slot side='right'>
-          <IconButton
-            variant='ghost'
-            onClick={queueAdd}
-          >
-            <PlusIcon />
-          </IconButton>
-        </TextField.Slot>
-      </TextField.Root>
+      {/* Settings & URL Entry */}
+      <Flex className='w-full items-center justify-between gap-2'>
+        {/* Settings dropdown */}
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger>
+            <IconButton variant='surface'>
+              <GearIcon />
+            </IconButton>
+          </DropdownMenu.Trigger>
 
+          <DropdownMenu.Content>
+            <DropdownMenu.CheckboxItem
+              onClick={(e) => {
+                e.preventDefault()
+                setHideChat(!hidechat);
+              }}
+              checked={hidechat}
+            >
+              Hide Chat
+            </DropdownMenu.CheckboxItem>
+          </DropdownMenu.Content>
+        </DropdownMenu.Root>
+
+        <TextField.Root
+          ref={media_queue_input}
+          className='flex-grow'
+          placeholder='Enter media url...'
+          onKeyDown={(e) => e.key === 'Enter' && queueAdd()}
+        >
+          {/* Add media button */}
+          <TextField.Slot side='right'>
+            <IconButton
+              variant='ghost'
+              onClick={queueAdd}
+            >
+              <PlusIcon />
+            </IconButton>
+          </TextField.Slot>
+        </TextField.Root>
+      </Flex>
       {/* Media Queue */}
       <MediaQueue
         internalQueue={queue}
