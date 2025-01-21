@@ -47,7 +47,7 @@ function MediaPlayer({
 
     editRoomMeta({
       playing: true,
-      curtime: curtime ?? Math.floor(player.current!.getCurrentTime())
+      curtime: curtime ?? Math.floor(player.current.getCurrentTime())
     });
 
     socket.send(JSON.stringify({
@@ -63,7 +63,7 @@ function MediaPlayer({
 
     editRoomMeta({
       playing: false,
-      curtime: curtime ?? Math.floor(player.current!.getCurrentTime())
+      curtime: curtime ?? Math.floor(player.current.getCurrentTime())
     });
 
     socket.send(JSON.stringify({
