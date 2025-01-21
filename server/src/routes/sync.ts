@@ -76,25 +76,18 @@ function relayToRoom(roomid: string, data: {}) {
   });
 }
 
-function handleJoinLeave(source: SyncClient, message: any) {
-  let users = clients
+function handleJoin(source: SyncClient, message: any) {
+  const users = clients
     .filter((client) => (
-      !!client.id && client.room === source.room
+      client.room === source.room
     ))
     .map((client) => `${client.id}:${client.username}`);
   
-  if (message.join) {
-    users.push(`${source.id}:${source.username}`);
-  } else {
-    const index = users.findIndex((user) => user.startsWith(source.id));
-    users.splice(index, 1)
-  }
-
-  users = [ ...new Set(users) ];
+  users.push(`${source.id}:${source.username}`);
 
   relayToRoom(source.room, {
     source: source.id,
-    users
+    users: [ ...new Set(users) ]
   });
 }
 
@@ -194,8 +187,7 @@ sync_route.get('/sync/ws', upgradeWebSocket((c) => {
 
       switch (message.command) {
         case 'join':
-        // case 'leave':
-          handleJoinLeave(source, message);
+          handleJoin(source, message);
           break;
 
         case 'play':
