@@ -1,5 +1,5 @@
 import { persistentAtom, persistentMap } from '@nanostores/persistent';
-import { UserType, GuildType } from './types';
+import { UserType, GuildType, SyncSettings } from './types';
 import { atom } from 'nanostores';
 
 const default_user: UserType = {
@@ -8,8 +8,12 @@ const default_user: UserType = {
   discord_id: '',
   username: '',
   token_guild: '',
-  is_admin: false,
+  is_admin: false
 };
+
+const default_sync: SyncSettings = {
+  hide_chat: false
+}
 
 export const $user = persistentMap<UserType>('user:', default_user, {
   encode: JSON.stringify,
@@ -21,9 +25,12 @@ export const $guilds = persistentAtom<GuildType[]>('guilds:', [], {
   decode: JSON.parse
 });
 
-export const $guildid = atom<string>('');
+export const $syncsettings = persistentMap<SyncSettings>('syncsettings:', default_sync, {
+  encode: JSON.stringify,
+  decode: JSON.parse
+})
 
-export const $hidechat = atom<boolean>(false);
+export const $guildid = atom<string>('');
 
 export function setUser(user: Partial<UserType>) {
   $user.set({ ...$user.get(), ...user });
@@ -57,5 +64,8 @@ export function setAdmin(admin: boolean) {
 }
 
 export function setHideChat(hide: boolean) {
-  $hidechat.set(hide);
+  $syncsettings.set({
+    ...$syncsettings.get(),
+    hide_chat: hide
+  });
 }

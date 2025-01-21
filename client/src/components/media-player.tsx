@@ -1,27 +1,26 @@
 import { GearIcon, PlusIcon } from "@radix-ui/react-icons";
 import { Flex, IconButton, TextField, AspectRatio, DropdownMenu } from "@radix-ui/themes";
 import ReactPlayer from "react-player";
-import { SyncRoom } from "../lib/types";
 import { useEffect, useRef, useState } from "react";
 import useToast from "../hooks/use-toast";
 import MediaQueue from "./media-queue";
 import { arrayMove } from "@dnd-kit/sortable";
 import { useStore } from "@nanostores/react";
-import { $hidechat, setHideChat } from "../lib/store";
+import { $syncsettings, setHideChat } from "../lib/store";
 
 type MediaPlayerProps = {
   socket: WebSocket;
   playing: boolean;
   curtime: number;
   queue: string[];
-  setRoom: React.Dispatch<React.SetStateAction<SyncRoom | undefined>>
+  editRoomMeta: (meta: object) => void
 };
 
 function MediaPlayer({
-  socket, playing, curtime, queue, setRoom
+  socket, playing, curtime, queue, editRoomMeta
 }: MediaPlayerProps
 ) {
-  const hidechat = useStore($hidechat);
+  const syncsettings = useStore($syncsettings);
   const { toast } = useToast();
 
   const player = useRef<ReactPlayer>(null);
@@ -46,13 +45,9 @@ function MediaPlayer({
       return;
     }
 
-    setRoom((rm) => !rm ? rm : {
-      ...rm,
-      meta: {
-        ...rm.meta,
-        playing: true,
-        curtime: curtime ?? Math.floor(player.current!.getCurrentTime())
-      }
+    editRoomMeta({
+      playing: true,
+      curtime: curtime ?? Math.floor(player.current!.getCurrentTime())
     });
 
     socket.send(JSON.stringify({
@@ -66,13 +61,9 @@ function MediaPlayer({
       return;
     }
 
-    setRoom((rm) => !rm ? rm : {
-      ...rm,
-      meta: {
-        ...rm.meta,
-        playing: false,
-        curtime: curtime ?? Math.floor(player.current!.getCurrentTime())
-      }
+    editRoomMeta({
+      playing: false,
+      curtime: curtime ?? Math.floor(player.current!.getCurrentTime())
     });
 
     socket.send(JSON.stringify({
@@ -173,7 +164,7 @@ function MediaPlayer({
   return (
     <Flex
       className='flex-col gap-2 min-w-[min(600px,_85vw)] max-w-[85vw]'
-      width={hidechat ? '60vw' : '50vw'}
+      width={syncsettings.hide_chat ? '60vw' : '50vw'}
     >
       {/* Player */}
       <AspectRatio ratio={16 / 9}>
@@ -215,9 +206,9 @@ function MediaPlayer({
             <DropdownMenu.CheckboxItem
               onClick={(e) => {
                 e.preventDefault()
-                setHideChat(!hidechat);
+                setHideChat(!syncsettings.hide_chat);
               }}
-              checked={hidechat}
+              checked={syncsettings.hide_chat}
             >
               Hide Chat
             </DropdownMenu.CheckboxItem>

@@ -57,8 +57,23 @@ function SyncRoom() {
 
   const [room, setRoom] = useState<SyncRoom>();
 
+  const editRoomMeta = (meta: object) => {
+    setRoom((rm) => !rm ? rm : {
+      ...rm,
+      meta: {
+        ...rm.meta,
+        ...meta
+      }
+    });
+  };
+
   useEffect(() => {
-    if (webSocket.current || !user.id || !roomid) {
+    if (!user.id || !roomid) {
+      //navigate('/watch-together');
+      return;
+    }
+
+    if (webSocket.current) {
       return;
     }
 
@@ -86,12 +101,8 @@ function SyncRoom() {
             console.log(message);
     
             if (message.chat) {
-              setRoom((rm) => !rm ? rm : {
-                ...rm,
-                meta: {
-                  ...rm.meta,
-                  messages: message.chat
-                }
+              editRoomMeta({
+                messages: message.chat
               });
             }
 
@@ -103,33 +114,24 @@ function SyncRoom() {
             }
 
             if (message.queue) {
-              setRoom((rm) => !rm ? rm : {
-                ...rm,
-                meta: {
-                  ...rm.meta,
-                  queue: message.queue
-                }
+              editRoomMeta({
+                queue: message.queue
               });
             }
     
             if (message.play || message.pause) {
-              setRoom((rm) => !rm ? rm : {
-                ...rm,
-                meta: {
-                  ...rm.meta,
-                  playing: !!message.play,
-                  curtime: message.curtime
-                }
-              });  
+              editRoomMeta({
+                playing: !!message.play,
+                curtime: message.curtime
+              }); 
             }
           }
         )
       })
       .catch(() => {
-        navigate('/watch-together');;
+        navigate('/watch-together');
       });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ roomid, user.id ]);
+  }, [ roomid, user, navigate ]);
 
   useEffect(() => {
     // "Heartbeat" - periodically check server status in case we get desynced
@@ -160,16 +162,11 @@ function SyncRoom() {
   }, [ interval, roomid ]);
 
   const disconnect = useCallback(() => {
-    if (!webSocket.current || webSocket.current.readyState !== 1) {
+    if (!webSocket.current) {
       return;
     }
 
-    webSocket.current.send(JSON.stringify({
-      command: 'leave'
-    }))
-
     webSocket.current.close();
-
     webSocket.current = null;
   }, [ webSocket ]);
 
@@ -204,7 +201,7 @@ function SyncRoom() {
           playing={room.meta.playing}
           curtime={room.meta.curtime}
           queue={room.meta.queue}
-          setRoom={setRoom}
+          editRoomMeta={editRoomMeta}
         />
       </Flex>
     </Flex>

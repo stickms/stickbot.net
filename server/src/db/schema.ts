@@ -19,7 +19,7 @@ export const users = sqliteTable('users', {
   // Discord ID
   discordId: text('discord_id').unique(),
   // Discord Profile Stuff
-  username: text('username'),
+  username: text('username').notNull(),
   avatar: text('avatar'),
   // When was this user made an Admin?
   // Null if user is not an admin

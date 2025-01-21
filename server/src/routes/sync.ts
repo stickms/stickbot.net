@@ -35,6 +35,7 @@ type RoomMetadata = {
 type SyncRoom = {
   name: string;
   host: string;
+  host_username: string;
   leaders: string[];
   meta: RoomMetadata;
 };
@@ -193,7 +194,7 @@ sync_route.get('/sync/ws', upgradeWebSocket((c) => {
 
       switch (message.command) {
         case 'join':
-        case 'leave':
+        // case 'leave':
           handleJoinLeave(source, message);
           break;
 
@@ -212,6 +213,21 @@ sync_route.get('/sync/ws', upgradeWebSocket((c) => {
       }
     },
     onClose(event, ws) {
+      const source = clients.find((client) => client.ws === ws);
+
+      if (source?.room) {
+        const users = clients
+          .filter((client) => (
+            client.room === source.room && client.id !== source.id
+          ))
+          .map((client) => `${client.id}:${client.username}`);
+    
+        relayToRoom(source.room, {
+          source: source.id,
+          users: [ ...new Set(users) ] 
+        });
+      }
+
       clients = clients.filter((client) => client.ws !== ws);
     }
   }
@@ -222,7 +238,7 @@ sync_route.get('/sync/rooms', authGuard, async (c) => {
     .map(([id, room]) => ({
       id,
       name: room.name,
-      host: room.host
+      host: room.host_username
     }));
 
   return c.json({
@@ -276,6 +292,7 @@ sync_route.post('/sync/rooms/create', authGuard, async (c) => {
 
   const room: SyncRoom = {
     host: user.id.toString(),
+    host_username: user.username,
     leaders: [],
     name: name,
 

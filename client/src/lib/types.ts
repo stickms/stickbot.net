@@ -29,6 +29,10 @@ export type SyncRoom = {
   }
 }
 
+export type SyncSettings = {
+  hide_chat: boolean;
+};
+
 // Steam Types
 
 export type SteamProfileSummary = {
