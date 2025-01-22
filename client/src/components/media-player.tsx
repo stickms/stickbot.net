@@ -147,7 +147,7 @@ function MediaPlayer({
   }
 
   const queueOrder = (from: number, to: number) => {
-    if (to === 0) {
+    if (to === 0 || from === 0) {
       player.current?.seekTo(0);
       if (playing) {
         mediaPlay(0);
