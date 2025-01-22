@@ -42,6 +42,7 @@ type SyncRoom = {
   host: string;
   host_username: string;
   leaders: string[];
+  background?: string;
   meta: RoomMetadata;
 };
 
@@ -51,6 +52,18 @@ type SyncRoomList = {
 
 let clients: SyncClient[] = [];
 let rooms: SyncRoomList = {};
+
+function editRoom(roomid: string, data: Partial<SyncRoom>) {
+  const room = rooms[roomid];
+  if (!room) {
+    return;
+  }
+
+  rooms[roomid] = {
+    ...room,
+    ...data
+  };
+}
 
 function editRoomMeta(roomid: string, meta: Partial<RoomMetadata>) {
   const room = rooms[roomid];
@@ -199,6 +212,21 @@ function handleChat(source: SyncClient, message: any) {
   });
 }
 
+function handleBackground(source: SyncClient, message: any) {
+  if (!source.room) {
+    return;
+  }
+
+  editRoom(source.room, {
+    background: message.background ?? undefined
+  });
+
+  relayToRoom(source.room, {
+    source: source.id,
+    background: message.background
+  });
+}
+
 sync_route.get('/sync/ws', upgradeWebSocket((c) => {
   return {
     onOpen(event, ws) {
@@ -235,6 +263,10 @@ sync_route.get('/sync/ws', upgradeWebSocket((c) => {
         case 'chat':
           handleChat(source, message);
           break;
+
+        case 'background':
+          handleBackground(source, message);
+          break;
       }
     },
     onClose(event, ws) {
@@ -263,7 +295,8 @@ sync_route.get('/sync/rooms', authGuard, async (c) => {
     .map(([id, room]) => ({
       id,
       name: room.name,
-      host: room.host_username
+      host: room.host,
+      host_username: room.host_username
     }));
 
   return c.json({

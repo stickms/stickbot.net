@@ -1,4 +1,4 @@
-import { Flex } from "@radix-ui/themes";
+import { Flex, Box } from "@radix-ui/themes";
 import { MutableRefObject, useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { UserType, type SyncRoom } from "../lib/types";
@@ -113,6 +113,13 @@ function SyncRoom() {
               });
             }
 
+            if (message.background !== undefined) {
+              setRoom((rm) => !rm ? rm : {
+                ...rm,
+                background: message.background ?? undefined
+              });
+            }
+
             if (message.queue) {
               editRoomMeta({
                 queue: message.queue
@@ -186,6 +193,10 @@ function SyncRoom() {
 
   return (
     <Flex className='items-start justify-center min-h-screen'>
+      <Box
+        className='absolute top-16 w-full h-[calc(100vh-4rem)] bg-contain bg-no-repeat bg-center -z-10'
+        style={{ backgroundImage: `url(${room.background})` }}
+      />
       <Flex className='mt-16 xl:mt-40 mb-8 mx-8 items-end justify-center gap-8 flex-wrap-reverse'>
         {/* Chat */}
         <ChatBox

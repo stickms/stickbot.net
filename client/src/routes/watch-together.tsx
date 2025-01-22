@@ -211,7 +211,7 @@ function RoomList({ userid }: { userid: string }) {
             <Flex className='items-start justify-between'>
               <Text className='text-lg break-all whitespace-pre-line'>
                 {room.name + '\n'}
-                <Text color='gray' className='text-sm'>hosted by {room.host}</Text>
+                <Text color='gray' className='text-sm'>hosted by {room.host_username}</Text>
               </Text>
               {room.host === userid && (
                 <Tooltip content='Close Room'>

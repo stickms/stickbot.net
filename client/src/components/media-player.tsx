@@ -1,5 +1,5 @@
 import { GearIcon, PlusIcon } from "@radix-ui/react-icons";
-import { Flex, IconButton, TextField, AspectRatio, DropdownMenu } from "@radix-ui/themes";
+import { Flex, IconButton, TextField, AspectRatio, DropdownMenu, Dialog, Button } from "@radix-ui/themes";
 import ReactPlayer from "react-player";
 import { useEffect, useRef, useState } from "react";
 import useToast from "../hooks/use-toast";
@@ -218,25 +218,7 @@ function MediaPlayer({
       {/* Settings & URL Entry */}
       <Flex className='w-full items-center justify-between gap-2'>
         {/* Settings dropdown */}
-        <DropdownMenu.Root>
-          <DropdownMenu.Trigger>
-            <IconButton variant='surface'>
-              <GearIcon />
-            </IconButton>
-          </DropdownMenu.Trigger>
-
-          <DropdownMenu.Content>
-            <DropdownMenu.CheckboxItem
-              onClick={(e) => {
-                e.preventDefault()
-                setHideChat(!syncsettings.hide_chat);
-              }}
-              checked={syncsettings.hide_chat}
-            >
-              Hide Chat
-            </DropdownMenu.CheckboxItem>
-          </DropdownMenu.Content>
-        </DropdownMenu.Root>
+        <SyncSettings socket={socket} />
 
         <TextField.Root
           ref={media_queue_input}
@@ -265,6 +247,86 @@ function MediaPlayer({
         queueClear={queueClear}
       />
     </Flex>
+  );
+}
+
+function SyncSettings({ socket }: { socket: WebSocket }) {
+  const { toast } = useToast();
+
+  const syncsettings = useStore($syncsettings);
+  const bg_input = useRef<HTMLInputElement>(null);
+
+  const changeBackground = () => {
+    if (!bg_input.current) {
+      return;
+    }
+
+    const value = bg_input.current.value.trim();
+
+    if (value.length && !URL.parse(value)) {
+      toast({
+        title: 'Could not change background',
+        description: 'Please enter a valid URL'
+      });
+      return;
+    }
+
+    socket.send(JSON.stringify({
+      command: 'background',
+      background: value
+    }));
+  };
+
+  return (
+    <Dialog.Root>
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger>
+          <IconButton variant='surface'>
+            <GearIcon />
+          </IconButton>
+        </DropdownMenu.Trigger>
+
+        <DropdownMenu.Content>
+          {/* Hide Chat toggle */}
+          <DropdownMenu.CheckboxItem
+            onClick={(e) => {
+              e.preventDefault()
+              setHideChat(!syncsettings.hide_chat);
+            }}
+            checked={syncsettings.hide_chat}
+          >
+            Hide Chat
+          </DropdownMenu.CheckboxItem>
+
+          {/* Change Background Trigger */}
+          <Dialog.Trigger>
+            <DropdownMenu.Item>
+              Change Background
+            </DropdownMenu.Item>
+          </Dialog.Trigger>
+        </DropdownMenu.Content>
+      </DropdownMenu.Root>
+
+      <Dialog.Content className='w-96 max-w-[80vw]'>
+        <Dialog.Title>Change Background</Dialog.Title>
+        <Dialog.Description>
+          Please enter a direct image url, or leave input box empty to clear
+        </Dialog.Description>
+        <Flex className='mt-4 gap-3 flex-wrap justify-end'>
+          <TextField.Root ref={bg_input} className='w-full'/>
+          <Dialog.Close>
+            <Button color='gray'>
+              Cancel
+            </Button>
+          </Dialog.Close>
+          <Dialog.Trigger>
+            <Button onClick={() => changeBackground()}>
+              Change
+            </Button>
+          </Dialog.Trigger>
+        </Flex>
+      </Dialog.Content>
+    </Dialog.Root>
   );
 }
 

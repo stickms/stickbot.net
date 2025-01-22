@@ -24,8 +24,10 @@ export type SyncRoom = {
   id: string;
   name: string;
   host: string;
+  host_username: string;
   leaders: string[];
   users: string[];
+  background?: string;
 
   meta: {
     queue: SyncRoomQueue;

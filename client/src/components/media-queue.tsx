@@ -75,7 +75,7 @@ function MediaQueue({ internalQueue, queueRemove, queueOrder, queueClear }: Medi
           <AlertDialog.Trigger>
             <Button>Clear Queue</Button>
           </AlertDialog.Trigger>
-          <AlertDialog.Content className='max-w-96'>
+          <AlertDialog.Content className='w-96 max-w-[80vw]'>
             <AlertDialog.Title>Clear Queue</AlertDialog.Title>
             <AlertDialog.Description>
               Are you sure you want to clear the queue?
