@@ -28,6 +28,7 @@ export type SyncRoom = {
   leaders: string[];
   users: string[];
   background?: string;
+  background_size?: string;
 
   meta: {
     queue: SyncRoomQueue;

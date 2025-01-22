@@ -1,5 +1,5 @@
 import { GearIcon, PlusIcon } from "@radix-ui/react-icons";
-import { Flex, IconButton, TextField, AspectRatio, DropdownMenu, Dialog, Button } from "@radix-ui/themes";
+import { Flex, IconButton, TextField, AspectRatio, DropdownMenu, Dialog, Button, Select } from "@radix-ui/themes";
 import ReactPlayer from "react-player";
 import { useEffect, useRef, useState } from "react";
 import useToast from "../hooks/use-toast";
@@ -256,6 +256,8 @@ function SyncSettings({ socket }: { socket: WebSocket }) {
   const syncsettings = useStore($syncsettings);
   const bg_input = useRef<HTMLInputElement>(null);
 
+  const [ bgSize, setBgSize ] = useState<string>('fill');
+
   const changeBackground = () => {
     if (!bg_input.current) {
       return;
@@ -273,7 +275,8 @@ function SyncSettings({ socket }: { socket: WebSocket }) {
 
     socket.send(JSON.stringify({
       command: 'background',
-      background: value
+      background: value,
+      size: bgSize
     }));
   };
 
@@ -289,10 +292,7 @@ function SyncSettings({ socket }: { socket: WebSocket }) {
         <DropdownMenu.Content>
           {/* Hide Chat toggle */}
           <DropdownMenu.CheckboxItem
-            onClick={(e) => {
-              e.preventDefault()
-              setHideChat(!syncsettings.hide_chat);
-            }}
+            onClick={() => setHideChat(!syncsettings.hide_chat)}
             checked={syncsettings.hide_chat}
           >
             Hide Chat
@@ -312,18 +312,31 @@ function SyncSettings({ socket }: { socket: WebSocket }) {
         <Dialog.Description>
           Please enter a direct image url, or leave input box empty to clear
         </Dialog.Description>
-        <Flex className='mt-4 gap-3 flex-wrap justify-end'>
+        <Flex className='mt-4 gap-3 flex-col'>
           <TextField.Root ref={bg_input} className='w-full'/>
-          <Dialog.Close>
-            <Button color='gray'>
-              Cancel
-            </Button>
-          </Dialog.Close>
-          <Dialog.Trigger>
-            <Button onClick={() => changeBackground()}>
-              Change
-            </Button>
-          </Dialog.Trigger>
+          <Select.Root value={bgSize} onValueChange={setBgSize}>
+            <Select.Trigger className='w-32' />
+            <Select.Content>
+              <Select.Group>
+                <Select.Label>Image Settings</Select.Label>
+                <Select.Item value='default'>Default Size</Select.Item>
+                <Select.Item value='fill'>Fill</Select.Item>
+                <Select.Item value='stretch'>Stretch to Fill</Select.Item>
+              </Select.Group>
+            </Select.Content>
+          </Select.Root>
+          <Flex className='gap-4 justify-end'>
+            <Dialog.Close>
+              <Button color='gray'>
+                Cancel
+              </Button>
+            </Dialog.Close>
+            <Dialog.Trigger>
+              <Button onClick={() => changeBackground()}>
+                Change
+              </Button>
+            </Dialog.Trigger>
+          </Flex>
         </Flex>
       </Dialog.Content>
     </Dialog.Root>

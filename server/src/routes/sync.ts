@@ -43,6 +43,7 @@ type SyncRoom = {
   host_username: string;
   leaders: string[];
   background?: string;
+  background_size?: string;
   meta: RoomMetadata;
 };
 
@@ -218,12 +219,14 @@ function handleBackground(source: SyncClient, message: any) {
   }
 
   editRoom(source.room, {
-    background: message.background ?? undefined
+    background: message.background ?? undefined,
+    background_size: message.background ? message.size : undefined
   });
 
   relayToRoom(source.room, {
     source: source.id,
-    background: message.background
+    background: message.background,
+    size: message.size
   });
 }
 

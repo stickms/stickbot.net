@@ -116,7 +116,8 @@ function SyncRoom() {
             if (message.background !== undefined) {
               setRoom((rm) => !rm ? rm : {
                 ...rm,
-                background: message.background ?? undefined
+                background: message.background ?? undefined,
+                background_size: message.size ?? undefined
               });
             }
 
@@ -191,11 +192,24 @@ function SyncRoom() {
     return null;
   }
 
+  const getBgSize = () => {
+    if (room.background_size === 'fill') {
+      return 'contain'
+    } else if (room.background_size === 'stretch') {
+      return '100% 100%'
+    } else {
+      return 'auto'
+    }
+  }
+
   return (
     <Flex className='items-start justify-center min-h-screen'>
       <Box
-        className='absolute top-16 w-full h-[calc(100vh-4rem)] bg-contain bg-no-repeat bg-center -z-10'
-        style={{ backgroundImage: `url(${room.background})` }}
+        className='absolute top-0 left-0 w-full h-screen bg-no-repeat bg-center -z-10 overflow-hidden'
+        style={{
+          backgroundImage: `url(${room.background})`,
+          backgroundSize: getBgSize() 
+        }}
       />
       <Flex className='mt-16 xl:mt-40 mb-8 mx-8 items-end justify-center gap-8 flex-wrap-reverse'>
         {/* Chat */}
