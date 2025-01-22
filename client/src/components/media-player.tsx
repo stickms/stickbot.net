@@ -27,7 +27,8 @@ function MediaPlayer({
   const player = useRef<ReactPlayer>(null);
   const media_queue_input = useRef<HTMLInputElement>(null);
 
-  const [ready, setReady] = useState<boolean>(false);
+  const [ ready, setReady ] = useState<boolean>(false);
+  const [ queueDirty, setQueueDirty ] = useState<boolean>(false);
 
   useEffect(() => {
     if (!player.current) {
@@ -40,6 +41,10 @@ function MediaPlayer({
 
     player.current.seekTo(curtime, 'seconds');
   }, [ player, curtime ]);
+
+  useEffect(() => {
+    setQueueDirty(false);
+  }, [ queue ]);
 
   const mediaPlay = (curtime?: number) => {
     if (!player.current) {
@@ -122,6 +127,8 @@ function MediaPlayer({
       return;
     }
 
+    setQueueDirty(true);
+
     socket.send(JSON.stringify({
       command: 'queue',
       add: url
@@ -131,6 +138,8 @@ function MediaPlayer({
   }
 
   const queueRemove = (id: string) => {
+    setQueueDirty(true);
+
     if (queue[0].id === id) {
       player.current?.seekTo(0);
       if (playing) {
@@ -147,6 +156,8 @@ function MediaPlayer({
   }
 
   const queueOrder = (from: number, to: number) => {
+    setQueueDirty(true);
+
     if (to === 0 || from === 0) {
       player.current?.seekTo(0);
       if (playing) {
@@ -221,12 +232,14 @@ function MediaPlayer({
           className='flex-grow'
           placeholder='Enter media url...'
           onKeyDown={(e) => e.key === 'Enter' && queueAdd()}
+          disabled={queueDirty}
         >
           {/* Add media button */}
           <TextField.Slot side='right'>
             <IconButton
               variant='ghost'
               onClick={queueAdd}
+              loading={queueDirty}
             >
               <PlusIcon />
             </IconButton>

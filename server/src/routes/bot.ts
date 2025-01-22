@@ -185,7 +185,7 @@ bot_route.post('/bot/addtag', validateToken, validateSteamId, async (c) => {
     {
       $set: {
         [`tags.${user.apiGuild!}.${tag}`]: {
-          addedby: `api_${user.id}`,
+          addedby: user.discordId!,
           date: Math.floor(Date.now() / 1000)
         }
       }

@@ -53,6 +53,7 @@ export const rooms = sqliteTable('rooms', {
   host: text('host').references(() => users.id, {
     onDelete: 'cascade'
   }),
+  hostUsername: text('host_username').notNull(),
   leaders: text('leaders', {
     mode: 'json'
   }).notNull().$type<string[]>().default(sql`'[]'`)
