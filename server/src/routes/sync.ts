@@ -158,8 +158,10 @@ async function handleQueue(source: SyncClient, message: any) {
     });
   } else if (message.remove) {
     queue = queue.filter((q) => q.id !== message.remove);
-  } else { // Reorder elements
+  } else if (message.order) {
     queue = message.order.map((i: number) => queue[i]);
+  } else if (message.clear) {
+    queue = [];
   }
 
   editRoomMeta(source.room, {

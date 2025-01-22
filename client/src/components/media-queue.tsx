@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Cross1Icon } from "@radix-ui/react-icons";
-import { Card, Link, IconButton, } from "@radix-ui/themes";
+import { Card, Link, IconButton, Flex, Button, AlertDialog, } from "@radix-ui/themes";
 import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { DndContext, DragEndEvent, PointerSensor, rectIntersection, useSensor, useSensors } from "@dnd-kit/core";
@@ -11,9 +11,10 @@ type MediaQueueProps = {
   internalQueue: SyncRoomQueue;
   queueRemove: (index: string) => void;
   queueOrder: (from: number, to: number) => void;
+  queueClear: () => void;
 };
 
-function MediaQueue({ internalQueue, queueRemove, queueOrder }: MediaQueueProps) {
+function MediaQueue({ internalQueue, queueRemove, queueOrder, queueClear }: MediaQueueProps) {
   const [ queue, setQueue ] = useState<SyncRoomQueue>(internalQueue);
 
   useEffect(() => {
@@ -47,7 +48,7 @@ function MediaQueue({ internalQueue, queueRemove, queueOrder }: MediaQueueProps)
   }
 
   return (
-    <div>
+    <Flex className='flex-col'>
       <DndContext
         sensors={sensors}
         collisionDetection={rectIntersection}
@@ -68,7 +69,33 @@ function MediaQueue({ internalQueue, queueRemove, queueOrder }: MediaQueueProps)
           })}
         </SortableContext>
       </DndContext>
-    </div>
+
+      <Flex className='items-center justify-end'>
+        <AlertDialog.Root>
+          <AlertDialog.Trigger>
+            <Button>Clear Queue</Button>
+          </AlertDialog.Trigger>
+          <AlertDialog.Content className='max-w-96'>
+            <AlertDialog.Title>Clear Queue</AlertDialog.Title>
+            <AlertDialog.Description>
+              Are you sure you want to clear the queue?
+            </AlertDialog.Description>
+            <Flex className='mt-4 gap-3 justify-end'>
+              <AlertDialog.Cancel>
+                <Button variant='soft' color='gray'>
+                  Cancel
+                </Button>
+              </AlertDialog.Cancel>
+              <AlertDialog.Action>
+                <Button variant='solid' color='red' onClick={queueClear}>
+                  Clear
+                </Button>
+              </AlertDialog.Action>
+            </Flex>
+          </AlertDialog.Content>
+        </AlertDialog.Root>
+      </Flex>
+    </Flex>
   );
 }
 

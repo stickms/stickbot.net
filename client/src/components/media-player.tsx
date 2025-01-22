@@ -155,6 +155,17 @@ function MediaPlayer({
     }));
   }
 
+  const queueClear = () => {
+    setQueueDirty(true);
+
+    mediaPause(0);
+
+    socket.send(JSON.stringify({
+      command: 'queue',
+      clear: true
+    }));
+  }
+
   const queueOrder = (from: number, to: number) => {
     setQueueDirty(true);
 
@@ -251,6 +262,7 @@ function MediaPlayer({
         internalQueue={queue}
         queueRemove={queueRemove}
         queueOrder={queueOrder}
+        queueClear={queueClear}
       />
     </Flex>
   );
