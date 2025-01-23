@@ -43,14 +43,12 @@ function MediaPlayer({
     player.current.seekTo(curtime, 'seconds');
   }, [ player, curtime ]);
 
-  useEffect(() => {
-    setQueueDirty(false);
-  }, [ queue ]);
-
   function mediaPlay(curtime?: number) {
     if (!player.current) {
       return;
     }
+
+    const meta = { playing, curtime }
 
     editRoomMeta({
       playing: true,
@@ -60,13 +58,15 @@ function MediaPlayer({
     socket.send({
       command: 'play',
       curtime: curtime ?? Math.floor(player.current.getCurrentTime())
-    });
+    }, undefined, () => { editRoomMeta(meta) });
   };
 
   function mediaPause(curtime?: number) {
     if (!player.current) {
       return;
     }
+
+    const meta = { playing, curtime }
 
     editRoomMeta({
       playing: false,
@@ -76,7 +76,7 @@ function MediaPlayer({
     socket.send({
       command: 'pause',
       curtime: curtime ?? Math.floor(player.current.getCurrentTime())
-    });
+    }, undefined, () => { editRoomMeta(meta) });
   };
 
   function onReady(player: ReactPlayer) {
@@ -113,6 +113,20 @@ function MediaPlayer({
     queueRemove(queue[0]?.id);
   }
 
+  function serverRespHandler(title: string) {
+    return [
+      () => setQueueDirty(false),
+      () => {
+        toast({
+          title,
+          description: 'Please try again later'
+        });
+
+        setQueueDirty(false);
+      }
+    ];
+  }
+
   function queueAdd() {
     if (!media_queue_input.current) {
       return;
@@ -133,7 +147,7 @@ function MediaPlayer({
     socket.send({
       command: 'queue',
       add: url
-    });
+    }, ...serverRespHandler('Could not add item to queue'));
 
     media_queue_input.current!.value = ''
   }
@@ -153,7 +167,7 @@ function MediaPlayer({
     socket.send({
       command: 'queue',
       remove: id.toString()
-    });
+    }, ...serverRespHandler('Could not remove item from queue'));
   }
 
   function queueClear() {
@@ -164,7 +178,7 @@ function MediaPlayer({
     socket.send({
       command: 'queue',
       clear: true
-    });
+    }, ...serverRespHandler('Could not clear queue'));
   }
 
   function queueOrder(from: number, to: number) {
@@ -182,7 +196,7 @@ function MediaPlayer({
     socket.send({
       command: 'queue',
       order: arrayMove(queue.map((_, i) => i), from, to)
-    });
+    }, ...serverRespHandler('Could not reorder queue'));
   }
 
   return (

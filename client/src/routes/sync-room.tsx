@@ -110,11 +110,9 @@ function SyncRoom() {
         .then(fetchGetJson)
         .then((data) => {
           const room_data: SyncRoom = data['data'];
-          if (room != room_data) {
-            setRoom(room_data);
-          }
+          setRoom(room_data);
         })
-          .catch(() => navigate('/watch-together'));
+        .catch(() => navigate('/watch-together'));
     }, 15_000); // Every 15 seconds
 
     return () => {

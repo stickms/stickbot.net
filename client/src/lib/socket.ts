@@ -65,16 +65,16 @@ class SocketConn {
 
     // If this timeout reaches completion, our message has been ignored
     const ignore_timeout = setTimeout(() => {
+      this.socket?.removeEventListener('message', handleOnMessage);
       onIgnored?.();
     }, this.timeout);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleOnMessage = (event: any) => {
-      this.socket?.removeEventListener('message', handleOnMessage);
-
       const message = JSON.parse(event.data);
 
       if (message.acknowledged === message_id) {
+        this.socket?.removeEventListener('message', handleOnMessage);
         clearTimeout(ignore_timeout);
         onAcknowledged?.();
       }

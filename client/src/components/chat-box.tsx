@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
 import { $syncsettings } from "../lib/store";
 import SocketConn from "../lib/socket";
 import { SyncRoomMessages } from "../lib/types";
+import useToast from "../hooks/use-toast";
 
 type ChatBoxProps = {
   socket: SocketConn;
@@ -17,6 +18,8 @@ type ChatBoxProps = {
 };
 
 function ChatBox({ socket, users, messages, host } : ChatBoxProps) {
+  const { toast } = useToast();
+
   const syncsettings = useStore($syncsettings);
 
   const message_area = useRef<HTMLDivElement>(null);
@@ -37,6 +40,11 @@ function ChatBox({ socket, users, messages, host } : ChatBoxProps) {
     socket.send({
       command: 'chat',
       content: chat_box.current.value.trim()
+    }, undefined, () => {
+      toast({
+        title: 'Could not send chat message',
+        description: 'Please try again later'
+      });
     });
 
     chat_box.current!.value = '';
