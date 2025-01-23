@@ -15,7 +15,9 @@ type MediaQueueProps = {
   queueClear: () => void;
 };
 
-function MediaQueue({ internalQueue, queueDirty, queueRemove, queueOrder, queueClear }: MediaQueueProps) {
+function MediaQueue({
+  internalQueue, queueDirty, queueRemove, queueOrder, queueClear
+}: MediaQueueProps) {
   const [ queue, setQueue ] = useState<SyncRoomQueue>(internalQueue);
 
   useEffect(() => {

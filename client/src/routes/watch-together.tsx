@@ -22,10 +22,10 @@ function SignIn() {
 
     const value = username_input.current.value.trim();
 
-    if (!value || !/^[a-z0-9]+$/i.test(value)) {
+    if (!value || !/^[a-z0-9-_.]+$/i.test(value)) {
       toast({
         title: 'Error signing in',
-        description: 'Please enter a valid username (alphanumeric characters)'
+        description: 'Usernames can only contain alphanumeric, -, ., or _ characters'
       });
 
       return;
@@ -35,7 +35,7 @@ function SignIn() {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
-        username: username_input.current.value
+        username: value
       })
     })
       .then(fetchGetJson)

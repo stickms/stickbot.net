@@ -293,7 +293,7 @@ sync_route.get('/sync/ws', upgradeWebSocket((c) => {
       if (source?.room) {
         const users = clients
           .filter((client) => (
-            client.room === source.room && client.id !== source.id
+            client.room === source.room && client.ws !== source.ws
           ))
           .map((client) => `${client.id}:${client.username}`);
     
