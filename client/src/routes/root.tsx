@@ -10,7 +10,7 @@ function Root() {
           <NavLink to='/lookup'>Steam Profile Lookup</NavLink>
         </Link>
         <Link asChild>
-          <NavLink to='/watch-together'>Watch Together (WIP)</NavLink>
+          <NavLink to='/watch-together'>Watch Together</NavLink>
         </Link>
         <Link asChild>
           <NavLink to='/soundcloud-dl'>Soundcloud Downloader</NavLink>

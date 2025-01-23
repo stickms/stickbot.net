@@ -178,7 +178,7 @@ function RoomList({ userid }: { userid: string }) {
 
   return (
     <Flex className='flex-col items-center gap-24 min-h-screen'>
-      <Text className='text-3xl mt-40'>Sync Rooms</Text>
+      <Text className='text-3xl mt-40'>Watch Together Rooms</Text>
 
       <TextField.Root
         ref={inputbar}

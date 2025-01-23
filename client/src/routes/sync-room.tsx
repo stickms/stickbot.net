@@ -165,7 +165,7 @@ function SyncRoom() {
           backgroundSize: getBgSize() 
         }}
       />
-      <Flex className='mt-16 xl:mt-40 mb-8 mx-8 items-end justify-center gap-8 flex-wrap-reverse'>
+      <Flex className='mt-[min(8rem,_calc(4rem+7.5vw))] mb-8 mx-8 items-end justify-center gap-8 flex-wrap-reverse'>
         {/* Chat */}
         <ChatBox
           socket={webSocket.current}
