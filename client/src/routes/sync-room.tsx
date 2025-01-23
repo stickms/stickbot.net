@@ -1,63 +1,25 @@
 import { Flex, Box } from "@radix-ui/themes";
-import { MutableRefObject, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { UserType, type SyncRoom } from "../lib/types";
+import { type SyncRoom } from "../lib/types";
 import { API_ENDPOINT } from "../env";
 import { fetchGetJson } from "../lib/util";
-import { hc } from "hono/client";
 import useAuth from "../hooks/use-auth";
 import MediaPlayer from "../components/media-player";
 import ChatBox from "../components/chat-box";
-
-function connect(
-  user: UserType,
-  roomid: string,
-  socketRef: MutableRefObject<WebSocket | null>,
-  setSocket: (socket: WebSocket | null) => void,
-  openCallback: (socket: WebSocket, event: Event) => unknown,
-  messageCallback: (socket: WebSocket, event: MessageEvent<string>) => unknown,
-) {
-  const client = hc(`${API_ENDPOINT}/sync`);
-  const socket = client.ws.$ws({
-    query: {
-      id: user.id,
-      username: user.username,
-      room: roomid
-    }
-  });
-
-  socket.addEventListener('open', (e) => openCallback(socket, e));
-  socket.addEventListener('message', (e) => messageCallback(socket, e));
-
-  socket.addEventListener('close', () => {
-    if (socketRef.current) {
-      console.error('WebSocket unexpectedly closed, reconnecting in 1s...');
-      setTimeout(() => {
-        connect(user, roomid, socketRef, setSocket, openCallback, messageCallback);
-      }, 1_000);
-    }
-  });
-
-  socket.addEventListener('error', () => {
-    console.error('WebSocket error encountered, closing...');
-    socket.close();
-    socketRef.current = null;
-  });
-
-  setSocket(socket);
-}
+import SocketConn from "../lib/socket";
 
 function SyncRoom() {
   const { user } = useAuth();
   const { roomid } = useParams();
   const navigate = useNavigate();
 
-  const webSocket = useRef<WebSocket | null>(null);
+  const webSocket = useRef<SocketConn | null>(null);
   const interval = useRef<NodeJS.Timeout | null>(null);
 
   const [room, setRoom] = useState<SyncRoom>();
 
-  const editRoomMeta = (meta: object) => {
+  function editRoomMeta(meta: object) {
     setRoom((rm) => !rm ? rm : {
       ...rm,
       meta: {
@@ -69,7 +31,6 @@ function SyncRoom() {
 
   useEffect(() => {
     if (!user.id || !roomid) {
-      //navigate('/watch-together');
       return;
     }
 
@@ -83,26 +44,22 @@ function SyncRoom() {
       .then(fetchGetJson)
       .then((data) => {
         setRoom(data['data']);
-        
-        connect(
-          user,
-          roomid,
-          webSocket,
-          (socket) => {
-            webSocket.current = socket;
+
+        webSocket.current = new SocketConn(
+          `${API_ENDPOINT}/sync`,
+          {
+            id: user.id,
+            username: user.username,
+            room: roomid
           },
-          (socket) => {
-            socket.send(JSON.stringify({
-              command: 'join'
-            }))
-          },
-          (_, event) => {
-            const message = JSON.parse(event.data);
-            console.log(message);
-    
+          (message) => {
             if (message.chat) {
-              editRoomMeta({
-                messages: message.chat
+              setRoom((rm) => !rm ? rm : {
+                ...rm,
+                meta: {
+                  ...rm.meta,
+                  messages: [ ...rm.meta.messages, message.chat ]
+                }
               });
             }
 
@@ -113,11 +70,10 @@ function SyncRoom() {
               });
             }
 
-            if (message.background !== undefined) {
+            if (message.background) {
               setRoom((rm) => !rm ? rm : {
                 ...rm,
-                background: message.background ?? undefined,
-                background_size: message.size ?? undefined
+                background: message.background
               });
             }
 
@@ -193,9 +149,9 @@ function SyncRoom() {
   }
 
   const getBgSize = () => {
-    if (room.background_size === 'fill') {
+    if (room.background.size === 'fill') {
       return 'contain'
-    } else if (room.background_size === 'stretch') {
+    } else if (room.background.size === 'stretch') {
       return '100% 100%'
     } else {
       return 'auto'
@@ -207,7 +163,7 @@ function SyncRoom() {
       <Box
         className='absolute top-0 left-0 w-full h-screen bg-no-repeat bg-center -z-10 overflow-hidden'
         style={{
-          backgroundImage: `url(${room.background})`,
+          backgroundImage: `url(${room.background.url})`,
           backgroundSize: getBgSize() 
         }}
       />

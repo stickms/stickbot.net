@@ -20,10 +20,12 @@ function SignIn() {
       return;
     }
 
-    if (!username_input.current.value) {
+    const value = username_input.current.value.trim();
+
+    if (!value || !/^[a-z0-9]+$/i.test(value)) {
       toast({
         title: 'Error signing in',
-        description: 'Please enter a username'
+        description: 'Please enter a valid username (alphanumeric characters)'
       });
 
       return;
@@ -211,9 +213,9 @@ function RoomList({ userid }: { userid: string }) {
             <Flex className='items-start justify-between'>
               <Text className='text-lg break-all whitespace-pre-line'>
                 {room.name + '\n'}
-                <Text color='gray' className='text-sm'>hosted by {room.host_username}</Text>
+                <Text color='gray' className='text-sm'>hosted by {room.host.username}</Text>
               </Text>
-              {room.host === userid && (
+              {room.host.id === userid && (
                 <Tooltip content='Close Room'>
                   <IconButton
                     variant='ghost'

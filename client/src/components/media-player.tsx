@@ -8,9 +8,10 @@ import { arrayMove } from "@dnd-kit/sortable";
 import { useStore } from "@nanostores/react";
 import { $syncsettings, setHideChat } from "../lib/store";
 import { SyncRoomQueue } from "../lib/types";
+import SocketConn from "../lib/socket";
 
 type MediaPlayerProps = {
-  socket: WebSocket;
+  socket: SocketConn;
   playing: boolean;
   curtime: number;
   queue: SyncRoomQueue;
@@ -46,7 +47,7 @@ function MediaPlayer({
     setQueueDirty(false);
   }, [ queue ]);
 
-  const mediaPlay = (curtime?: number) => {
+  function mediaPlay(curtime?: number) {
     if (!player.current) {
       return;
     }
@@ -56,13 +57,13 @@ function MediaPlayer({
       curtime: curtime ?? Math.floor(player.current.getCurrentTime())
     });
 
-    socket.send(JSON.stringify({
+    socket.send({
       command: 'play',
       curtime: curtime ?? Math.floor(player.current.getCurrentTime())
-    }));
+    });
   };
 
-  const mediaPause = (curtime?: number) => {
+  function mediaPause(curtime?: number) {
     if (!player.current) {
       return;
     }
@@ -72,20 +73,20 @@ function MediaPlayer({
       curtime: curtime ?? Math.floor(player.current.getCurrentTime())
     });
 
-    socket.send(JSON.stringify({
+    socket.send({
       command: 'pause',
       curtime: curtime ?? Math.floor(player.current.getCurrentTime())
-    }));
+    });
   };
 
-  const onReady = (player: ReactPlayer) => {
+  function onReady(player: ReactPlayer) {
     if (!ready) {
       setReady(true);
       player.seekTo(curtime, 'seconds');
     }
   };
 
-  const onPlay = () => {
+  function onPlay() {
     if (!player.current || playing) {
       return;
     }
@@ -93,7 +94,7 @@ function MediaPlayer({
     mediaPlay();
   };
 
-  const onPause = () => {
+  function onPause() {
     if (!player.current || !playing) {
       return;
     }
@@ -101,7 +102,7 @@ function MediaPlayer({
     mediaPause();
   };
 
-  const onFinished = () => {
+  function onFinished() {
     console.log('finished');
 
     if (!player.current || !player.current.getCurrentTime()) {
@@ -112,7 +113,7 @@ function MediaPlayer({
     queueRemove(queue[0]?.id);
   }
 
-  const queueAdd = () => {
+  function queueAdd() {
     if (!media_queue_input.current) {
       return;
     }
@@ -129,15 +130,15 @@ function MediaPlayer({
 
     setQueueDirty(true);
 
-    socket.send(JSON.stringify({
+    socket.send({
       command: 'queue',
       add: url
-    }));
+    });
 
     media_queue_input.current!.value = ''
   }
 
-  const queueRemove = (id: string) => {
+  function queueRemove(id: string) {
     setQueueDirty(true);
 
     if (queue[0].id === id) {
@@ -149,24 +150,24 @@ function MediaPlayer({
       }
     }
 
-    socket.send(JSON.stringify({
+    socket.send({
       command: 'queue',
       remove: id.toString()
-    }));
+    });
   }
 
-  const queueClear = () => {
+  function queueClear() {
     setQueueDirty(true);
 
     mediaPause(0);
 
-    socket.send(JSON.stringify({
+    socket.send({
       command: 'queue',
       clear: true
-    }));
+    });
   }
 
-  const queueOrder = (from: number, to: number) => {
+  function queueOrder(from: number, to: number) {
     setQueueDirty(true);
 
     if (to === 0 || from === 0) {
@@ -178,10 +179,10 @@ function MediaPlayer({
       }
     }
 
-    socket.send(JSON.stringify({
+    socket.send({
       command: 'queue',
       order: arrayMove(queue.map((_, i) => i), from, to)
-    }));
+    });
   }
 
   return (
@@ -250,7 +251,7 @@ function MediaPlayer({
   );
 }
 
-function SyncSettings({ socket }: { socket: WebSocket }) {
+function SyncSettings({ socket }: { socket: SocketConn }) {
   const { toast } = useToast();
 
   const syncsettings = useStore($syncsettings);
@@ -273,11 +274,13 @@ function SyncSettings({ socket }: { socket: WebSocket }) {
       return;
     }
 
-    socket.send(JSON.stringify({
+    socket.send({
       command: 'background',
-      background: value,
-      size: bgSize
-    }));
+      background: {
+        url: value,
+        size: bgSize
+      },
+    });
   };
 
   return (

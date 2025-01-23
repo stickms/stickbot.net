@@ -3,12 +3,17 @@ import { PaperPlaneIcon } from "@radix-ui/react-icons";
 import { Text, Box, Card, IconButton, ScrollArea, TextField } from "@radix-ui/themes";
 import { useEffect, useRef } from "react";
 import { $syncsettings } from "../lib/store";
+import SocketConn from "../lib/socket";
+import { SyncRoomMessages } from "../lib/types";
 
 type ChatBoxProps = {
-  socket: WebSocket;
+  socket: SocketConn;
   users: string[];
-  messages: string[];
-  host: string;
+  messages: SyncRoomMessages;
+  host: {
+    id: string;
+    username: string;
+  };
 };
 
 function ChatBox({ socket, users, messages, host } : ChatBoxProps) {
@@ -29,10 +34,10 @@ function ChatBox({ socket, users, messages, host } : ChatBoxProps) {
       return;
     }
 
-    socket.send(JSON.stringify({
+    socket.send({
       command: 'chat',
       content: chat_box.current.value.trim()
-    }));
+    });
 
     chat_box.current!.value = '';
   }
@@ -54,7 +59,7 @@ function ChatBox({ socket, users, messages, host } : ChatBoxProps) {
             return (
               <Text
                 key={user}
-                color={host === userid ? 'amber' : undefined}
+                color={host.id === userid ? 'amber' : undefined}
                 className='text-sm break-all'
               >
                 {username + '\n'}
@@ -64,28 +69,32 @@ function ChatBox({ socket, users, messages, host } : ChatBoxProps) {
         </ScrollArea>
 
         {/* Messages */}
-        <ScrollArea ref={message_area} className='pr-3 whitespace-pre-line row-[2/1] col-[3/2]' scrollbars='vertical' type='always'>
-          {messages.map((msg, i) => {
-            const split1 = msg.indexOf(':');
-            const split2 = msg.indexOf(':', split1 + 1);
-
-            const userid = msg.substring(0, split1);
-            const username = msg.substring(split1 + 1, split2);
-            const content = msg.substring(split2 + 1);
-
-            return (
-              <Text
-                key={i}
-                className='text-sm break-all'
-                color={host === userid ? 'amber' : undefined}
-              >
-                {username}
-                <Text color='gray'>
-                  {': ' + content + '\n'}
+        <ScrollArea
+          ref={message_area}
+          className='pr-3 whitespace-pre-line row-[2/1] col-[3/2]'
+          scrollbars='vertical'
+          type='always'
+        >
+          {messages
+            .sort((a, b) => a.date - b.date)
+            .map((msg, i) => {
+              return (
+                <Text key={i} className='break-all text-sm'>
+                  <Text className='text-xs' color='gray'>
+                    {new Date(msg.date).toLocaleTimeString('en-US', {
+                      hour: 'numeric', minute: '2-digit'
+                    })}
+                  </Text>
+                  <Text color={host.id === msg.author.id ? 'amber' : undefined}>
+                    {' ' + msg.author.username}
+                  </Text>
+                  <Text color='gray'>
+                    {': ' + msg.content + '\n'}
+                  </Text>
                 </Text>
-              </Text>
-            );
-          })}
+              );
+            })
+          }
         </ScrollArea>
 
         {/* Message Input */}

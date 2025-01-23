@@ -34,16 +34,27 @@ type RoomMetadata = {
   start_time: number;         // MS since UTC epoch
   stop_time?: number;         // If set, overrides start_time
   playing: boolean;
-  messages: string[];
+  messages: {
+    author: {
+      id: string;
+      username: string;
+    },
+    content: string,
+    date: number              // When was this message sent?
+  }[];
 };
 
 type SyncRoom = {
   name: string;
-  host: string;
-  host_username: string;
+  host: {
+    id: string;
+    username: string;
+  };
   leaders: string[];
-  background?: string;
-  background_size?: string;
+  background: {
+    url?: string;
+    size?: string;
+  };
   meta: RoomMetadata;
 };
 
@@ -95,7 +106,7 @@ function relayToRoom(roomid: string, data: {}) {
   });
 }
 
-function handleJoin(source: SyncClient, message: any) {
+function handleJoin(source: SyncClient) {
   const users = clients
     .filter((client) => (
       client.room === source.room
@@ -122,7 +133,7 @@ function handlePlayPause(source: SyncClient, message: any) {
   });
 
   relayToRoom(source.room, {
-    source: source.id,
+    acknowledged: message.message_id,
     play: message.command === 'play' ? true : undefined,
     pause: message.command === 'pause' ? true : undefined,
     curtime: message.curtime
@@ -183,7 +194,7 @@ async function handleQueue(source: SyncClient, message: any) {
   });
 
   relayToRoom(source.room, {
-    source: source.id,
+    acknowledged: message.message_id,
     queue
   });
 }
@@ -198,18 +209,22 @@ function handleChat(source: SyncClient, message: any) {
     return
   }
 
-  const chat = [
-    ...room.meta.messages,
-    `${source.id}:${source.username}: ${message.content}`
-  ];
+  const new_message = {
+    author: {
+      id: source.id,
+      username: source.username
+    },
+    content: message.content,
+    date: Date.now()
+  }
 
   editRoomMeta(source.room, {
-    messages: chat
+    messages: [...room.meta.messages, new_message]
   });
 
   relayToRoom(source.room, {
-    source: source.id,
-    chat
+    acknowledged: message.message_id,
+    chat: new_message
   });
 }
 
@@ -219,14 +234,15 @@ function handleBackground(source: SyncClient, message: any) {
   }
 
   editRoom(source.room, {
-    background: message.background ?? undefined,
-    background_size: message.background ? message.size : undefined
+    background: message.background
   });
 
   relayToRoom(source.room, {
-    source: source.id,
-    background: message.background,
-    size: message.size
+    acknowledged: message.message_id,
+    background: {
+      url: message.background.url,
+      size: message.background.size
+    }
   });
 }
 
@@ -234,12 +250,15 @@ sync_route.get('/sync/ws', upgradeWebSocket((c) => {
   return {
     onOpen(event, ws) {
       const { id, username, room } = c.req.query();
-      clients.push({
+      const new_client: SyncClient = {
         ws,
         id,
         username,
         room
-      });
+      };
+
+      clients.push(new_client);
+      handleJoin(new_client);
     },
     onMessage(event, ws) {
       const source = clients.find((client) => client.ws === ws);
@@ -250,10 +269,6 @@ sync_route.get('/sync/ws', upgradeWebSocket((c) => {
       const message = JSON.parse(event.data.toString());
 
       switch (message.command) {
-        case 'join':
-          handleJoin(source, message);
-          break;
-
         case 'play':
         case 'pause':
           handlePlayPause(source, message);
@@ -298,8 +313,7 @@ sync_route.get('/sync/rooms', authGuard, async (c) => {
     .map(([id, room]) => ({
       id,
       name: room.name,
-      host: room.host,
-      host_username: room.host_username
+      host: room.host
     }));
 
   return c.json({
@@ -352,10 +366,13 @@ sync_route.post('/sync/rooms/create', authGuard, async (c) => {
   const roomid = encodeBase64urlNoPadding(bytes);
 
   const room: SyncRoom = {
-    host: user.id.toString(),
-    host_username: user.username,
+    host: {
+      id: user.id,
+      username: user.username
+    },
     leaders: [],
     name: name,
+    background: {},
 
     meta: {
       queue: [],
@@ -403,7 +420,7 @@ sync_route.delete('/sync/rooms/:roomid', authGuard, async (c) => {
     });
   }
 
-  if (room.host !== user.id.toString()) {
+  if (room.host.id !== user.id) {
     throw new HTTPException(401, {
       message: 'Unauthorized'
     });

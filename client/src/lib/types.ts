@@ -20,21 +20,34 @@ export type SyncRoomQueue = {
   title: string;
 }[];
 
+export type SyncRoomMessages = {
+  author: {
+    id: string;
+    username: string;
+  },
+  content: string,
+  date: number
+}[];
+
 export type SyncRoom = {
   id: string;
   name: string;
-  host: string;
-  host_username: string;
+  host: {
+    id: string;
+    username: string;
+  };
   leaders: string[];
   users: string[];
-  background?: string;
-  background_size?: string;
+  background: {
+    url?: string;
+    size?: string;
+  };
 
   meta: {
     queue: SyncRoomQueue;
     curtime: number;
     playing: boolean;
-    messages: string[];
+    messages: SyncRoomMessages;
   }
 }
 
