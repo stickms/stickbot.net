@@ -9,12 +9,13 @@ import { restrictToParentElement } from "@dnd-kit/modifiers";
 
 type MediaQueueProps = {
   internalQueue: SyncRoomQueue;
+  queueDirty: boolean;
   queueRemove: (index: string) => void;
   queueOrder: (from: number, to: number) => void;
   queueClear: () => void;
 };
 
-function MediaQueue({ internalQueue, queueRemove, queueOrder, queueClear }: MediaQueueProps) {
+function MediaQueue({ internalQueue, queueDirty, queueRemove, queueOrder, queueClear }: MediaQueueProps) {
   const [ queue, setQueue ] = useState<SyncRoomQueue>(internalQueue);
 
   useEffect(() => {
@@ -58,12 +59,14 @@ function MediaQueue({ internalQueue, queueRemove, queueOrder, queueClear }: Medi
         <SortableContext 
           items={queue}
           strategy={verticalListSortingStrategy}
+          disabled={queueDirty}
         >
           {queue.map((entry, index) => {
             return <QueueItem
               key={entry.id}
               content={entry}
               index={index}
+              queueDirty={queueDirty}
               queueRemove={queueRemove}
             />
           })}
@@ -73,7 +76,7 @@ function MediaQueue({ internalQueue, queueRemove, queueOrder, queueClear }: Medi
       <Flex className='items-center justify-end'>
         <AlertDialog.Root>
           <AlertDialog.Trigger>
-            <Button>Clear Queue</Button>
+            <Button disabled={queueDirty}>Clear Queue</Button>
           </AlertDialog.Trigger>
           <AlertDialog.Content className='w-96 max-w-[80vw]'>
             <AlertDialog.Title>Clear Queue</AlertDialog.Title>
@@ -106,10 +109,11 @@ type QueueItemProps = {
     title: string;  
   };
   index: number;
+  queueDirty: boolean;
   queueRemove: (id: string) => void
 };
 
-function QueueItem({ content, index, queueRemove }: QueueItemProps) {
+function QueueItem({ content, index, queueDirty, queueRemove }: QueueItemProps) {
   const {
     attributes,
     listeners,
@@ -144,6 +148,7 @@ function QueueItem({ content, index, queueRemove }: QueueItemProps) {
         variant='outline' 
         size='1'
         onClick={() => queueRemove(content.id)}
+        disabled={queueDirty}
       >
         <Cross1Icon />
       </IconButton>

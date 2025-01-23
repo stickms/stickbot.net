@@ -257,6 +257,7 @@ function MediaPlayer({
       {/* Media Queue */}
       <MediaQueue
         internalQueue={queue}
+        queueDirty={queueDirty}
         queueRemove={queueRemove}
         queueOrder={queueOrder}
         queueClear={queueClear}
