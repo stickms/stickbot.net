@@ -272,7 +272,7 @@ function SyncSettings({ socket }: { socket: SocketConn }) {
   const syncsettings = useStore($syncsettings);
   const bg_input = useRef<HTMLInputElement>(null);
 
-  const [ bgSize, setBgSize ] = useState<string>('fill');
+  const [ bgSize, setBgSize ] = useState<string>('cover');
 
   const changeBackground = () => {
     if (!bg_input.current) {
@@ -338,6 +338,7 @@ function SyncSettings({ socket }: { socket: SocketConn }) {
               <Select.Group>
                 <Select.Label>Image Settings</Select.Label>
                 <Select.Item value='default'>Default Size</Select.Item>
+                <Select.Item value='cover'>Cover</Select.Item>
                 <Select.Item value='fill'>Fill</Select.Item>
                 <Select.Item value='stretch'>Stretch to Fill</Select.Item>
               </Select.Group>

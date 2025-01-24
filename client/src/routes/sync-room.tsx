@@ -148,11 +148,13 @@ function SyncRoom() {
 
   const getBgSize = () => {
     if (room.background.size === 'fill') {
-      return 'contain'
+      return 'contain';
     } else if (room.background.size === 'stretch') {
-      return '100% 100%'
+      return '100% 100%';
+    } else if (room.background.size === 'cover') {
+      return 'cover';
     } else {
-      return 'auto'
+      return 'auto';
     }
   }
 
