@@ -368,8 +368,6 @@ sync_route.post('/sync/rooms/create', authGuard, async (c) => {
   crypto.getRandomValues(bytes);
   const roomid = encodeBase64urlNoPadding(bytes);
 
-  console.log(unlisted)
-
   const room: SyncRoom = {
     host: {
       id: user.id,

@@ -11,7 +11,8 @@ function Toaster() {
         <Callout.Root
           key={toast.id}
           data-open={toast.open}
-          className='w-96 max-w-[min(30rem,calc(100vw-3rem))] ml-6 transition ease-in-out duration-200 data-[open=false]:translate-x-[calc(100%+1.5rem)] data-[open=true]:translate-x-0'
+          highContrast
+          className='w-96 max-w-[min(30rem,calc(100vw-3rem))] ml-6 backdrop-blur-3xl transition ease-in-out duration-200 data-[open=false]:translate-x-[calc(100%+1.5rem)] data-[open=true]:translate-x-0'
         >
           <Callout.Icon>
             <InfoCircledIcon />

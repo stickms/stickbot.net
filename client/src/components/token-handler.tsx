@@ -38,13 +38,13 @@ function TokenHandler() {
     }
   };
 
-  if (!user.id) {
+  if (!user.id || !user.discord_id) {
     return (
       <Callout.Root size='2'>
         <Callout.Icon>
           <InfoCircledIcon />
         </Callout.Icon>
-        <Callout.Text>Sign in to use Stickbot API</Callout.Text>
+        <Callout.Text>Sign in with Discord to use Stickbot API</Callout.Text>
       </Callout.Root>
     );
   }
