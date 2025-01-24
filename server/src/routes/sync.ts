@@ -46,6 +46,7 @@ type RoomMetadata = {
 
 type SyncRoom = {
   name: string;
+  unlisted: boolean;
   host: {
     id: string;
     username: string;
@@ -309,7 +310,9 @@ sync_route.get('/sync/ws', upgradeWebSocket((c) => {
 }));
 
 sync_route.get('/sync/rooms', authGuard, async (c) => {
+  // Only show non-unlisted rooms
   const mapped = Object.entries(rooms)
+    .filter(([_, room]) => !room.unlisted)
     .map(([id, room]) => ({
       id,
       name: room.name,
@@ -353,7 +356,7 @@ sync_route.get('/sync/rooms/:roomid', authGuard, async (c) => {
 
 sync_route.post('/sync/rooms/create', authGuard, async (c) => {
   const user = c.get('user')!;
-  const { name } = await c.req.json();
+  const { name, unlisted } = await c.req.json();
 
   if (!name) {
     throw new HTTPException(400, {
@@ -365,6 +368,8 @@ sync_route.post('/sync/rooms/create', authGuard, async (c) => {
   crypto.getRandomValues(bytes);
   const roomid = encodeBase64urlNoPadding(bytes);
 
+  console.log(unlisted)
+
   const room: SyncRoom = {
     host: {
       id: user.id,
@@ -373,6 +378,7 @@ sync_route.post('/sync/rooms/create', authGuard, async (c) => {
     leaders: [],
     name: name,
     background: {},
+    unlisted: unlisted,
 
     meta: {
       queue: [],

@@ -1,4 +1,4 @@
-import { Button, Callout, Card, Flex, IconButton, Link, Text, TextField, Tooltip } from "@radix-ui/themes";
+import { Button, Callout, Card, Checkbox, Flex, IconButton, Link, Text, TextField, Tooltip } from "@radix-ui/themes";
 import { useEffect, useRef, useState } from "react";
 import { API_ENDPOINT } from "../env";
 import { Cross1Icon, DiscordLogoIcon, EnterIcon, InfoCircledIcon, PlusIcon } from "@radix-ui/react-icons";
@@ -90,6 +90,7 @@ function RoomList({ userid }: { userid: string }) {
   const navigate = useNavigate();
 
   const inputbar = useRef<HTMLInputElement>(null);
+  const unlistedbox = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     fetch(`${API_ENDPOINT}/sync/rooms`, {
@@ -157,11 +158,14 @@ function RoomList({ userid }: { userid: string }) {
       return;
     }
 
+    const unlisted = unlistedbox.current?.ariaChecked === 'true';
+
     fetch(`${API_ENDPOINT}/sync/rooms/create`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
-        name
+        name,
+        unlisted
       })
     })
       .then(fetchGetJson)
@@ -180,22 +184,30 @@ function RoomList({ userid }: { userid: string }) {
     <Flex className='flex-col items-center gap-24 min-h-screen'>
       <Text className='text-3xl mt-40'>Watch Together Rooms</Text>
 
-      <TextField.Root
-        ref={inputbar}
-        className='w-96 max-w-[80vw]'
-        placeholder='Create a room...'
-        maxLength={32}
-        onKeyDown={(e) => e.key === 'Enter' && createRoom()}
-      >
-        <TextField.Slot side='right'>
-          <IconButton
-            variant='ghost'
-            onClick={createRoom}
-          >
-            <PlusIcon />
-          </IconButton>
-        </TextField.Slot>
-      </TextField.Root>
+      <Flex className='items-center justify-center flex-col gap-4'>
+        <TextField.Root
+          ref={inputbar}
+          className='w-96 max-w-[80vw]'
+          placeholder='Create a room...'
+          maxLength={32}
+          onKeyDown={(e) => e.key === 'Enter' && createRoom()}
+        >
+          <TextField.Slot side='right'>
+            <IconButton
+              variant='ghost'
+              onClick={createRoom}
+            >
+              <PlusIcon />
+            </IconButton>
+          </TextField.Slot>
+        </TextField.Root>
+        <Text as='label'>
+          <Flex className='gap-1 items-center'>
+            <Checkbox size='3' ref={unlistedbox} />
+            Unlisted
+          </Flex>
+        </Text>
+      </Flex>
 
       <Flex className='items-stretch justify-center flex-wrap gap-4 mb-8 max-w-[80vw]'>
         {!rooms?.length && (
