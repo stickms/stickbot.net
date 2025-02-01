@@ -26,7 +26,10 @@ tools_route.get('/tools/media-info', async (c) => {
     noCheckCertificates: true,
     noWarnings: true,
     preferFreeFormats: true,
-    skipDownload: true
+    skipDownload: true,
+    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:134.0) Gecko/20100101 Firefox/134.0',
+    referer: query,
+    addHeader: [ 'Origin: https://stickbot.net/' ]
   });
 
   return c.json({
@@ -55,6 +58,9 @@ tools_route.get('/tools/soundcloud-dl', async (c) => {
     ffmpegLocation: ffmpeg_path,
     externalDownloader: 'ffmpeg',
     externalDownloaderArgs: `-vn -f ${ext}`,
+    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:134.0) Gecko/20100101 Firefox/134.0',
+    referer: query,
+    addHeader: [ 'Origin: https://stickbot.net/' ]
   }, {
     stdio: [ 'ignore', 'pipe', 'ignore' ]
   });
