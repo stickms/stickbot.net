@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import type { Context } from "../lib/context.js";
-import { authGuard } from "../middleware/auth-guard.js";
 import { HTTPException } from "hono/http-exception";
 import { youtubeDl } from 'youtube-dl-exec';
 import { CLIENT_URL, FFMPEG_PATH } from "../env.js";
@@ -97,14 +96,13 @@ tools_route.get('/tools/youtube-dl', async (c) => {
     noCheckCertificates: true,
     noWarnings: true,
     format: `${format}+ba[ext=m4a]/${format}+ba/${format}/b`,
-    //format: 'bv*[ext=mp4][vcodec^=avc]+ba[ext=m4a]/b[ext=mp4] / bv*+ba/b',
     ffmpegLocation: ffmpeg_path,
-    //mergeOutputFormat: 'mp4',
     remuxVideo: 'mp4',
     externalDownloader: 'ffmpeg',
     externalDownloaderArgs: '-f mp4 -movflags frag_keyframe+empty_moov -c:v libx264 -preset ultrafast -crf 23',
-    //postprocessorArgs: 'FFmpeg:-f mp4 -movflags frag_keyframe+empty_moov -c:v libx264 -preset ultrafast -crf 22',
-    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:133.0) Gecko/20100101 Firefox/133.0'
+    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:134.0) Gecko/20100101 Firefox/134.0',
+    referer: query,
+    addHeader: [ 'Origin: https://stickbot.net/' ]
   }, {
     stdio: [ 'ignore', 'pipe', 'ignore' ]
   });

@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import Sourcebans from '../helpers/sourcebans.js';
+import Sourcebans from '../lib/sourcebans.js';
 import type { Context } from '../lib/context.js';
 import { HTTPException } from 'hono/http-exception';
 import { callSteamApi } from '../lib/util.js';

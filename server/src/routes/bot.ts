@@ -10,7 +10,7 @@ import { eq } from 'drizzle-orm';
 import { discordRefresh } from '../middleware/discord.js';
 import { randomBytes } from 'node:crypto';
 import { validateToken } from '../middleware/validate-token.js';
-import Sourcebans from '../helpers/sourcebans.js';
+import Sourcebans from '../lib/sourcebans.js';
 import { validateSteamId } from '../middleware/validate-steamid.js';
 import { callDiscordApi } from '../lib/util.js';
 
