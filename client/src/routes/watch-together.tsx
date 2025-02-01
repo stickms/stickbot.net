@@ -11,6 +11,7 @@ import { SyncRoom } from "../lib/types";
 function SignIn() {
   const username_input = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { getUser } = useAuth();
 
   const location = useLocation();
   const redirect = `?redirect=${encodeURIComponent(location.pathname)}`;
@@ -40,7 +41,7 @@ function SignIn() {
     })
       .then(fetchGetJson)
       .then(() => {
-        window.location.reload();
+        getUser();
       })
       .catch(() => {
         toast({
@@ -101,6 +102,7 @@ function RoomList({ userid }: { userid: string }) {
         setRooms(data['data']);
       })
       .catch(() => {
+        setRooms([]);
         toast({
           title: 'Error fetching rooms',
           description: 'Please try again later'
@@ -204,7 +206,7 @@ function RoomList({ userid }: { userid: string }) {
         <Text as='label'>
           <Flex className='gap-1 items-center'>
             <Checkbox size='3' ref={unlistedbox} />
-            Unlisted
+            Create Unlisted Room
           </Flex>
         </Text>
       </Flex>

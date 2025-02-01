@@ -47,11 +47,13 @@ function UserCard({ user }: { user: UserListType }) {
           <Text as='div' className='text-sm' color='gray'>
             {'#' + user.id}
           </Text>
-          <Text as='div' className='text-sm' color='gray'>
-            {'<@'}
-            {user.discord_id}
-            {'>'}
-          </Text>
+          {
+            !!user.discord_id && (
+              <Text as='div' className='text-sm' color='gray'>
+                {'<@' + user.discord_id + '>'}
+              </Text>  
+            )
+          }
           <Text as='div' className='text-xs text-center' color='gray'>
             click to copy {user.discord_id ? 'discord id' : 'userid'}
           </Text>
