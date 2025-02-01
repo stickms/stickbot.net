@@ -13,6 +13,9 @@ function Root() {
           <NavLink to='/lookup'>Steam Profile Lookup</NavLink>
         </Link>
         <Link asChild>
+          <NavLink to='/youtube-dl'>YouTube Downloader</NavLink>
+        </Link>
+        <Link asChild>
           <NavLink to='/soundcloud-dl'>Soundcloud Downloader</NavLink>
         </Link>
         <Link asChild>

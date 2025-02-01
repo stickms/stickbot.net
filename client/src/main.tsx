@@ -22,6 +22,7 @@ import SyncRoom from './routes/sync-room.tsx';
 
 import '@radix-ui/themes/styles.css';
 import './index.css';
+import YoutubeDl from './routes/youtube-dl.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -42,6 +43,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path='/api-reference' element={<ApiReference />} />
           <Route path='/url-shortener' element={<UrlShortener />} />
           <Route path='/qr-code-generator' element={<QrCodeGenerator />} />
+          <Route path='/youtube-dl' element={<YoutubeDl />} />
           <Route path='/soundcloud-dl' element={<SoundcloudDl />} />
           <Route path='/watch-together' element={<WatchTogether />} />
           <Route path='/sync/room/:roomid' element={<SyncRoom />} />

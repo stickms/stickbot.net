@@ -67,7 +67,6 @@ tools_route.get('/tools/soundcloud-dl', async (c) => {
     console.log(error);
   });
 
-
   c.header('Content-Type', 'application/octet-stream; charset=utf-8');
   c.header('Content-Disposition', `attachment; filename="audio.${ext}"`);
 
@@ -107,11 +106,15 @@ tools_route.get('/tools/youtube-dl', async (c) => {
     stdio: [ 'ignore', 'pipe', 'ignore' ]
   });
 
+  exec_process.on('error', (error) =>{
+    console.log(error);
+  });
+
   exec_process.catch((error) => {
     console.log(error);
   });
 
-  c.header('Content-Type', 'video/mp4');
+  c.header('Content-Type', 'application/octet-stream; charset=utf-8');
   c.header('Content-Disposition', `attachment; filename="video.mp4"`);
 
   return c.body(exec_process.stdout! as any as ReadableStream);

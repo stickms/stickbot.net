@@ -1,5 +1,3 @@
-// UNUSED (SINCE YOUTUBE SUCKS)
-
 import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
 import { Flex, IconButton, Link, Text, TextField, Card, Separator, Select, Button, Tooltip } from "@radix-ui/themes";
 import { useEffect, useState } from "react";
@@ -29,8 +27,8 @@ function VideoDownloader({ info }: { info?: VideoPayload }) {
   const downloadVideo = () => {
     if(!format) {
       toast({
-        title: 'Could not download video',
-        description: 'Please select a video format'
+        title: 'Could not download media',
+        description: 'Please select a valid format'
       });
 
       return;
@@ -47,32 +45,9 @@ function VideoDownloader({ info }: { info?: VideoPayload }) {
 
     url.search = params.toString();
 
-    fetch(url,
-      { credentials: 'include' }
-    )
-      .then((resp) => {
-        if (!resp.ok) {
-          throw new Error();
-        }
+    window.location.href = url.toString();
 
-        return resp.blob();
-      })
-      .then((blob) => {
-        const a = document.createElement('a');
-        a.href = window.URL.createObjectURL(blob);
-        a.download = `video.mp4`;
-        document.body.appendChild(a);
-        a.click();    
-        a.remove();
-      })
-      .catch((e) => {
-        console.log(e);
-        toast({
-          title: 'Error when downloading video',
-          description: 'Please try again later'
-        })
-      })
-      .finally(() => setDownloading(false));
+    setTimeout(() => setDownloading(false), 2_500);
   }
 
   return (
@@ -226,7 +201,7 @@ function YoutubeDl() {
     setVideoInfo(() => undefined);
     setLoading(() => true);
 
-    fetch(`${API_ENDPOINT}/tools/youtube-info?query=${query.trim()}`, 
+    fetch(`${API_ENDPOINT}/tools/media-info?query=${query.trim()}`, 
       { credentials: 'include' }
     )
       .then(fetchGetJson)
