@@ -1,15 +1,15 @@
-import { Code, Flex, Text } from '@radix-ui/themes';
+import { VStack, Text, Code } from '@chakra-ui/react';
 import ApiEndpointInfo from '../components/api-endpoint-info';
 import TokenHandler from '../components/token-handler';
 import { API_ENDPOINT } from '../env';
 
 function ApiReference() {
   return (
-    <Flex className='items-center justify-center flex-col gap-y-20 pb-8'>
-      <Flex className='mt-40 flex-wrap items-center justify-center gap-y-6 text-center'>
-        <Text className='text-3xl w-full text-center'>API Reference</Text>
-        <Code size='3'>{API_ENDPOINT}/</Code>
-      </Flex>
+    <VStack gap='20' pt='40' pb='8'>
+      <VStack gap='6' textAlign='center' maxW='80vw'>
+        <Text fontSize='3xl'>API Reference</Text>
+        <Code size='lg'>{API_ENDPOINT}/</Code>
+      </VStack>
 
       <TokenHandler />
 
@@ -82,7 +82,7 @@ function ApiReference() {
           }
         ]}
       />
-    </Flex>
+    </VStack>
   );
 }
 

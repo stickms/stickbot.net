@@ -10,13 +10,11 @@ import {
   setUser
 } from '../lib/store';
 import { API_ENDPOINT } from '../env';
-import useToast from './use-toast';
+import { toaster } from '@/components/ui/toaster';
 
 function useAuth() {
   const user = useStore($user);
   const guilds = useStore($guilds);
-
-  const { toast } = useToast();
 
   function clearAll() {
     clearUser();
@@ -59,7 +57,7 @@ function useAuth() {
     });
 
     if (!resp.ok) {
-      toast({
+      toaster.create({
         title: 'Error: Could not logout',
         description: 'Please try again later'
       });
@@ -81,7 +79,7 @@ function useAuth() {
     );
 
     if (!resp.ok) {
-      toast({
+      toaster.create({
         title: 'Error: Could not generate API token',
         description: 'Please try again later'
       });
@@ -99,7 +97,7 @@ function useAuth() {
     });
 
     if (!resp.ok) {
-      toast({
+      toaster.create({
         title: 'Error: Could not revoke API token',
         description: 'Please try again later'
       });

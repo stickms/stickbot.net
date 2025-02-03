@@ -1,7 +1,6 @@
 import { Card, Flex, Select, Skeleton, Text, TextField, Box } from "@radix-ui/themes";
 import { useEffect, useRef, useState } from "react";
 import { QRCodeToDataURLOptions, toDataURL } from 'qrcode';
-import useToast from "../hooks/use-toast";
 
 function QrCode({ data }: { data?: string }) {
   const { toast } = useToast();
@@ -67,7 +66,6 @@ function QrCode({ data }: { data?: string }) {
       .finally(() => setGenerated(true));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, errorCorrection, margin, type, width, lightColor, darkColor]);
-
 
   return (
     <Card className='flex p-4 items-stretch justify-center gap-4 max-w-[80vw] flex-wrap'>

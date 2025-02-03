@@ -3,11 +3,9 @@ import { Flex, IconButton, Link, Select, Separator, Skeleton, Text, TextField, T
 import { useRef, useState } from "react";
 import { API_ENDPOINT } from "../env";
 import { fetchGetJson } from "../lib/util";
-import useToast from "../hooks/use-toast";
+import { toaster } from "@/components/ui/toaster";
 
 function UrlShortener() {
-  const { toast } = useToast();
-
   const url_input = useRef<HTMLInputElement>(null);
 
   const [ loading, setLoading ] = useState<boolean>(false);
@@ -22,7 +20,7 @@ function UrlShortener() {
     const parse = URL.parse(url_input.current.value.trim());
 
     if (!parse) {
-      toast({
+      toaster.create({
         title: 'Invalid URL specified',
         description: 'Make sure input is a valid URL (and include protocol)'
       });
@@ -31,7 +29,7 @@ function UrlShortener() {
     }
 
     if (parse.protocol != 'http:' && parse.protocol != 'https:') {
-      toast({
+      toaster.create({
         title: 'Invalid URL specified',
         description: 'Only HTTP(s) protocols are allowed'
       });
@@ -55,7 +53,7 @@ function UrlShortener() {
         setShortenedUrl(data['data']['url']);
       })
       .catch(() => {
-        toast({
+        toaster.create({
           title: 'Error shortening URL',
           description: 'Please try again later'
         })

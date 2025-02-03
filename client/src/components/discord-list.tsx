@@ -1,9 +1,11 @@
-import { Avatar, Flex, Select, Text } from '@radix-ui/themes';
+import { createListCollection, HStack } from '@chakra-ui/react';
+import { SelectContent, SelectItem, SelectRoot, SelectTrigger, SelectValueText } from '@/components/ui/select';
+import { Avatar } from '@/components/ui/avatar';
 import { useEffect } from 'react';
 import { clearGuildId, setGuildId } from '../lib/store';
 import useAuth from '../hooks/use-auth';
 
-function DiscordList({ placeholder }: { placeholder?: string }) {
+function DiscordList({ placeholder }: { placeholder: string }) {
   const { guilds, getGuilds } = useAuth();
 
   useEffect(() => {
@@ -16,30 +18,41 @@ function DiscordList({ placeholder }: { placeholder?: string }) {
     return null;
   }
 
+  const guildcollection = createListCollection({
+    items: guilds.map((guild) => ({
+      name: guild.name, 
+      id: guild.id,
+      icon: guild.icon
+    })),
+    itemToString: (item) => item.name,
+    itemToValue: (item) => item.id
+  });
+
   return (
-    <Select.Root onValueChange={setGuildId}>
-      <Select.Trigger
-        className='w-56'
-        placeholder={placeholder ?? 'Search by Server'}
-      />
-      <Select.Content>
-        <Select.Group>
-        <Select.Label>{placeholder ?? 'Search by Server'}</Select.Label>
-          {guilds.map((guild) => (
-            <Select.Item value={guild.id} key={guild.id}>
-              <Flex className='gap-2 items-center justify-start'>
-                <Avatar
-                  src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`}
-                  fallback={guild.name[0]}
-                  size='1'
-                />
-                <Text>{guild.name}</Text>
-              </Flex>
-            </Select.Item>
-          ))}
-        </Select.Group>
-      </Select.Content>
-    </Select.Root>
+    <SelectRoot
+      collection={guildcollection}
+      onValueChange={(e) => setGuildId(e.value[0] ?? '')}
+      w='56'
+    >
+      <SelectTrigger clearable>
+        <SelectValueText placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
+        {guildcollection.items.map((guild) => (
+          <SelectItem item={guild} key={guild.id}>
+            <HStack>
+              <Avatar
+                shape='rounded'
+                name={guild.name[0]}
+                src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`}
+                size='2xs'
+              />
+              {guild.name}
+            </HStack>
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </SelectRoot>
   );
 }
 

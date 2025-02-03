@@ -1,5 +1,5 @@
 import { CheckIcon } from '@radix-ui/react-icons';
-import { Badge, Flex, Table, Code } from '@radix-ui/themes';
+import { Badge, VStack, HStack, Flex, Table, Code } from '@chakra-ui/react';
 import { API_ENDPOINT } from '../env';
 
 type EndpointInfoProps = {
@@ -21,38 +21,37 @@ function ApiEndpointInfo({ ...props }: EndpointInfoProps) {
     if (props.method === 'GET') {
       return 'green';
     } else if (props.method === 'POST') {
-      return 'amber';
+      return 'orange';
     } else if (props.method === 'DELETE') {
       return 'red';
     }
   };
 
   return (
-    <Flex className='items-center justify-center flex-col gap-y-4 max-w-[80vw]'>
-      <Flex className='items-center justify-center flex-wrap-reverse gap-4'>
-        <Badge color={methodColor()} size='3'>
+    <VStack gap='4' maxW='80vw'>
+      <HStack gap='4' alignItems='center' justify='center' flexWrap='wrap-reverse'>
+        <Badge colorPalette={methodColor()} size='lg'>
           {props.method}
         </Badge>
-        <Code size='4' className='text-center text-wrap'>
-          {API_ENDPOINT}
-          {props.name}
+        <Code size='lg' textWrap='wrap' textAlign='center'>
+          {API_ENDPOINT + props.name}
         </Code>
-      </Flex>
+      </HStack>
 
       {props.params && (
-        <Table.Root variant='surface'>
+        <Table.Root variant='outline'>
           <Table.Header>
             <Table.Row>
-              <Table.ColumnHeaderCell>Property</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Description</Table.ColumnHeaderCell>
+              <Table.ColumnHeader>Property</Table.ColumnHeader>
+              <Table.ColumnHeader>Description</Table.ColumnHeader>
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {props.params.map((param) => (
               <Table.Row>
-                <Table.RowHeaderCell>
+                <Table.Cell>
                   <Code>{param.name}</Code>
-                </Table.RowHeaderCell>
+                </Table.Cell>
                 <Table.Cell>{param.description}</Table.Cell>
               </Table.Row>
             ))}
@@ -61,23 +60,23 @@ function ApiEndpointInfo({ ...props }: EndpointInfoProps) {
       )}
 
       {props.queries && (
-        <Table.Root variant='surface'>
+        <Table.Root variant='outline'>
           <Table.Header>
             <Table.Row>
-              <Table.ColumnHeaderCell>Query</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Description</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Required</Table.ColumnHeaderCell>
+              <Table.ColumnHeader>Query</Table.ColumnHeader>
+              <Table.ColumnHeader>Description</Table.ColumnHeader>
+              <Table.ColumnHeader>Required</Table.ColumnHeader>
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {props.queries.map((query) => (
               <Table.Row>
-                <Table.RowHeaderCell>
+                <Table.Cell>
                   <Code>{query.name}</Code>
-                </Table.RowHeaderCell>
+                </Table.Cell>
                 <Table.Cell>{query.description}</Table.Cell>
                 <Table.Cell>
-                  <Flex className='justify-center'>
+                  <Flex justifyItems='center'>
                     {!query.optional ? <CheckIcon /> : ''}
                   </Flex>
                 </Table.Cell>
@@ -86,7 +85,7 @@ function ApiEndpointInfo({ ...props }: EndpointInfoProps) {
           </Table.Body>
         </Table.Root>
       )}
-    </Flex>
+    </VStack>
   );
 }
 

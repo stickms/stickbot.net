@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Flex, Text } from '@radix-ui/themes';
+import { AbsoluteCenter, Text } from '@chakra-ui/react';
 import { useParams } from 'react-router-dom';
 
 function OpenProfile() {
@@ -10,9 +10,9 @@ function OpenProfile() {
   });
 
   return (
-    <Flex className='items-center justify-center h-screen flex-col gap-y-4'>
-      <Text className='text-3xl'>Redirecting...</Text>
-    </Flex>
+    <AbsoluteCenter>
+      <Text fontSize='3xl'>Redirecting...</Text>
+    </AbsoluteCenter>
   );
 }
 

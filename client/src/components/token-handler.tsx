@@ -1,23 +1,15 @@
-import { CopyIcon, InfoCircledIcon } from '@radix-ui/react-icons';
-import {
-  Button,
-  Callout,
-  Flex,
-  IconButton,
-  Text,
-  TextField,
-  Tooltip
-} from '@radix-ui/themes';
+import { Alert, VStack, Text, Button } from '@chakra-ui/react';
 import DiscordList from './discord-list';
 import useAuth from '../hooks/use-auth';
 import { useStore } from '@nanostores/react';
 import { $guildid } from '../lib/store';
 import { useState } from 'react';
-import useToast from '../hooks/use-toast';
+import { toaster } from './ui/toaster';
+import { ClipboardIconButton, ClipboardInput, ClipboardRoot } from './ui/clipboard';
+import { InputGroup } from './ui/input-group';
 
 function TokenHandler() {
   const { user, generateApiToken, revokeApiToken } = useAuth();
-  const { toast } = useToast();
   const guildid = useStore($guildid);
 
   // Only saved on FIRST TIME token generation
@@ -25,10 +17,11 @@ function TokenHandler() {
 
   const generateToken = async () => {
     if (!guildid) {
-      toast({
+      toaster.create({
         title: 'Error: Could not generate API token',
         description: 'Please select a guild for token generation'
       });
+
       return;
     }
 
@@ -40,46 +33,39 @@ function TokenHandler() {
 
   if (!user.id || !user.discord_id) {
     return (
-      <Callout.Root size='2'>
-        <Callout.Icon>
-          <InfoCircledIcon />
-        </Callout.Icon>
-        <Callout.Text>Sign in with Discord to use Stickbot API</Callout.Text>
-      </Callout.Root>
+      <Alert.Root>
+        <Alert.Indicator />
+        <Alert.Title>Sign in with Discord to use Stickbot API</Alert.Title>
+      </Alert.Root>
     );
   }
 
   if (token) {
     return (
-      <TextField.Root disabled value={token} size='3'>
-        <TextField.Slot side='right'>
-          <Tooltip content='click to copy token'>
-            <IconButton
-              variant='ghost'
-              onClick={() => navigator.clipboard.writeText(token)}
-            >
-              <CopyIcon />
-            </IconButton>
-          </Tooltip>
-        </TextField.Slot>
-      </TextField.Root>
+      <ClipboardRoot maxW='300px' value={token}>
+        <InputGroup w='full' endElement={<ClipboardIconButton me='-2' />}>
+          <ClipboardInput />
+        </InputGroup>
+      </ClipboardRoot>
     );
   }
 
   if (user.token_guild) {
     return (
-      <Flex className='items-center justify-center flex-col gap-4 max-w-[80vw]'>
-        <Text>You already have an existing API token.</Text>
-        <Button onClick={revokeApiToken}>Revoke API Token</Button>
-      </Flex>
+      <VStack>
+        <Text>You already have an existing API token</Text>
+        <Button onClick={revokeApiToken} colorPalette='current'>
+          Revoke API Token
+        </Button>
+      </VStack>
     );
   }
 
   return (
-    <Flex className='items-center justify-center flex-wrap gap-4 max-w-[80vw]'>
+    <VStack>
       <DiscordList placeholder='Generate token for...' />
-      <Button onClick={generateToken}>Generate API Token</Button>
-    </Flex>
+      <Button onClick={generateToken} colorPalette='current'>Generate API Token</Button>
+    </VStack>
   );
 }
 

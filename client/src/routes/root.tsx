@@ -1,11 +1,12 @@
-import { Flex, Text, Link } from '@radix-ui/themes';
+import { AbsoluteCenter, Link, Text, VStack } from '@chakra-ui/react';
 import { NavLink } from 'react-router-dom';
 
 function Root() {
   return (
-    <Flex className='items-center justify-center min-h-screen'>
-      <Flex className='items-center justify-center my-16 flex-col gap-y-4'>
-        <Text className='text-3xl mb-20'>Stickbot.net</Text>
+    <AbsoluteCenter axis='both'>
+      <VStack gap='4'>
+        <Text fontSize='3xl' mb='20' colorPalette='gray'>Stickbot.net</Text>
+
         <Link asChild>
           <NavLink to='/watch-together'>Watch Together</NavLink>
         </Link>
@@ -27,8 +28,9 @@ function Root() {
         <Link asChild>
           <NavLink to='/api-reference'>API & Reference</NavLink>
         </Link>
-      </Flex>
-    </Flex>
+
+      </VStack>
+    </AbsoluteCenter>
   );
 }
 

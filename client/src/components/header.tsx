@@ -1,10 +1,15 @@
-import { Avatar, Button, DropdownMenu, Flex, IconButton, Link } from '@radix-ui/themes';
-import { DiscordLogoIcon, GitHubLogoIcon } from '@radix-ui/react-icons';
+import { Button, IconButton, Link, Box, HStack } from '@chakra-ui/react';
+import { MenuRoot, MenuTrigger, MenuContent, MenuSeparator, MenuItem } from '@/components/ui/menu';
+import { useColorMode } from '@/components/ui/color-mode';
 import { API_ENDPOINT } from '../env';
 import { useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/use-auth';
 import { getDiscordAvatar } from '../lib/util';
+import { Avatar } from '@/components/ui/avatar';
+import { FaDiscord, FaGithub } from 'react-icons/fa';
+import { RxCaretDown } from 'react-icons/rx';
+import { LuMoon, LuSun } from 'react-icons/lu';
 
 function DiscordLogin() {
   const { user, getUser, validateAdmin, logout } = useAuth();
@@ -21,65 +26,73 @@ function DiscordLogin() {
     const redirect = `?redirect=${encodeURIComponent(location.pathname)}`;
     return (
       <Link href={`${API_ENDPOINT}/login/discord${redirect}`}>
-        <Button>
-          <DiscordLogoIcon /> Login
+        <Button colorPalette='cyan'>
+          <FaDiscord /> Login
         </Button>
       </Link>
     );
   }
 
   return (
-    <DropdownMenu.Root>
-      <DropdownMenu.Trigger>
-        <Button variant='ghost'>
+    <MenuRoot>
+      <MenuTrigger asChild>
+        <Button variant='ghost' size='md'>
           <Avatar
+            shape='rounded'
             src={getDiscordAvatar(user.discord_id, user.avatar)}
             fallback={'U'}
-            size='2'
           />
-          <DropdownMenu.TriggerIcon />
+          <RxCaretDown />
         </Button>
-      </DropdownMenu.Trigger>
-      <DropdownMenu.Content>
-        <DropdownMenu.Label>{user.username}</DropdownMenu.Label>
-        <DropdownMenu.Separator />
+      </MenuTrigger>
+      <MenuContent>
+        <MenuItem value='username' disabled>{user.username}</MenuItem>
+        <MenuSeparator />
         {user.is_admin && (
-          <DropdownMenu.Item onClick={() => navigate('/admin-portal')}>
+          <MenuItem
+            value='admin-portal'
+            onClick={() => navigate('/admin-portal')}
+          >
             Admin Portal
-          </DropdownMenu.Item>
+          </MenuItem>
         )}
-        <DropdownMenu.Item onClick={logout} color='red'>
+        <MenuItem value='logout' onClick={logout} color='red.400'>
           Logout
-        </DropdownMenu.Item>
-      </DropdownMenu.Content>
-    </DropdownMenu.Root>
+        </MenuItem>
+      </MenuContent>    
+    </MenuRoot>   
   );
 }
 
 function Header() {
+  const { colorMode, toggleColorMode } = useColorMode();
+  
   return (
-    <Flex className='fixed top-0 w-full justify-between items-center z-50 backdrop-blur-3xl bg-[--gray-a2]'>
-      {/* Left */}
-      <Flex className='pl-6 py-4 items-center'>
-        <Link asChild color='gray' highContrast underline='hover'>
+    <Box pos='fixed' top='0' left='0' w='100vw' h='16' px='6' zIndex='1' backdropBlur='3xl' bgColor='Background' borderWidth='1px'>
+      <HStack h='full' justify='space-between'>
+        {/* Left */}
+        <Link color='fg' asChild>
           <NavLink to='/'>Stickbot.net</NavLink>
         </Link>
-      </Flex>
 
-      {/* Right */}
-      <Flex className='pr-6 py-4 gap-4 items-center'>
-        <Link
-          href="https://github.com/stickms/stickbot.net"
-          target='_blank'
-          rel='noopener noreferrer'
-        >
-          <IconButton variant='surface'>
-            <GitHubLogoIcon />
+        {/* Right */}
+        <HStack>
+          <IconButton variant='outline' onClick={toggleColorMode}>
+            {colorMode === 'light' ? <LuMoon /> : <LuSun />}
           </IconButton>
-        </Link>
-        <DiscordLogin />
-      </Flex>
-    </Flex>
+          <IconButton variant='outline' asChild>
+            <Link
+            href='https://github.com/stickms/stickbot.net'
+            target='_blank'
+            rel='noopener noreferrer'
+          >
+            <FaGithub />
+          </Link>
+          </IconButton>
+          <DiscordLogin />
+        </HStack>
+      </HStack>
+    </Box>
   );
 }
 

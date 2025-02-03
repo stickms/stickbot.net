@@ -1,11 +1,13 @@
-import { Flex, Text } from '@radix-ui/themes';
+import { AbsoluteCenter, VStack, Text } from "@chakra-ui/react";
 
 function ErrorPage() {
   return (
-    <Flex className='items-center justify-center h-screen flex-col gap-y-4'>
-      <Text className='text-3xl'>Error</Text>
-      <Text className='text-lg'>Page not found</Text>
-    </Flex>
+    <AbsoluteCenter axis='both'>
+      <VStack>
+        <Text fontSize='3xl'>Error</Text>
+        <Text fontSize='lg'>Page not found</Text>
+      </VStack>
+    </AbsoluteCenter>
   );
 }
 
