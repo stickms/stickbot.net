@@ -68,7 +68,7 @@ function Header() {
   const { colorMode, toggleColorMode } = useColorMode();
   
   return (
-    <Box pos='fixed' top='0' left='0' w='100vw' h='16' px='6' zIndex='1' backdropBlur='3xl' bgColor='Background' borderWidth='1px'>
+    <Box pos='fixed' top='0' left='0' w='100vw' h='16' px='6' zIndex='skipNav' backdropBlur='3xl' bgColor='bg.subtle' borderWidth='1px'>
       <HStack h='full' justify='space-between'>
         {/* Left */}
         <Link color='fg' asChild>
@@ -77,10 +77,10 @@ function Header() {
 
         {/* Right */}
         <HStack>
-          <IconButton variant='outline' onClick={toggleColorMode}>
+          <IconButton variant='ghost' onClick={toggleColorMode}>
             {colorMode === 'light' ? <LuMoon /> : <LuSun />}
           </IconButton>
-          <IconButton variant='outline' asChild>
+          <IconButton variant='ghost' asChild>
             <Link
             href='https://github.com/stickms/stickbot.net'
             target='_blank'

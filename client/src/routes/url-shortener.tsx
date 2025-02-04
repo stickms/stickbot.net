@@ -13,7 +13,7 @@ function UrlShortener() {
 
   const [ loading, setLoading ] = useState<boolean>(false);
   const [ shortenedUrl, setShortenedUrl ] = useState<string>();
-  const [ expires, setExpires ] = useState<string>('7');
+  const [ expires, setExpires ] = useState<string>();
 
   function shortenUrl() {
     if (!url_input.current || loading) {
@@ -35,6 +35,14 @@ function UrlShortener() {
       toaster.create({
         title: 'Invalid URL specified',
         description: 'Only HTTP(s) protocols are allowed'
+      });
+
+      return;
+    }
+
+    if (!expires) {
+      toaster.create({
+        title: 'Please specify an expiration date'
       });
 
       return;
@@ -104,12 +112,11 @@ function UrlShortener() {
           <SelectRoot
             collection={expoptions}
             onValueChange={(e) => setExpires(e.value[0])}
-            defaultValue={['30']}
             w='32'
             maxW='80vw'
           >
             <SelectTrigger>
-              <SelectValueText />
+              <SelectValueText placeholder='Expires...' />
             </SelectTrigger>
             <SelectContent>
               {expoptions.items.map((exp) => (

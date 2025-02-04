@@ -1,20 +1,13 @@
-import {
-  Avatar,
-  Badge,
-  Box,
-  Card,
-  Flex,
-  Link,
-  Skeleton,
-  Spinner,
-  Text
-} from '@radix-ui/themes';
-import { ComponentProps, useEffect, useState } from 'react';
+
+import { useEffect, useState } from 'react';
 import { Sourceban, SteamProfileSummary } from '../lib/types';
 import { API_ENDPOINT } from '../env';
 import { useStore } from '@nanostores/react';
 import { $guildid } from '../lib/store';
 import { fetchGetJson, parseSteamID } from '../lib/util';
+import { Alert, Badge, Box, Card, HStack, Link, Spinner, Text, VStack } from '@chakra-ui/react';
+import { Skeleton, SkeletonText } from './ui/skeleton';
+import { Avatar } from './ui/avatar';
 
 type SteamProfileProps = {
   steamid?: string;
@@ -38,21 +31,12 @@ function SteamIdList({ summary }: { summary: SteamProfileSummary }) {
   }
 
   return (
-    <Box className='min-w-36 flex-grow'>
-      <Box className='w-full'>
-        <Text size='2' weight='bold'>
-          Steam IDs
-        </Text>
-      </Box>
-      <Box className='w-full whitespace-pre-line'>
-        {idlist.map((id) => (
-          <Text key={id} size='2'>
-            {id}
-            {'\n'}
-          </Text>
-        ))}
-      </Box>
-    </Box>
+    <VStack minW='36' alignItems='start' flexGrow='1'>
+      <Text>Steam IDs</Text>
+      {idlist.map((id) => (
+        <Text key={id}>{id}</Text>
+      ))}
+    </VStack>
   );
 }
 
@@ -128,25 +112,14 @@ function AlertList({
   }
 
   return (
-    <Box className='min-w-36 flex-grow'>
-      <Box className='w-full'>
-        <Text size='2' weight='bold'>
-          Alerts
-        </Text>
-      </Box>
-      <Box className='w-full whitespace-pre-line'>
-        {alertlist.map((alert) => (
-          <Box className='w-full' key={alert.text}>
-            <Badge
-              size='2'
-              color={alert.color as ComponentProps<typeof Badge>['color']}
-            >
-              {alert.text}
-            </Badge>
-          </Box>
-        ))}
-      </Box>
-    </Box>
+    <VStack minW='36' alignItems='start' flexGrow='1'>
+      <Text>Alerts</Text>
+      {alertlist.map((alert) => (
+        <Badge size='md' colorPalette={alert.color}>
+          {alert.text}
+        </Badge>
+      ))}
+    </VStack>
   );
 }
 
@@ -160,27 +133,19 @@ function QuickLinks({ summary }: { summary: SteamProfileSummary }) {
   };
 
   return (
-    <Box className='min-w-36 flex-grow'>
-      <Box className='w-full'>
-        <Text size='2' weight='bold'>
-          Quick Links
-        </Text>
-      </Box>
-      <Box className='w-full whitespace-pre-line'>
-        {Object.entries(quicklinks).map(([k, v]) => (
-          <Link
-            key={k}
-            size='2'
-            href={`${v}${summary.steamid}`}
-            target='_blank'
-            rel='noopener noreferrer'
-          >
-            {k}
-            {'\n'}
-          </Link>
-        ))}
-      </Box>
-    </Box>
+    <VStack minW='36' alignItems='start' flexGrow='1'>
+      <Text>Quick Links</Text>
+      {Object.entries(quicklinks).map(([k, v]) => (
+        <Link
+          key={k}
+          href={`${v}${summary.steamid}`}
+          target='_blank'
+          rel='noopener noreferrer'
+        >
+          {k}
+        </Link>
+      ))}
+    </VStack>
   );
 }
 
@@ -190,52 +155,31 @@ function Sourcebans({
   sourcebans?: Sourceban[] | null;
 }) {
   return (
-    <Box className='min-w-36 flex-grow'>
-      <Box className='w-full'>
-        <Text size='2' weight='bold'>
-          Sourcebans
-        </Text>
-      </Box>
-      <Box className='w-full whitespace-pre-line'>
-        {sourcebans === undefined && <Spinner size='3' />}
-        {sourcebans === null && <Text size='2'>❌ Error: Could not fetch sourcebans</Text>}
-        {sourcebans && !sourcebans.length && (
-          <Badge size='2' color='green'>
-            None
-          </Badge>
-        )}
-        {!!sourcebans?.length &&
-          sourcebans.map((s, index) => (
-            <Link
-              key={index}
-              size='2'
-              href={s.url}
-              target='_blank'
-              rel='noopener noreferrer'
-            >
-              {`${s.url.split('/')[2]} - ${s.reason}`}
-              {'\n'}
-            </Link>
-          ))}
-      </Box>
-    </Box>
-  );
-}
-
-function Placeholder() {
-  const randomtext = [];
-
-  for (let i = 0; i < Math.floor(Math.random() * 3) + 2; i++) {
-    randomtext.push('A'.repeat(Math.floor(Math.random() * 5) + 8));
-  }
-
-  return (
-    <Box className='min-w-36 flex-grow'>
-      <Skeleton className='w-28 h-[17px] my-[6.5px]' />
-      <Skeleton className='w-28 h-[17px] my-[6.5px]' />
-      <Skeleton className='w-28 h-[17px] my-[6.5px]' />
-      <Skeleton className='w-28 h-[17px] my-[6.5px]' />
-    </Box>
+    <VStack minW='36' alignItems='start' flexGrow='1'>
+      <Text>Sourcebans</Text>
+      {sourcebans === undefined && <Spinner />}
+      {sourcebans === null && (
+        <Alert.Root status='error'>
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Title>Could not fetch sourcebans</Alert.Title>
+          </Alert.Content>
+        </Alert.Root>
+      )}
+      {sourcebans && !sourcebans.length && (
+        <Badge size='md' colorPalette='green'>None</Badge>
+      )}
+      {!!sourcebans?.length && sourcebans.map((ban, i) => (
+        <Link
+          key={i}
+          href={ban.url}
+          target='_blank'
+          rel='noopener noreferrer'
+        >
+          {`${ban.url.split('/')[2]} - ${ban.reason}`}
+        </Link>
+      ))}
+    </VStack>
   );
 }
 
@@ -324,62 +268,75 @@ function SteamProfile({ steamid, setDisabled, skeleton }: SteamProfileProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [steamid, guildid]);
 
+  if (error) {
+    return (
+      <Card.Root my='2' w='680px' maxW='80vw' minH='300px'>
+        <Card.Body>
+          <Alert.Root status='error'>
+            <Alert.Indicator />
+            <Alert.Content>
+              <Alert.Title>Error</Alert.Title>
+              <Alert.Description>{error.toString()}</Alert.Description>
+            </Alert.Content>
+          </Alert.Root>
+        </Card.Body>
+      </Card.Root>
+    );
+  }
+
+  if (!error && !summary) {
+    return (
+      <Card.Root my='2' w='680px' maxW='80vw' minH='300px'>
+        <Card.Body>
+          <HStack gap='3' alignItems='start'>
+            <Skeleton w='20' h='20' flexShrink='0' />
+            <VStack>
+              <SkeletonText w='36' noOfLines={1} />
+              <HStack gap='5' flexWrap='wrap'>
+                {[1, 2, 3, 4].map(() => (
+                  <Box flexGrow='1' maxW='36'>
+                    <SkeletonText w='28' noOfLines={5} />
+                  </Box>
+                ))}
+              </HStack>
+            </VStack>
+          </HStack>
+        </Card.Body>
+      </Card.Root>
+    );
+  }
+
   return (
-    <Card className='my-2 min-h-[300px] w-[680px] max-w-[80vw]'>
-      {error && (
-        <Box className='whitespace-pre-line'>
-          <Text size='3' weight='bold' color='ruby'>
-            ❌ Error{'\n'}
-          </Text>
-          <Text size='3'>{error.toString()}</Text>
-        </Box>
-      )}
-
-      {!error && !summary && (
-        <Flex className='gap-3 items-start'>
-          <Skeleton className='size-20 flex-shrink-0' />
-          <Box>
-            <Box className='w-full'>
-              <Skeleton className='w-40 h-[19px] mb-1' />
-            </Box>
-            <Flex className='gap-5 flex-wrap'>
-              <Placeholder />
-              <Placeholder />
-              <Placeholder />
-              <Placeholder />
-            </Flex>
-          </Box>
-        </Flex>
-      )}
-
-      {!error && summary && (
-        <Flex className='gap-3 items-start'>
-          <Avatar src={summary.avatarfull} fallback='T' size='6' />
-          <Box>
-            <Box className='w-full'>
-              <Link
-                href={`https://steamcommunity.com/profiles/${summary.steamid}`}
-                target='_blank'
-                rel='noopener noreferrer'
-                color='gray'
-                highContrast
-                underline='hover'
-                size='3'
-                weight='bold'
-              >
-                {summary.personaname}
-              </Link>
-            </Box>
-            <Flex className='gap-5 flex-wrap'>
-              <SteamIdList summary={summary} />
-              <AlertList summary={summary} tags={tags} />
-              <QuickLinks summary={summary} />
+    <Card.Root my='2' w='680px' maxW='80vw' minH='300px'>
+      <Card.Body>
+        <HStack gap='3' alignItems='start'>
+          <Avatar
+            shape='rounded'
+            w='20'
+            h='20'
+            src={summary!.avatarfull} 
+          />
+          <VStack alignItems='start'>
+            <Link
+              href={`https://steamcommunity.com/profiles/${summary!.steamid}`}
+              target='_blank'
+              rel='noopener noreferrer'
+              color='fg'
+              fontSize='lg'
+              fontWeight='bold'
+            >
+              {summary!.personaname}
+            </Link>
+            <HStack alignItems='start' justifyContent='start' gap='5' flexWrap='wrap'>
+              <SteamIdList summary={summary!} />
+              <AlertList summary={summary!} tags={tags} />
+              <QuickLinks summary={summary!} />
               <Sourcebans sourcebans={sourcebans} />
-            </Flex>
-          </Box>
-        </Flex>
-      )}
-    </Card>
+            </HStack>
+          </VStack>
+        </HStack>
+      </Card.Body>
+    </Card.Root>
   );
 }
 

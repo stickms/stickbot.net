@@ -10,7 +10,7 @@ import Header from './components/header.tsx';
 import Root from './routes/root.tsx';
 import ErrorPage from './routes/error-page.tsx';
 import ApiReference from './routes/api-reference.tsx';
-// import ProfileLookup from './routes/profile-lookup.tsx';
+import ProfileLookup from './routes/profile-lookup.tsx';
 import AdminPortal from './routes/admin-portal.tsx';
 import OpenProfile from './routes/open-profile.tsx';
 // import YoutubeDl from './routes/youtube-dl.tsx';
@@ -39,6 +39,7 @@ createRoot(document.getElementById('root')!).render(
         <Routes>
           <Route index element={<Root />} />
           <Route path='*' element={<ErrorPage />} />
+          <Route path='/lookup' element={<ProfileLookup />} />
           <Route path='/api-reference' element={<ApiReference />} />
           <Route path='/url-shortener' element={<UrlShortener />} />
           <Route path='/qr-code-generator' element={<QrCodeGenerator />} />
@@ -46,7 +47,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path='/openprofile/:id' element={<OpenProfile />} />
           <Route path='/l/:id' element={<OpenUrl />} />
 
-          {/* <Route path='/lookup' element={<ProfileLookup />} />
+          {/* 
           <Route path='/youtube-dl' element={<YoutubeDl />} />
           <Route path='/soundcloud-dl' element={<SoundcloudDl />} />
           <Route path='/watch-together' element={<WatchTogether />} />

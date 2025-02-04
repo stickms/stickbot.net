@@ -35,7 +35,19 @@ function DiscordList({ placeholder }: { placeholder: string }) {
       w='56'
     >
       <SelectTrigger clearable>
-        <SelectValueText placeholder={placeholder} />
+        <SelectValueText placeholder={placeholder}>
+        {(guilds: { name: string; id: string; icon: string; }[]) => (
+          <HStack>
+            <Avatar
+              shape='rounded'
+              name={guilds[0].name[0]}
+              src={`https://cdn.discordapp.com/icons/${guilds[0].id}/${guilds[0].icon}.png`}
+              size='2xs'
+            />
+            {guilds[0].name}
+          </HStack>
+        )}
+        </SelectValueText>
       </SelectTrigger>
       <SelectContent>
         {guildcollection.items.map((guild) => (

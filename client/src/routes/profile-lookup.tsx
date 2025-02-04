@@ -1,18 +1,12 @@
-import {
-  Flex,
-  IconButton,
-  TextField,
-  Text
-} from '@radix-ui/themes';
+import { HStack, IconButton, Input, Text, VStack } from '@chakra-ui/react';
 import { useEffect, useRef, useState } from 'react';
 import SteamProfile from '../components/steam-profile';
-import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import DiscordList from '../components/discord-list';
-import useToast from '../hooks/use-toast';
+import { toaster } from '@/components/ui/toaster';
+import { InputGroup } from '@/components/ui/input-group';
+import { FaMagnifyingGlass } from 'react-icons/fa6';
 
 function ProfileLookup() {
-  const { toast } = useToast();
-
   const input = useRef<HTMLInputElement>(null);
   const [disabled, setDisabled] = useState<boolean>(false);
   const [profiles, setProfiles] = useState<string[]>([]);
@@ -25,7 +19,7 @@ function ProfileLookup() {
 
   const handleSearch = () => {
     if (!input.current?.value.trim()) {
-      toast({
+      toaster.create({
         title: 'Error: Could not lookup profile',
         description: 'Please enter a Steam ID or profile URL'
       });
@@ -37,26 +31,34 @@ function ProfileLookup() {
   };
 
   return (
-    <Flex className='flex-col items-center gap-y-20 min-h-screen'>
-      <Text className='mt-40 text-3xl text-center'>Steam Profile Lookup</Text>
-      <Flex className='flex-wrap gap-4 items-center justify-center max-w-[80vw]'>
-        <TextField.Root
-          ref={input}
-          className='w-96 max-w-[80vw]'
-          placeholder='Lookup a Steam Profile...'
-          maxLength={128}
-          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-          disabled={disabled}
-        >
-          <TextField.Slot side='right'>
-            <IconButton variant='ghost' onClick={handleSearch}>
-              <MagnifyingGlassIcon />
+    <VStack gap='20' pt='40' pb='8'>
+      <Text fontSize='3xl' textAlign='center'>Steam Profile Lookup</Text>
+      <HStack justify='center' maxW='80vw' flexWrap='wrap'>
+        <InputGroup
+          endElement={(
+            <IconButton
+              onClick={handleSearch}
+              size='xs'
+              me='-2'
+              variant='ghost'
+              loading={disabled}
+            >
+              <FaMagnifyingGlass />
             </IconButton>
-          </TextField.Slot>
-        </TextField.Root>
-        <DiscordList />
-      </Flex>
-      <Flex className='items-center justify-center flex-col mb-4'>
+          )}
+        >
+          <Input
+            ref={input}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            placeholder='Enter Steam ID or Custom URL...'
+            w='96'
+            maxW='80vw'
+          />
+        </InputGroup>
+        <DiscordList placeholder='Search by server...' />
+      </HStack>
+
+      <VStack>
         {!profiles.length && <SteamProfile skeleton />}
         {profiles.map((p, i) => {
           return i >= 5 ? null : (
@@ -67,8 +69,8 @@ function ProfileLookup() {
             />
           );
         })}
-      </Flex>
-    </Flex>
+      </VStack>
+    </VStack>
   );
 }
 
