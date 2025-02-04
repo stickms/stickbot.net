@@ -11,7 +11,7 @@ import Root from './routes/root.tsx';
 import ErrorPage from './routes/error-page.tsx';
 import ApiReference from './routes/api-reference.tsx';
 // import ProfileLookup from './routes/profile-lookup.tsx';
-// import AdminPortal from './routes/admin-portal.tsx';
+import AdminPortal from './routes/admin-portal.tsx';
 import OpenProfile from './routes/open-profile.tsx';
 // import YoutubeDl from './routes/youtube-dl.tsx';
 // import SoundcloudDl from './routes/soundcloud-dl.tsx';
@@ -42,6 +42,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path='/api-reference' element={<ApiReference />} />
           <Route path='/url-shortener' element={<UrlShortener />} />
           <Route path='/qr-code-generator' element={<QrCodeGenerator />} />
+          <Route path='/admin-portal' element={<AdminPortal />} />
           <Route path='/openprofile/:id' element={<OpenProfile />} />
           <Route path='/l/:id' element={<OpenUrl />} />
 
@@ -50,7 +51,6 @@ createRoot(document.getElementById('root')!).render(
           <Route path='/soundcloud-dl' element={<SoundcloudDl />} />
           <Route path='/watch-together' element={<WatchTogether />} />
           <Route path='/sync/room/:roomid' element={<SyncRoom />} />
-          <Route path='/admin-portal' element={<AdminPortal />} />
           <Route path='*' element={<ErrorPage />} /> */}
         </Routes>
         <Toaster />
