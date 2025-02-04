@@ -33,7 +33,7 @@ function TokenHandler() {
 
   if (!user.id || !user.discord_id) {
     return (
-      <Alert.Root>
+      <Alert.Root w='auto' maxW='80vw'>
         <Alert.Indicator />
         <Alert.Title>Sign in with Discord to use Stickbot API</Alert.Title>
       </Alert.Root>
@@ -42,7 +42,7 @@ function TokenHandler() {
 
   if (token) {
     return (
-      <ClipboardRoot maxW='300px' value={token}>
+      <ClipboardRoot maxW='min(300px, 80vw)' value={token}>
         <InputGroup w='full' endElement={<ClipboardIconButton me='-2' />}>
           <ClipboardInput />
         </InputGroup>

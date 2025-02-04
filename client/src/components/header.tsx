@@ -26,7 +26,7 @@ function DiscordLogin() {
     const redirect = `?redirect=${encodeURIComponent(location.pathname)}`;
     return (
       <Link href={`${API_ENDPOINT}/login/discord${redirect}`}>
-        <Button colorPalette='cyan'>
+        <Button>
           <FaDiscord /> Login
         </Button>
       </Link>

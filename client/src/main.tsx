@@ -15,8 +15,8 @@ import ApiReference from './routes/api-reference.tsx';
 import OpenProfile from './routes/open-profile.tsx';
 // import YoutubeDl from './routes/youtube-dl.tsx';
 // import SoundcloudDl from './routes/soundcloud-dl.tsx';
-// import QrCodeGenerator from './routes/qr-code-generator.tsx';
-// import UrlShortener from './routes/url-shortener.tsx';
+import QrCodeGenerator from './routes/qr-code-generator.tsx';
+import UrlShortener from './routes/url-shortener.tsx';
 import OpenUrl from './routes/open-url.tsx';
 // import WatchTogether from './routes/watch-together.tsx';
 // import SyncRoom from './routes/sync-room.tsx';
@@ -40,12 +40,12 @@ createRoot(document.getElementById('root')!).render(
           <Route index element={<Root />} />
           <Route path='*' element={<ErrorPage />} />
           <Route path='/api-reference' element={<ApiReference />} />
+          <Route path='/url-shortener' element={<UrlShortener />} />
+          <Route path='/qr-code-generator' element={<QrCodeGenerator />} />
           <Route path='/openprofile/:id' element={<OpenProfile />} />
           <Route path='/l/:id' element={<OpenUrl />} />
 
           {/* <Route path='/lookup' element={<ProfileLookup />} />
-          <Route path='/url-shortener' element={<UrlShortener />} />
-          <Route path='/qr-code-generator' element={<QrCodeGenerator />} />
           <Route path='/youtube-dl' element={<YoutubeDl />} />
           <Route path='/soundcloud-dl' element={<SoundcloudDl />} />
           <Route path='/watch-together' element={<WatchTogether />} />

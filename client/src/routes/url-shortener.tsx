@@ -1,9 +1,12 @@
-import { ArrowRightIcon, CopyIcon } from "@radix-ui/react-icons";
-import { Flex, IconButton, Link, Select, Separator, Skeleton, Text, TextField, Tooltip } from "@radix-ui/themes";
+import { AbsoluteCenter, VStack, Text, HStack, Input, IconButton, createListCollection, Skeleton } from "@chakra-ui/react";
+import { SelectContent, SelectItem, SelectRoot, SelectTrigger, SelectValueText } from "@/components/ui/select";
 import { useRef, useState } from "react";
 import { API_ENDPOINT } from "../env";
 import { fetchGetJson } from "../lib/util";
 import { toaster } from "@/components/ui/toaster";
+import { InputGroup } from "@/components/ui/input-group";
+import { FaArrowRight } from "react-icons/fa";
+import { ClipboardIconButton, ClipboardInput, ClipboardRoot } from "@/components/ui/clipboard";
 
 function UrlShortener() {
   const url_input = useRef<HTMLInputElement>(null);
@@ -12,8 +15,8 @@ function UrlShortener() {
   const [ shortenedUrl, setShortenedUrl ] = useState<string>();
   const [ expires, setExpires ] = useState<string>('7');
 
-  const shortenUrl = () => {
-    if (!url_input.current) {
+  function shortenUrl() {
+    if (!url_input.current || loading) {
       return;
     }
 
@@ -61,72 +64,77 @@ function UrlShortener() {
       .finally(() => setLoading(false));
   };
 
-  return (
-    <Flex className='items-center justify-center min-h-screen'>
-      <Flex className='items-center justify-center my-16 flex-col gap-y-24'>
-        <Text className='mt-16 text-3xl text-center'>URL Shortener</Text>
+  const expoptions = createListCollection({
+    items: [
+      { label: '1 day', value: '1' },
+      { label: '1 week', value: '7' },
+      { label: '1 month', value: '30' },
+      { label: '1 year', value: '365' },
+      { label: 'Never', value: 'never' }      
+    ]
+  });
 
-        <Flex className='items-center justify-center gap-4 max-w-[80vw]'>
-          <TextField.Root
-            ref={url_input}
-            className='w-96 max-w-[80vw]'
-            placeholder='Enter url to shorten...'
-            maxLength={256}
-            onKeyDown={(e) => e.key === 'Enter' && shortenUrl()}
-            disabled={loading}
-          >
-            <TextField.Slot side='right'>
+  return (
+    <AbsoluteCenter axis='both'>
+      <VStack mt='16' gap='24'>
+        <Text fontSize='3xl'>URL Shortener</Text>
+
+        <HStack maxW='80vw' flexWrap='wrap' justify='center'>
+          <InputGroup
+            endElement={(
               <IconButton
-                variant='ghost'
                 onClick={shortenUrl}
+                size='xs'
+                me='-2'
+                variant='ghost'
                 loading={loading}
               >
-                <ArrowRightIcon />
+                <FaArrowRight />
               </IconButton>
-            </TextField.Slot>
-          </TextField.Root>
-          
-          <Select.Root value={expires} onValueChange={setExpires}>
-            <Tooltip content='Link Expires After'>
-              <Select.Trigger />
-            </Tooltip>
-            <Select.Content>
-              <Select.Group>
-                <Select.Label>Expires After</Select.Label>
-                <Select.Item value='1'>1 day</Select.Item>
-                <Select.Item value='7'>1 week</Select.Item>
-                <Select.Item value='30'>1 month</Select.Item>
-                <Select.Item value='365'>1 year</Select.Item>
-                <Select.Item value='never'>Never</Select.Item>
-              </Select.Group>
-            </Select.Content>
-          </Select.Root>
-        </Flex>
+            )}
+          >
+            <Input
+              ref={url_input}
+              onKeyDown={(e) => e.key === 'Enter' && shortenUrl()}
+              w='96'
+              maxW='80vw'
+            />
+          </InputGroup>
 
-        <Flex className='gap-2 items-center justify-center mb-16'>
-          <Skeleton loading={!shortenedUrl}>
-            <Link
-              href={shortenedUrl}
-              target='_blank'
-              rel='noopener noreferrer'
+          <SelectRoot
+            collection={expoptions}
+            onValueChange={(e) => setExpires(e.value[0])}
+            defaultValue={['30']}
+            w='32'
+            maxW='80vw'
+          >
+            <SelectTrigger>
+              <SelectValueText />
+            </SelectTrigger>
+            <SelectContent>
+              {expoptions.items.map((exp) => (
+                <SelectItem item={exp} key={exp.value}>
+                  {exp.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </SelectRoot>
+        </HStack>
+
+        <Skeleton loading={!shortenedUrl} variant='shine'>
+          <ClipboardRoot w='64' maxW='80vw' value={shortenedUrl}>
+            <InputGroup
+              w='full'
+              endElement={(
+                <ClipboardIconButton variant='ghost' me='-2' />
+              )}
             >
-              {/* Placeholder until skeleton disappears */}
-              {shortenedUrl ?? 'GENERATED LINK HERE'}
-            </Link>
-          </Skeleton>
-          <Separator orientation='vertical' />
-          <Tooltip content='Copy Link'>
-            <IconButton
-              variant='outline'
-              onClick={() => shortenedUrl && navigator.clipboard.writeText(shortenedUrl)}
-              disabled={!shortenedUrl}
-            >
-              <CopyIcon />
-            </IconButton>
-          </Tooltip>
-        </Flex>
-      </Flex>
-    </Flex>
+              <ClipboardInput />
+            </InputGroup>
+          </ClipboardRoot>
+        </Skeleton>
+      </VStack>
+    </AbsoluteCenter>
   );
 }
 

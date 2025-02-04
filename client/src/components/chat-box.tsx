@@ -32,7 +32,7 @@ function ChatBox({ socket, users, messages, host } : ChatBoxProps) {
     }
   }, [ messages ]);
 
-  const sendChatMessage = () => {
+  function sendChatMessage() {
     if (!chat_box.current || !chat_box.current.value.trim()) {
       return;
     }

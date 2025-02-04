@@ -1,10 +1,9 @@
-import { Card, Flex, Select, Skeleton, Text, TextField, Box } from "@radix-ui/themes";
+import { Card, HStack, VStack } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import { QRCodeToDataURLOptions, toDataURL } from 'qrcode';
+import { toaster } from "@/components/ui/toaster";
 
 function QrCode({ data }: { data?: string }) {
-  const { toast } = useToast();
-
   const imageRef = useRef<HTMLImageElement>(null);
 
   const [ generated, setGenerated ] = useState<boolean>(false);
@@ -22,7 +21,7 @@ function QrCode({ data }: { data?: string }) {
     }
 
     if (width > 2048 || width < 32) {
-      toast({
+      toaster.create({
         title: 'Invalid QR Code Specs',
         description: 'Width must be >= 32px and <= 2048px'
       });
@@ -30,7 +29,7 @@ function QrCode({ data }: { data?: string }) {
     }
 
     if (margin > 16 || margin < 0) {
-      toast({
+      toaster.create({
         title: 'Invalid QR Code Specs',
         description: 'Margin must be >= 0px and <= 16px'
       });
@@ -58,7 +57,7 @@ function QrCode({ data }: { data?: string }) {
       })
       .catch((e) => {
         console.log(e);
-        toast({
+        toaster.create({
           title: 'Could not generate QR code',
           description: 'Please try again later'
         });
@@ -66,6 +65,24 @@ function QrCode({ data }: { data?: string }) {
       .finally(() => setGenerated(true));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, errorCorrection, margin, type, width, lightColor, darkColor]);
+
+  return (
+    <Card.Root>
+      <Card.Body maxW='80vw'>
+        <HStack flexWrap='wrap' alignItems='stretch' justify='center'>
+          <img 
+            ref={imageRef}      
+            data-open={generated}
+            className='data-[open=false]:hidden data-[open=true]:block w-72 h-72 object-fill'          
+          />
+
+          <VStack>
+
+          </VStack>
+        </HStack>
+      </Card.Body>
+    </Card.Root>
+  );
 
   return (
     <Card className='flex p-4 items-stretch justify-center gap-4 max-w-[80vw] flex-wrap'>

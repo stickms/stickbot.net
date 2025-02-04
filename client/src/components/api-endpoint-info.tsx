@@ -1,5 +1,5 @@
-import { CheckIcon } from '@radix-ui/react-icons';
-import { Badge, VStack, HStack, Flex, Table, Code } from '@chakra-ui/react';
+import { Badge, VStack, HStack, Table, Code, Center } from '@chakra-ui/react';
+import { FaCheck } from 'react-icons/fa';
 import { API_ENDPOINT } from '../env';
 
 type EndpointInfoProps = {
@@ -17,7 +17,7 @@ type EndpointInfoProps = {
 };
 
 function ApiEndpointInfo({ ...props }: EndpointInfoProps) {
-  const methodColor = () => {
+  function methodColor() {
     if (props.method === 'GET') {
       return 'green';
     } else if (props.method === 'POST') {
@@ -39,7 +39,7 @@ function ApiEndpointInfo({ ...props }: EndpointInfoProps) {
       </HStack>
 
       {props.params && (
-        <Table.Root variant='outline'>
+        <Table.Root variant='outline' borderRadius='md'>
           <Table.Header>
             <Table.Row>
               <Table.ColumnHeader>Property</Table.ColumnHeader>
@@ -60,7 +60,7 @@ function ApiEndpointInfo({ ...props }: EndpointInfoProps) {
       )}
 
       {props.queries && (
-        <Table.Root variant='outline'>
+        <Table.Root variant='outline' borderRadius='md'>
           <Table.Header>
             <Table.Row>
               <Table.ColumnHeader>Query</Table.ColumnHeader>
@@ -76,9 +76,9 @@ function ApiEndpointInfo({ ...props }: EndpointInfoProps) {
                 </Table.Cell>
                 <Table.Cell>{query.description}</Table.Cell>
                 <Table.Cell>
-                  <Flex justifyItems='center'>
-                    {!query.optional ? <CheckIcon /> : ''}
-                  </Flex>
+                  <Center>
+                    {!query.optional ? <FaCheck /> : ''}
+                  </Center>
                 </Table.Cell>
               </Table.Row>
             ))}
