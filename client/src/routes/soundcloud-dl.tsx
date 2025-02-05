@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { API_ENDPOINT } from "../env";
 import { fetchGetJson } from "../lib/util";
 import { type Payload } from 'youtube-dl-exec';
-import useToast from "../hooks/use-toast";
+import { useToast } from "../hooks/use-toast";
 
 // Payload doesn't include like_count (bug)
 type MediaPayload = Payload & { like_count: number };

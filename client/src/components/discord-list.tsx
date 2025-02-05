@@ -1,7 +1,7 @@
 import { Avatar, Flex, Select, Text } from '@radix-ui/themes';
 import { useEffect } from 'react';
 import { clearGuildId, setGuildId } from '../lib/store';
-import useAuth from '../hooks/use-auth';
+import { useAuth } from '../hooks/use-auth';
 
 function DiscordList({ placeholder }: { placeholder?: string }) {
   const { guilds, getGuilds } = useAuth();

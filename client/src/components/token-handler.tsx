@@ -9,11 +9,11 @@ import {
   Tooltip
 } from '@radix-ui/themes';
 import DiscordList from './discord-list';
-import useAuth from '../hooks/use-auth';
+import { useAuth } from '../hooks/use-auth';
 import { useStore } from '@nanostores/react';
 import { $guildid } from '../lib/store';
 import { useState } from 'react';
-import useToast from '../hooks/use-toast';
+import { useToast } from '../hooks/use-toast';
 
 function TokenHandler() {
   const { user, generateApiToken, revokeApiToken } = useAuth();

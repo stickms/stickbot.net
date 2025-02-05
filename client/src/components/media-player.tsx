@@ -2,7 +2,7 @@ import { GearIcon, PlusIcon } from "@radix-ui/react-icons";
 import { Flex, IconButton, TextField, AspectRatio, DropdownMenu, Dialog, Button, Select } from "@radix-ui/themes";
 import ReactPlayer from "react-player";
 import { useEffect, useRef, useState } from "react";
-import useToast from "../hooks/use-toast";
+import { useToast } from "../hooks/use-toast";
 import MediaQueue from "./media-queue";
 import { arrayMove } from "@dnd-kit/sortable";
 import { useStore } from "@nanostores/react";

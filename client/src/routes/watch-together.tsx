@@ -3,9 +3,9 @@ import { useEffect, useRef, useState } from "react";
 import { API_ENDPOINT } from "../env";
 import { Cross1Icon, DiscordLogoIcon, EnterIcon, InfoCircledIcon, PlusIcon } from "@radix-ui/react-icons";
 import { useLocation, useNavigate } from "react-router-dom";
-import useAuth from "../hooks/use-auth";
+import { useAuth } from "../hooks/use-auth";
 import { fetchGetJson } from "../lib/util";
-import useToast from "../hooks/use-toast";
+import { useToast } from "../hooks/use-toast";
 import { SyncRoom } from "../lib/types";
 
 function SignIn() {

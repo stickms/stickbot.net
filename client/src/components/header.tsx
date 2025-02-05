@@ -3,7 +3,7 @@ import { DiscordLogoIcon, GitHubLogoIcon } from '@radix-ui/react-icons';
 import { API_ENDPOINT } from '../env';
 import { useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import useAuth from '../hooks/use-auth';
+import { useAuth } from '../hooks/use-auth';
 import { getDiscordAvatar } from '../lib/util';
 
 function DiscordLogin() {

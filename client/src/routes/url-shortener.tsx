@@ -3,7 +3,7 @@ import { Flex, IconButton, Link, Select, Separator, Skeleton, Text, TextField, T
 import { useRef, useState } from "react";
 import { API_ENDPOINT } from "../env";
 import { fetchGetJson } from "../lib/util";
-import useToast from "../hooks/use-toast";
+import { useToast } from "../hooks/use-toast";
 
 function UrlShortener() {
   const { toast } = useToast();

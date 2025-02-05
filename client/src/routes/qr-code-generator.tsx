@@ -1,7 +1,7 @@
 import { Card, Flex, Select, Skeleton, Text, TextField, Box } from "@radix-ui/themes";
 import { useEffect, useRef, useState } from "react";
 import { QRCodeToDataURLOptions, toDataURL } from 'qrcode';
-import useToast from "../hooks/use-toast";
+import { useToast } from "../hooks/use-toast";
 
 function QrCode({ data }: { data?: string }) {
   const { toast } = useToast();

@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 import { $syncsettings } from "../lib/store";
 import SocketConn from "../lib/socket";
 import { SyncRoomMessages } from "../lib/types";
-import useToast from "../hooks/use-toast";
+import { useToast } from "../hooks/use-toast";
 
 type ChatBoxProps = {
   socket: SocketConn;

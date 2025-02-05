@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { type SyncRoom } from "../lib/types";
 import { API_ENDPOINT } from "../env";
 import { fetchGetJson } from "../lib/util";
-import useAuth from "../hooks/use-auth";
+import { useAuth } from "../hooks/use-auth";
 import MediaPlayer from "../components/media-player";
 import ChatBox from "../components/chat-box";
 import SocketConn from "../lib/socket";

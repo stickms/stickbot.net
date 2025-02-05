@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import SteamProfile from '../components/steam-profile';
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import DiscordList from '../components/discord-list';
-import useToast from '../hooks/use-toast';
+import { useToast } from '../hooks/use-toast';
 
 function ProfileLookup() {
   const { toast } = useToast();

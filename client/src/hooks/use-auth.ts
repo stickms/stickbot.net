@@ -10,9 +10,9 @@ import {
   setUser
 } from '../lib/store';
 import { API_ENDPOINT } from '../env';
-import useToast from './use-toast';
+import { useToast } from './use-toast';
 
-function useAuth() {
+export function useAuth() {
   const user = useStore($user);
   const guilds = useStore($guilds);
 
@@ -149,5 +149,3 @@ function useAuth() {
     validateAdmin
   };
 }
-
-export default useAuth;

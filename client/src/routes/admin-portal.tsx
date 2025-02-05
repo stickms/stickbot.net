@@ -13,9 +13,9 @@ import {
   Avatar,
   Link
 } from '@radix-ui/themes';
-import useAuth from '../hooks/use-auth';
+import { useAuth } from '../hooks/use-auth';
 import { useNavigate } from 'react-router-dom';
-import useToast from '../hooks/use-toast';
+import { useToast } from '../hooks/use-toast';
 import { useEffect, useState } from 'react';
 import { API_ENDPOINT } from '../env';
 import {
