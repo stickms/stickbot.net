@@ -54,7 +54,7 @@ function TokenHandler() {
     return (
       <VStack>
         <Text>You already have an existing API token</Text>
-        <Button onClick={revokeApiToken} colorPalette='current'>
+        <Button onClick={revokeApiToken}>
           Revoke API Token
         </Button>
       </VStack>

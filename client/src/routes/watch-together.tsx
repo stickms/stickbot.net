@@ -5,12 +5,11 @@ import { Cross1Icon, DiscordLogoIcon, EnterIcon, InfoCircledIcon, PlusIcon } fro
 import { useLocation, useNavigate } from "react-router-dom";
 import useAuth from "../hooks/use-auth";
 import { fetchGetJson } from "../lib/util";
-import useToast from "../hooks/use-toast";
 import { SyncRoom } from "../lib/types";
+import { toaster } from "@/components/ui/toaster";
 
 function SignIn() {
   const username_input = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
   const { getUser } = useAuth();
 
   const location = useLocation();
@@ -24,7 +23,7 @@ function SignIn() {
     const value = username_input.current.value.trim();
 
     if (!value || !/^[a-z0-9-_.]+$/i.test(value)) {
-      toast({
+      toaster.create({
         title: 'Error signing in',
         description: 'Usernames can only contain alphanumeric, -, ., or _ characters'
       });
@@ -44,7 +43,7 @@ function SignIn() {
         getUser();
       })
       .catch(() => {
-        toast({
+        toaster.create({
           title: 'Error signing in',
           description: 'Please try again'
         });
@@ -86,7 +85,6 @@ function SignIn() {
 }
 
 function RoomList({ userid }: { userid: string }) {
-  const { toast } = useToast();
   const [ rooms, setRooms ] = useState<SyncRoom[]>();
   const navigate = useNavigate();
 
@@ -103,7 +101,7 @@ function RoomList({ userid }: { userid: string }) {
       })
       .catch(() => {
         setRooms([]);
-        toast({
+        toaster.create({
           title: 'Error fetching rooms',
           description: 'Please try again later'
         });
@@ -120,7 +118,7 @@ function RoomList({ userid }: { userid: string }) {
         navigate(`/sync/room/${roomid}`);
       })
       .catch(() => {
-        toast({
+        toaster.create({
           title: 'Error joining room',
           description: 'Please try again later'
         });
@@ -137,7 +135,7 @@ function RoomList({ userid }: { userid: string }) {
         setRooms(data['data']);
       })
       .catch(() => {
-        toast({
+        toaster.create({
           title: 'Error deleting room',
           description: 'Please try again later'
         });
@@ -152,7 +150,7 @@ function RoomList({ userid }: { userid: string }) {
     const name = inputbar.current.value.trim();
 
     if (!name) {
-      toast({
+      toaster.create({
         title: 'Error creating room',
         description: 'Please enter a room name'
       });
@@ -175,7 +173,7 @@ function RoomList({ userid }: { userid: string }) {
         navigate(`/sync/room/${data['data']['roomid']}`);
       })
       .catch(() => {
-        toast({
+        toaster.create({
           title: 'Error creating room',
           description: 'Please try again later'
         });
