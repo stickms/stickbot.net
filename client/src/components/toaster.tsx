@@ -6,13 +6,12 @@ import { useLocation } from 'react-router-dom';
 
 function ToastDisplay({ toast }: { toast: Toast }) {
   const [open, setOpen] = useState<boolean>(false);
-  const [closed, setClosed] = useState<boolean>(false);
 
   useEffect(() => {
     setTimeout(() => setOpen(true), 10);
 
     setTimeout(() => {
-      setClosed(true);
+      setOpen(false);
 
       setTimeout(() => {
         $toasts.set($toasts.get().filter((t) => t.id !== toast.id));
@@ -25,8 +24,7 @@ function ToastDisplay({ toast }: { toast: Toast }) {
     <Callout.Root
       highContrast
       data-open={open}
-      data-closed={closed}
-      className='fixed w-96 max-w-[min(30rem,calc(100vw-3rem))] m-6 transition ease-in-out duration-200 bottom-0 right-0 translate-x-[--x] translate-y-[--y] data-[open=false]:translate-x-[150%] data-[closed=true]:translate-x-[150%] backdrop-blur-3xl'
+      className='fixed w-96 max-w-[min(30rem,calc(100vw-3rem))] m-6 transition ease-in-out duration-200 bottom-0 right-0 translate-x-[--x] translate-y-[--y] data-[open=false]:translate-x-[150%] backdrop-blur-3xl'
     >
       <Callout.Icon>
         <InfoCircledIcon />

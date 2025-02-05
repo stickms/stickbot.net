@@ -53,7 +53,7 @@ function SignIn() {
 
   return (
     <Flex className='items-center justify-center min-h-screen'>
-      <Flex className='my-16 flex-col items-center justify-evenly gap-24'>
+      <Flex className='mt-32 mb-16 flex-col items-center justify-evenly gap-24'>
         <Text className='text-3xl'>Watch Together</Text>
 
         <Flex className='flex-col items-center gap-4'>
@@ -183,8 +183,8 @@ function RoomList({ userid }: { userid: string }) {
   }
 
   return (
-    <Flex className='flex-col items-center gap-24 min-h-screen'>
-      <Text className='text-3xl mt-40'>Watch Together Rooms</Text>
+    <Flex className='flex-col items-center gap-24 min-h-screen pt-40 pb-16'>
+      <Text className='text-3xl'>Watch Together Rooms</Text>
 
       <Flex className='items-center justify-center flex-col gap-4'>
         <TextField.Root
@@ -211,7 +211,7 @@ function RoomList({ userid }: { userid: string }) {
         </Text>
       </Flex>
 
-      <Flex className='items-stretch justify-center flex-wrap gap-4 mb-8 max-w-[80vw]'>
+      <Flex className='items-stretch justify-center flex-wrap gap-4 max-w-[80vw]'>
         {!rooms?.length && (
           <Callout.Root>
             <Callout.Icon>

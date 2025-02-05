@@ -3,17 +3,14 @@ import { NavLink } from 'react-router-dom';
 
 function Root() {
   return (
-    <Flex className='items-center justify-center min-h-screen'>
-      <Flex className='items-center justify-center my-16 flex-col gap-y-4'>
+    <Flex className='items-center justify-center min-h-screen pt-32 pb-16'>
+      <Flex className='items-center justify-center flex-col gap-y-4'>
         <Text className='text-3xl mb-20'>Stickbot.net</Text>
         <Link asChild>
           <NavLink to='/watch-together'>Watch Together</NavLink>
         </Link>
         <Link asChild>
           <NavLink to='/lookup'>Steam Profile Lookup</NavLink>
-        </Link>
-        <Link asChild>
-          <NavLink to='/youtube-dl'>YouTube Downloader</NavLink>
         </Link>
         <Link asChild>
           <NavLink to='/soundcloud-dl'>Soundcloud Downloader</NavLink>

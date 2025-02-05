@@ -10,7 +10,7 @@ function QrCode({ data }: { data?: string }) {
 
   const [ generated, setGenerated ] = useState<boolean>(false);
   const [ type, setType ] = useState<string>('image/png');
-  const [ width, setWidth ] = useState<number>(256);
+  const [ width, setWidth ] = useState<number>(512);
   const [ margin, setMargin ] = useState<number>(1);
   const [ errorCorrection, setErrorCorrection ] = useState<string>('M');
   const [ lightColor, setLightColor ] = useState<string>('#ffffffff');
@@ -173,8 +173,8 @@ function QrCodeGenerator() {
   const [data, setData] = useState<string>();
 
   return (
-    <Flex className='items-center justify-center min-h-screen'>
-      <Flex className='my-16 items-center justify-center flex-col gap-y-16'>
+    <Flex className='items-center justify-center min-h-screen pt-32 pb-16'>
+      <Flex className='items-center justify-center flex-col gap-y-16'>
         <Text className='text-3xl text-center'>QR Code Generator</Text>
 
         <Flex className='items-center justify-center gap-4'>

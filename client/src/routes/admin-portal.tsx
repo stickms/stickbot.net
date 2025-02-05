@@ -204,8 +204,8 @@ function AdminPortal() {
   }
 
   return (
-    <Flex className='items-center justify-center flex-col gap-16'>
-      <Flex className='mt-[20vh] flex-wrap items-center justify-center gap-y-6 text-center'>
+    <Flex className='items-center justify-center flex-col gap-16 pt-40 pb-16'>
+      <Flex className='flex-wrap items-center justify-center gap-y-6 text-center'>
         <Text className='text-3xl w-full'>Admin Portal</Text>
         <Text className='text-lg'>
           Welcome, <Code>{user.username}</Code>

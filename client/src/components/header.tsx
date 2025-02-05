@@ -1,10 +1,11 @@
 import { Avatar, Button, DropdownMenu, Flex, IconButton, Link } from '@radix-ui/themes';
-import { DiscordLogoIcon, GitHubLogoIcon } from '@radix-ui/react-icons';
+import { DiscordLogoIcon, GitHubLogoIcon, MoonIcon, SunIcon } from '@radix-ui/react-icons';
 import { API_ENDPOINT } from '../env';
 import { useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/use-auth';
 import { getDiscordAvatar } from '../lib/util';
+import { useTheme } from 'next-themes';
 
 function DiscordLogin() {
   const { user, getUser, validateAdmin, logout } = useAuth();
@@ -57,19 +58,28 @@ function DiscordLogin() {
 }
 
 function Header() {
+  const { theme, setTheme } = useTheme();
+
   return (
-    <Flex className='fixed top-0 w-full justify-between items-center z-50 backdrop-blur-3xl bg-[--gray-a2]'>
+    <Flex className='fixed top-0 w-full px-6 h-16 justify-between items-center z-50 backdrop-blur-3xl bg-[--gray-a2]'>
       {/* Left */}
-      <Flex className='pl-6 py-4 items-center'>
+      <Flex className='items-center'>
         <Link asChild color='gray' highContrast underline='hover'>
           <NavLink to='/'>Stickbot.net</NavLink>
         </Link>
       </Flex>
 
       {/* Right */}
-      <Flex className='pr-6 py-4 gap-4 items-center'>
+      <Flex className='gap-4 items-center'>
+        <IconButton
+          variant='surface'
+          onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+        >
+          {theme === 'light' && <MoonIcon />}
+          {theme === 'dark' && <SunIcon />}
+        </IconButton>
         <Link
-          href="https://github.com/stickms/stickbot.net"
+          href='https://github.com/stickms/stickbot.net'
           target='_blank'
           rel='noopener noreferrer'
         >

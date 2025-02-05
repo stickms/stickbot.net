@@ -13,7 +13,7 @@ class SocketConn {
     query: object,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onMessage?: (message: any) => void,
-    timeout: number = 2_500
+    timeout: number = 2500
   ) {
     this.timeout = timeout;
     this.closed = false;

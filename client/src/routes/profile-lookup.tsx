@@ -37,8 +37,8 @@ function ProfileLookup() {
   };
 
   return (
-    <Flex className='flex-col items-center gap-y-20 min-h-screen'>
-      <Text className='mt-40 text-3xl text-center'>Steam Profile Lookup</Text>
+    <Flex className='flex-col items-center gap-y-20 min-h-screen pt-40 pb-16'>
+      <Text className='text-3xl text-center'>Steam Profile Lookup</Text>
       <Flex className='flex-wrap gap-4 items-center justify-center max-w-[80vw]'>
         <TextField.Root
           ref={input}
@@ -56,7 +56,7 @@ function ProfileLookup() {
         </TextField.Root>
         <DiscordList />
       </Flex>
-      <Flex className='items-center justify-center flex-col mb-4'>
+      <Flex className='items-center justify-center flex-col'>
         {!profiles.length && <SteamProfile skeleton />}
         {profiles.map((p, i) => {
           return i >= 5 ? null : (

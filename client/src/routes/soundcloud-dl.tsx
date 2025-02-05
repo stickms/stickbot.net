@@ -107,7 +107,7 @@ function MediaDownloader({ info }: { info?: MediaPayload }) {
 function MediaPreview({ info }: { info?: MediaPayload }) {
   if (!info) {
     return (
-      <Card className='flex p-4 items-stretch justify-center gap-4 max-w-[80vw] flex-wrap'>
+      <Card className='flex items-stretch justify-center gap-4 max-w-[80vw] flex-wrap'>
         <Skeleton className='size-52' />
 
         <Flex className='gap-4 flex-col max-w-[30rem] justify-between'>
@@ -263,8 +263,8 @@ function SoundcloudDl() {
   };
 
   return (
-    <Flex className='items-center justify-center min-h-screen'>
-      <Flex className='my-16 items-center justify-center flex-col gap-y-24'>
+    <Flex className='items-center justify-center min-h-screen pt-40 pb-16'>
+      <Flex className='items-center justify-center flex-col gap-y-24'>
         <Text className='text-3xl text-center'>Soundcloud Downloader</Text>
 
         <Flex className='items-center justify-center gap-4'>

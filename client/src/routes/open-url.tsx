@@ -11,7 +11,7 @@ function OpenUrl() {
   });
 
   return (
-    <Flex className='items-center justify-center h-screen flex-col gap-y-4'>
+    <Flex className='items-center justify-center h-screen'>
       <Text className='text-3xl'>Redirecting...</Text>
     </Flex>
   );

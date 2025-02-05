@@ -5,8 +5,8 @@ import { API_ENDPOINT } from '../env';
 
 function ApiReference() {
   return (
-    <Flex className='items-center justify-center flex-col gap-y-20 pb-8'>
-      <Flex className='mt-40 flex-wrap items-center justify-center gap-y-6 text-center'>
+    <Flex className='items-center justify-center flex-col gap-y-20 pt-40 pb-16'>
+      <Flex className='flex-wrap items-center justify-center gap-y-6 text-center'>
         <Text className='text-3xl w-full text-center'>API Reference</Text>
         <Code size='3'>{API_ENDPOINT}/</Code>
       </Flex>
