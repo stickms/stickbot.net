@@ -5,25 +5,25 @@ import { atom } from 'nanostores';
 
 const MAX_TOASTS = 5;
 
-type ToastProps = {
+type UserToastProps = {
   title: string;
   description?: string;
   color?: string;
   timer?: number;
 }
 
-export type Toast = ToastProps & {
+export type ToastProps = UserToastProps & {
   id?: number;
   open?: boolean;
 };
 
-export const $toasts = atom<Toast[]>([]);
+export const $toasts = atom<ToastProps[]>([]);
 let toast_id = 0;
 
 export function useToast() {
   const toasts = useStore($toasts);
 
-  const toast = (toast: ToastProps) => {
+  const toast = (toast: UserToastProps) => {
     const id = toast_id++;
     const timer = 2_500;
     $toasts.set([ { id, timer, ...toast }, ...$toasts.get() ].slice(0, MAX_TOASTS));

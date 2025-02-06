@@ -1,10 +1,10 @@
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { Callout, Box } from '@radix-ui/themes';
-import { $toasts, useToast, type Toast } from '../hooks/use-toast';
+import { $toasts, useToast, type ToastProps } from '../hooks/use-toast';
 import { CSSProperties, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
-function ToastDisplay({ toast }: { toast: Toast }) {
+function ToastDisplay({ toast }: { toast: ToastProps }) {
   const [open, setOpen] = useState<boolean>(false);
 
   useEffect(() => {
@@ -26,6 +26,7 @@ function ToastDisplay({ toast }: { toast: Toast }) {
       data-open={open}
       className='fixed w-96 max-w-[min(30rem,calc(100vw-3rem))] m-6 transition ease-in-out duration-200 bottom-0 right-0 translate-x-[--x] translate-y-[--y] data-[open=false]:translate-x-[150%] backdrop-blur-3xl'
     >
+      {/* <Box data-open={open} className='fixed bottom-0 right-0 bg-[--gray-a4] w-full h-2 origin-[left_center] duration-[2500ms] data-[open=true]:scale-x-0' /> */}
       <Callout.Icon>
         <InfoCircledIcon />
       </Callout.Icon>
