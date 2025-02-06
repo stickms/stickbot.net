@@ -269,29 +269,27 @@ function SoundcloudDl() {
   };
 
   return (
-    <Flex className='items-center justify-center min-h-screen pt-40 pb-16'>
-      <Flex className='items-center justify-center flex-col gap-y-24'>
-        <Text className='text-3xl text-center'>Soundcloud Downloader</Text>
+    <Flex className='items-center min-h-screen flex-col gap-y-24 pt-40 pb-16'>
+      <Text className='text-3xl text-center'>Soundcloud Downloader</Text>
 
-        <Flex className='items-center justify-center gap-4'>
-          <TextField.Root
-            ref={url_input}
-            className='w-96 max-w-[80vw]'
-            placeholder='Enter Soundcloud url...'
-            maxLength={128}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            disabled={loading}
-          >
-            <TextField.Slot side='right'>
-              <IconButton variant='ghost' onClick={handleSearch}>
-                <MagnifyingGlassIcon />
-              </IconButton>
-            </TextField.Slot>
-          </TextField.Root>
-        </Flex>
-
-        <MediaPreview info={mediaInfo} />
+      <Flex className='items-center justify-center gap-4'>
+        <TextField.Root
+          ref={url_input}
+          className='w-96 max-w-[80vw]'
+          placeholder='Enter Soundcloud url...'
+          maxLength={128}
+          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+          disabled={loading}
+        >
+          <TextField.Slot side='right'>
+            <IconButton variant='ghost' onClick={handleSearch}>
+              <MagnifyingGlassIcon />
+            </IconButton>
+          </TextField.Slot>
+        </TextField.Root>
       </Flex>
+
+      <MediaPreview info={mediaInfo} />
     </Flex>
   );
 }

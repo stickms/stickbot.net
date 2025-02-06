@@ -185,7 +185,6 @@ function UserList() {
 
 function AdminPortal() {
   const { user, validateAdmin } = useAuth();
-  const { toast } = useToast();
   const navigation = useNavigate();
 
   useEffect(() => {
@@ -194,11 +193,6 @@ function AdminPortal() {
   }, []);
 
   if (!user.id || !user.is_admin) {
-    toast({
-      title: 'Error: Unauthorized',
-      description: 'Sorry, you cannot access that page'
-    });
-
     navigation('/');
     return null;
   }
