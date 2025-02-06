@@ -1,9 +1,4 @@
-import {
-  Flex,
-  IconButton,
-  TextField,
-  Text
-} from '@radix-ui/themes';
+import { Flex, IconButton, TextField, Text } from '@radix-ui/themes';
 import { useEffect, useRef, useState } from 'react';
 import SteamProfile from '../components/steam-profile';
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
@@ -32,7 +27,7 @@ function ProfileLookup() {
       return;
     }
 
-    setProfiles((prev) => [ input.current!.value.trim(), ...prev ]);
+    setProfiles((prev) => [input.current!.value.trim(), ...prev]);
     setDisabled(true);
   };
 
@@ -54,7 +49,7 @@ function ProfileLookup() {
             </IconButton>
           </TextField.Slot>
         </TextField.Root>
-        <DiscordList />
+        <DiscordList placeholder='Search by server' />
       </Flex>
       <Flex className='items-center justify-center flex-col'>
         {!profiles.length && <SteamProfile skeleton />}

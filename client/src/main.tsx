@@ -31,8 +31,14 @@ createRoot(document.getElementById('root')!).render(
       <meta property='og:title' content='Stickbot.net' />
       <meta property='og:type' content='website' />
       <meta property='og:url' content='https://stickbot.net' />
-      <meta property='og:image:url' content={`${window.location.origin}/stick.png`} />
-      <meta property='og:image:secure_url' content={`${window.location.origin}/stick.png`} />
+      <meta
+        property='og:image:url'
+        content={`${window.location.origin}/stick.png`}
+      />
+      <meta
+        property='og:image:secure_url'
+        content={`${window.location.origin}/stick.png`}
+      />
       <meta property='og:description' content='' />
     </Helmet>
     <ThemeProvider attribute='class'>

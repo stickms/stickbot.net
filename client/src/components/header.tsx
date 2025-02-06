@@ -1,5 +1,17 @@
-import { Avatar, Button, DropdownMenu, Flex, IconButton, Link } from '@radix-ui/themes';
-import { DiscordLogoIcon, GitHubLogoIcon, MoonIcon, SunIcon } from '@radix-ui/react-icons';
+import {
+  Avatar,
+  Button,
+  DropdownMenu,
+  Flex,
+  IconButton,
+  Link
+} from '@radix-ui/themes';
+import {
+  DiscordLogoIcon,
+  GitHubLogoIcon,
+  MoonIcon,
+  SunIcon
+} from '@radix-ui/react-icons';
 import { API_ENDPOINT } from '../env';
 import { useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
@@ -75,8 +87,8 @@ function Header() {
           variant='surface'
           onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
         >
-          {theme === 'light' && <MoonIcon />}
           {theme === 'dark' && <SunIcon />}
+          {theme !== 'dark' && <MoonIcon />}
         </IconButton>
         <Link
           href='https://github.com/stickms/stickbot.net'

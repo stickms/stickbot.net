@@ -24,9 +24,9 @@ export type SyncRoomMessages = {
   author: {
     id: string;
     username: string;
-  },
-  content: string,
-  date: number
+  };
+  content: string;
+  date: number;
 }[];
 
 export type SyncRoom = {
@@ -48,8 +48,8 @@ export type SyncRoom = {
     curtime: number;
     playing: boolean;
     messages: SyncRoomMessages;
-  }
-}
+  };
+};
 
 export type SyncSettings = {
   hide_chat: boolean;

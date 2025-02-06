@@ -26,7 +26,7 @@ class SocketConn {
   private connect(url: string, query: object) {
     const client = hc(url);
     this.socket = client.ws.$ws({ query });
-    
+
     // Auto retry on close
     this.socket.addEventListener('close', () => {
       if (!this.closed) {
@@ -49,7 +49,11 @@ class SocketConn {
     }
   }
 
-  public async send(data: object, onAcknowledged?: () => void, onIgnored?: () => void) {
+  public async send(
+    data: object,
+    onAcknowledged?: () => void,
+    onIgnored?: () => void
+  ) {
     if (!this.socket) {
       console.error('WebSocket not open, cannot send message');
       return;
@@ -58,10 +62,12 @@ class SocketConn {
     const message_id = this.genId();
 
     // Send the message
-    this.socket.send(JSON.stringify({
-      ...data,
-      message_id
-    }));
+    this.socket.send(
+      JSON.stringify({
+        ...data,
+        message_id
+      })
+    );
 
     // If this timeout reaches completion, our message has been ignored
     const ignore_timeout = setTimeout(() => {
@@ -78,9 +84,9 @@ class SocketConn {
         clearTimeout(ignore_timeout);
         onAcknowledged?.();
       }
-    }
+    };
 
-    this.socket.addEventListener('message', handleOnMessage);  
+    this.socket.addEventListener('message', handleOnMessage);
   }
 
   public close() {
@@ -97,7 +103,7 @@ class SocketConn {
   private genId() {
     const bytes = new Uint8Array(8);
     crypto.getRandomValues(bytes);
-    return encodeBase32LowerCaseNoPadding(bytes);  
+    return encodeBase32LowerCaseNoPadding(bytes);
   }
 }
 

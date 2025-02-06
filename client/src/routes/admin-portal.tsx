@@ -47,13 +47,11 @@ function UserCard({ user }: { user: UserListType }) {
           <Text as='div' className='text-sm' color='gray'>
             {'#' + user.id}
           </Text>
-          {
-            !!user.discord_id && (
-              <Text as='div' className='text-sm' color='gray'>
-                {'<@' + user.discord_id + '>'}
-              </Text>  
-            )
-          }
+          {!!user.discord_id && (
+            <Text as='div' className='text-sm' color='gray'>
+              {'<@' + user.discord_id + '>'}
+            </Text>
+          )}
           <Text as='div' className='text-xs text-center' color='gray'>
             click to copy {user.discord_id ? 'discord id' : 'userid'}
           </Text>
@@ -149,7 +147,9 @@ function UserList() {
                         asChild
                         highContrast
                         underline='hover'
-                        onClick={() => navigator.clipboard.writeText(u.discord_id ?? u.id)}
+                        onClick={() =>
+                          navigator.clipboard.writeText(u.discord_id ?? u.id)
+                        }
                       >
                         <button>{u.username ?? 'Username N/A'}</button>
                       </Link>

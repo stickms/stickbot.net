@@ -1,10 +1,21 @@
-import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
-import { Flex, IconButton, Link, Text, TextField, Card, Separator, Select, Button, Tooltip } from "@radix-ui/themes";
-import { useEffect, useState } from "react";
-import { API_ENDPOINT } from "../env";
-import { fetchGetJson } from "../lib/util";
+import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
+import {
+  Flex,
+  IconButton,
+  Link,
+  Text,
+  TextField,
+  Card,
+  Separator,
+  Select,
+  Button,
+  Tooltip
+} from '@radix-ui/themes';
+import { useEffect, useState } from 'react';
+import { API_ENDPOINT } from '../env';
+import { fetchGetJson } from '../lib/util';
 import { type Payload } from 'youtube-dl-exec';
-import { useToast } from "../hooks/use-toast";
+import { useToast } from '../hooks/use-toast';
 
 // Payload doesn't include like_count (bug)
 type VideoPayload = Payload & { like_count: number };
@@ -12,20 +23,20 @@ type VideoPayload = Payload & { like_count: number };
 function VideoDownloader({ info }: { info?: VideoPayload }) {
   const { toast } = useToast();
 
-  const [ format, setFormat ] = useState<string>();
-  const [ downloading, setDownloading ] = useState<boolean>(false);
+  const [format, setFormat] = useState<string>();
+  const [downloading, setDownloading] = useState<boolean>(false);
 
   useEffect(() => {
     setFormat(undefined);
     setDownloading(false);
-  }, [ info?.original_url ]);
+  }, [info?.original_url]);
 
   if (!info) {
     return null;
   }
 
   const downloadVideo = () => {
-    if(!format) {
+    if (!format) {
       toast({
         title: 'Could not download media',
         description: 'Please select a valid format'
@@ -48,45 +59,38 @@ function VideoDownloader({ info }: { info?: VideoPayload }) {
     window.location.href = url.toString();
 
     setTimeout(() => setDownloading(false), 2_500);
-  }
+  };
 
   return (
     <Flex className='flex-col gap-2'>
-      <Select.Root
-        onValueChange={setFormat}
-      >
-        <Select.Trigger 
+      <Select.Root onValueChange={setFormat}>
+        <Select.Trigger
           placeholder='Select video format & quality...'
           className='w-72'
         />
 
         <Select.Content>
           <Select.Group>
-            <Select.Label>
-              MP4
-            </Select.Label>
-            {
-              info.formats
-                .filter((fmt) => fmt.format_note && fmt.vcodec.startsWith('avc'))
-                .map((fmt) => (
-                  <Select.Item key={fmt.format_id} value={fmt.format_id}>
-                    {fmt.format_note!} ({fmt.format_id})
-                  </Select.Item>
-                ))
-            }
+            <Select.Label>MP4</Select.Label>
+            {info.formats
+              .filter((fmt) => fmt.format_note && fmt.vcodec.startsWith('avc'))
+              .map((fmt) => (
+                <Select.Item key={fmt.format_id} value={fmt.format_id}>
+                  {fmt.format_note!} ({fmt.format_id})
+                </Select.Item>
+              ))}
           </Select.Group>
         </Select.Content>
-
       </Select.Root>
 
       <Button
-          className='w-40'
-          onClick={downloadVideo}
-          disabled={downloading}
-          loading={downloading}
-        >
-          Download Video
-        </Button>
+        className='w-40'
+        onClick={downloadVideo}
+        disabled={downloading}
+        loading={downloading}
+      >
+        Download Video
+      </Button>
     </Flex>
   );
 }
@@ -112,9 +116,10 @@ function VideoPreview({ info }: { info?: VideoPayload }) {
 
   const compactNumber = (num: number) => {
     return Intl.NumberFormat('en-US', {
-      notation: 'compact', maximumFractionDigits: 1
+      notation: 'compact',
+      maximumFractionDigits: 1
     }).format(num);
-  }
+  };
 
   return (
     <Card className='flex p-4 items-stretch justify-center gap-4 max-w-[80vw] flex-wrap mb-8'>
@@ -144,7 +149,7 @@ function VideoPreview({ info }: { info?: VideoPayload }) {
               fallback={'A'}
               radius='full'
             /> */}
-            <Link 
+            <Link
               href={info.channel_url}
               target='_blank'
               rel='noopener noreferrer'
@@ -163,7 +168,7 @@ function VideoPreview({ info }: { info?: VideoPayload }) {
           <Flex className='gap-2 items-center'>
             <Tooltip content={info.view_count.toLocaleString('en-US')}>
               <Text className='text-sm' color='gray'>
-              {compactNumber(info.view_count)} views
+                {compactNumber(info.view_count)} views
               </Text>
             </Tooltip>
             <Separator orientation='vertical' />
@@ -201,15 +206,16 @@ function YoutubeDl() {
     setVideoInfo(() => undefined);
     setLoading(() => true);
 
-    fetch(`${API_ENDPOINT}/tools/media-info?query=${query.trim()}`, 
-      { credentials: 'include' }
-    )
+    fetch(`${API_ENDPOINT}/tools/media-info?query=${query.trim()}`, {
+      credentials: 'include'
+    })
       .then(fetchGetJson)
       .then((data) => setVideoInfo(data['data']))
       .catch(() => {
         toast({
           title: 'Error looking up video',
-          description: 'Make sure video exists and isn\'t private or age/region restricted'
+          description:
+            "Make sure video exists and isn't private or age/region restricted"
         });
       })
       .finally(() => setLoading(() => false));
@@ -227,7 +233,7 @@ function YoutubeDl() {
       <Text className='mt-[20vh] text-3xl'>Youtube Downloader</Text>
 
       <Flex className='items-center justify-center gap-4'>
-        <TextField.Root 
+        <TextField.Root
           className='w-96 max-w-[80vw]'
           placeholder='Enter video url...'
           maxLength={128}

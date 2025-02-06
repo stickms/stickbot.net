@@ -1,13 +1,13 @@
-import { Flex, Box } from "@radix-ui/themes";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { type SyncRoom } from "../lib/types";
-import { API_ENDPOINT } from "../env";
-import { fetchGetJson } from "../lib/util";
-import { useAuth } from "../hooks/use-auth";
-import MediaPlayer from "../components/media-player";
-import ChatBox from "../components/chat-box";
-import SocketConn from "../lib/socket";
+import { Flex, Box } from '@radix-ui/themes';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { type SyncRoom } from '../lib/types';
+import { API_ENDPOINT } from '../env';
+import { fetchGetJson } from '../lib/util';
+import { useAuth } from '../hooks/use-auth';
+import MediaPlayer from '../components/media-player';
+import ChatBox from '../components/chat-box';
+import SocketConn from '../lib/socket';
 
 function SyncRoom() {
   const { user } = useAuth();
@@ -20,14 +20,18 @@ function SyncRoom() {
   const [room, setRoom] = useState<SyncRoom>();
 
   function editRoomMeta(meta: object) {
-    setRoom((rm) => !rm ? rm : {
-      ...rm,
-      meta: {
-        ...rm.meta,
-        ...meta
-      }
-    });
-  };
+    setRoom((rm) =>
+      !rm
+        ? rm
+        : {
+            ...rm,
+            meta: {
+              ...rm.meta,
+              ...meta
+            }
+          }
+    );
+  }
 
   useEffect(() => {
     if (!user.id || !roomid) {
@@ -54,27 +58,39 @@ function SyncRoom() {
           },
           (message) => {
             if (message.chat) {
-              setRoom((rm) => !rm ? rm : {
-                ...rm,
-                meta: {
-                  ...rm.meta,
-                  messages: [ ...rm.meta.messages, message.chat ]
-                }
-              });
+              setRoom((rm) =>
+                !rm
+                  ? rm
+                  : {
+                      ...rm,
+                      meta: {
+                        ...rm.meta,
+                        messages: [...rm.meta.messages, message.chat]
+                      }
+                    }
+              );
             }
 
             if (message.users) {
-              setRoom((rm) => !rm ? rm : {
-                ...rm,
-                users: message.users
-              });
+              setRoom((rm) =>
+                !rm
+                  ? rm
+                  : {
+                      ...rm,
+                      users: message.users
+                    }
+              );
             }
 
             if (message.background) {
-              setRoom((rm) => !rm ? rm : {
-                ...rm,
-                background: message.background
-              });
+              setRoom((rm) =>
+                !rm
+                  ? rm
+                  : {
+                      ...rm,
+                      background: message.background
+                    }
+              );
             }
 
             if (message.queue) {
@@ -82,20 +98,20 @@ function SyncRoom() {
                 queue: message.queue
               });
             }
-    
+
             if (message.play || message.pause) {
               editRoomMeta({
                 playing: !!message.play,
                 curtime: message.curtime
-              }); 
+              });
             }
           }
-        )
+        );
       })
       .catch(() => {
         navigate('/watch-together');
       });
-  }, [ roomid, user, navigate ]);
+  }, [roomid, user, navigate]);
 
   useEffect(() => {
     // "Heartbeat" - periodically check server status in case we get desynced
@@ -119,9 +135,9 @@ function SyncRoom() {
       if (interval.current) {
         clearInterval(interval.current);
       }
-    }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ interval, roomid ]);
+  }, [interval, roomid]);
 
   const disconnect = useCallback(() => {
     if (!webSocket.current) {
@@ -130,12 +146,12 @@ function SyncRoom() {
 
     webSocket.current.close();
     webSocket.current = null;
-  }, [ webSocket ]);
+  }, [webSocket]);
 
   useEffect(() => {
     return () => {
       disconnect();
-    }
+    };
   }, [disconnect]);
 
   window.addEventListener('beforeunload', () => {
@@ -156,7 +172,7 @@ function SyncRoom() {
     } else {
       return 'auto';
     }
-  }
+  };
 
   return (
     <Flex className='items-start justify-center min-h-screen'>
@@ -164,7 +180,7 @@ function SyncRoom() {
         className='absolute top-0 left-0 w-full h-screen bg-no-repeat bg-center -z-10 overflow-hidden'
         style={{
           backgroundImage: `url(${room.background.url})`,
-          backgroundSize: getBgSize() 
+          backgroundSize: getBgSize()
         }}
       />
       <Flex className='mt-[min(8rem,_calc(4rem+7.5vw))] mb-8 mx-8 items-end justify-center gap-8 flex-wrap-reverse'>

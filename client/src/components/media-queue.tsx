@@ -1,11 +1,30 @@
-import { useEffect, useState } from "react";
-import { Cross1Icon } from "@radix-ui/react-icons";
-import { Card, Link, IconButton, Flex, Button, AlertDialog, } from "@radix-ui/themes";
-import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { useEffect, useState } from 'react';
+import { Cross1Icon } from '@radix-ui/react-icons';
+import {
+  Card,
+  Link,
+  IconButton,
+  Flex,
+  Button,
+  AlertDialog
+} from '@radix-ui/themes';
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy
+} from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { DndContext, DragEndEvent, PointerSensor, rectIntersection, useSensor, useSensors } from "@dnd-kit/core";
-import { SyncRoomQueue } from "../lib/types";
-import { restrictToParentElement } from "@dnd-kit/modifiers";
+import {
+  DndContext,
+  DragEndEvent,
+  PointerSensor,
+  rectIntersection,
+  useSensor,
+  useSensors
+} from '@dnd-kit/core';
+import { SyncRoomQueue } from '../lib/types';
+import { restrictToParentElement } from '@dnd-kit/modifiers';
 
 type MediaQueueProps = {
   internalQueue: SyncRoomQueue;
@@ -16,14 +35,18 @@ type MediaQueueProps = {
 };
 
 function MediaQueue({
-  internalQueue, queueDirty, queueRemove, queueOrder, queueClear
+  internalQueue,
+  queueDirty,
+  queueRemove,
+  queueOrder,
+  queueClear
 }: MediaQueueProps) {
-  const [ queue, setQueue ] = useState<SyncRoomQueue>(internalQueue);
+  const [queue, setQueue] = useState<SyncRoomQueue>(internalQueue);
 
   useEffect(() => {
     setQueue(internalQueue);
-  }, [ internalQueue ]);
-  
+  }, [internalQueue]);
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -31,13 +54,13 @@ function MediaQueue({
       }
     })
   );
-  
+
   if (!queue.length) {
     return null;
   }
 
   const handleDragEnd = (event: DragEndEvent) => {
-    const {active, over} = event;
+    const { active, over } = event;
 
     if (!over || active.id === over.id) {
       return;
@@ -48,29 +71,31 @@ function MediaQueue({
 
     setQueue(arrayMove(queue, start, end));
     queueOrder(start, end);
-  }
+  };
 
   return (
     <Flex className='flex-col'>
       <DndContext
         sensors={sensors}
         collisionDetection={rectIntersection}
-        modifiers={[ restrictToParentElement ]}
+        modifiers={[restrictToParentElement]}
         onDragEnd={handleDragEnd}
       >
-        <SortableContext 
+        <SortableContext
           items={queue}
           strategy={verticalListSortingStrategy}
           disabled={queueDirty}
         >
           {queue.map((entry, index) => {
-            return <QueueItem
-              key={entry.id}
-              content={entry}
-              index={index}
-              queueDirty={queueDirty}
-              queueRemove={queueRemove}
-            />
+            return (
+              <QueueItem
+                key={entry.id}
+                content={entry}
+                index={index}
+                queueDirty={queueDirty}
+                queueRemove={queueRemove}
+              />
+            );
           })}
         </SortableContext>
       </DndContext>
@@ -108,21 +133,21 @@ type QueueItemProps = {
   content: {
     id: string;
     url: string;
-    title: string;  
+    title: string;
   };
   index: number;
   queueDirty: boolean;
-  queueRemove: (id: string) => void
+  queueRemove: (id: string) => void;
 };
 
-function QueueItem({ content, index, queueDirty, queueRemove }: QueueItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({ id: content.id });
+function QueueItem({
+  content,
+  index,
+  queueDirty,
+  queueRemove
+}: QueueItemProps) {
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id: content.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -137,7 +162,7 @@ function QueueItem({ content, index, queueDirty, queueRemove }: QueueItemProps) 
       {...attributes}
       {...listeners}
     >
-      <Link 
+      <Link
         className='text-xs text-center break-all'
         href={content.url}
         target='_blank'
@@ -146,8 +171,8 @@ function QueueItem({ content, index, queueDirty, queueRemove }: QueueItemProps) 
         {index + 1}. {content.title}
       </Link>
 
-      <IconButton 
-        variant='outline' 
+      <IconButton
+        variant='outline'
         size='1'
         onClick={() => queueRemove(content.id)}
         disabled={queueDirty}

@@ -10,15 +10,20 @@ type UserToastProps = {
   description?: string;
   color?: string;
   duration?: number;
-}
-
-export type ToastProps = UserToastProps & {
-  id?: number;
-  open?: boolean;
 };
 
-export const $toasts = atom<ToastProps[]>([]);
+export type ToastProps = UserToastProps & { id: number };
+
+const $toasts = atom<ToastProps[]>([]);
 let toast_id = 0;
+
+export function removeToast(id: number) {
+  $toasts.set($toasts.get().filter((toast) => toast.id !== id));
+}
+
+export function clearToasts() {
+  $toasts.set([]);
+}
 
 export function useToast() {
   const toasts = useStore($toasts);
@@ -26,7 +31,9 @@ export function useToast() {
   const toast = (toast: UserToastProps) => {
     const id = toast_id++;
     const timer = 2_500;
-    $toasts.set([ { id, timer, ...toast }, ...$toasts.get() ].slice(0, MAX_TOASTS));
+    $toasts.set(
+      [{ id, timer, ...toast }, ...$toasts.get()].slice(0, MAX_TOASTS)
+    );
   };
 
   return {

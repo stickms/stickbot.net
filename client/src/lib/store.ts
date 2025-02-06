@@ -13,7 +13,7 @@ const default_user: UserType = {
 
 const default_sync: SyncSettings = {
   hide_chat: false
-}
+};
 
 export const $user = persistentMap<UserType>('user:', default_user, {
   encode: JSON.stringify,
@@ -25,10 +25,14 @@ export const $guilds = persistentAtom<GuildType[]>('guilds:', [], {
   decode: JSON.parse
 });
 
-export const $syncsettings = persistentMap<SyncSettings>('syncsettings:', default_sync, {
-  encode: JSON.stringify,
-  decode: JSON.parse
-})
+export const $syncsettings = persistentMap<SyncSettings>(
+  'syncsettings:',
+  default_sync,
+  {
+    encode: JSON.stringify,
+    decode: JSON.parse
+  }
+);
 
 export const $guildid = atom<string>('');
 

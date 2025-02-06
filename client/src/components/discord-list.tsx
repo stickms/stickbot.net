@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { clearGuildId, setGuildId } from '../lib/store';
 import { useAuth } from '../hooks/use-auth';
 
-function DiscordList({ placeholder }: { placeholder?: string }) {
+function DiscordList({ placeholder }: { placeholder: string }) {
   const { guilds, getGuilds } = useAuth();
 
   useEffect(() => {
@@ -20,11 +20,11 @@ function DiscordList({ placeholder }: { placeholder?: string }) {
     <Select.Root onValueChange={setGuildId}>
       <Select.Trigger
         className='w-56'
-        placeholder={placeholder ?? 'Search by Server'}
+        placeholder={placeholder}
       />
       <Select.Content>
         <Select.Group>
-        <Select.Label>{placeholder ?? 'Search by Server'}</Select.Label>
+          <Select.Label>{placeholder}</Select.Label>
           {guilds.map((guild) => (
             <Select.Item value={guild.id} key={guild.id}>
               <Flex className='gap-2 items-center justify-start'>

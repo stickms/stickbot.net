@@ -1,18 +1,28 @@
-import { ArrowRightIcon, CopyIcon } from "@radix-ui/react-icons";
-import { Flex, IconButton, Link, Select, Separator, Skeleton, Text, TextField, Tooltip } from "@radix-ui/themes";
-import { useRef, useState } from "react";
-import { API_ENDPOINT } from "../env";
-import { fetchGetJson } from "../lib/util";
-import { useToast } from "../hooks/use-toast";
+import { ArrowRightIcon, CopyIcon } from '@radix-ui/react-icons';
+import {
+  Flex,
+  IconButton,
+  Link,
+  Select,
+  Separator,
+  Skeleton,
+  Text,
+  TextField,
+  Tooltip
+} from '@radix-ui/themes';
+import { useRef, useState } from 'react';
+import { API_ENDPOINT } from '../env';
+import { fetchGetJson } from '../lib/util';
+import { useToast } from '../hooks/use-toast';
 
 function UrlShortener() {
   const { toast } = useToast();
 
   const url_input = useRef<HTMLInputElement>(null);
 
-  const [ loading, setLoading ] = useState<boolean>(false);
-  const [ shortenedUrl, setShortenedUrl ] = useState<string>();
-  const [ expires, setExpires ] = useState<string>('7');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [shortenedUrl, setShortenedUrl] = useState<string>();
+  const [expires, setExpires] = useState<string>('7');
 
   const shortenUrl = () => {
     if (!url_input.current) {
@@ -58,7 +68,7 @@ function UrlShortener() {
         toast({
           title: 'Error shortening URL',
           description: 'Please try again later'
-        })
+        });
       })
       .finally(() => setLoading(false));
   };
@@ -77,16 +87,12 @@ function UrlShortener() {
           disabled={loading}
         >
           <TextField.Slot side='right'>
-            <IconButton
-              variant='ghost'
-              onClick={shortenUrl}
-              loading={loading}
-            >
+            <IconButton variant='ghost' onClick={shortenUrl} loading={loading}>
               <ArrowRightIcon />
             </IconButton>
           </TextField.Slot>
         </TextField.Root>
-        
+
         <Select.Root value={expires} onValueChange={setExpires}>
           <Tooltip content='Link Expires After'>
             <Select.Trigger />
@@ -106,11 +112,7 @@ function UrlShortener() {
 
       <Flex className='gap-2 items-center justify-center'>
         <Skeleton loading={!shortenedUrl}>
-          <Link
-            href={shortenedUrl}
-            target='_blank'
-            rel='noopener noreferrer'
-          >
+          <Link href={shortenedUrl} target='_blank' rel='noopener noreferrer'>
             {/* Placeholder until skeleton disappears */}
             {shortenedUrl ?? 'GENERATED LINK HERE'}
           </Link>
@@ -119,7 +121,9 @@ function UrlShortener() {
         <Tooltip content='Copy Link'>
           <IconButton
             variant='outline'
-            onClick={() => shortenedUrl && navigator.clipboard.writeText(shortenedUrl)}
+            onClick={() =>
+              shortenedUrl && navigator.clipboard.writeText(shortenedUrl)
+            }
             disabled={!shortenedUrl}
           >
             <CopyIcon />

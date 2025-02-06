@@ -1,12 +1,29 @@
-import { Button, Callout, Card, Checkbox, Flex, IconButton, Link, Text, TextField, Tooltip } from "@radix-ui/themes";
-import { useEffect, useRef, useState } from "react";
-import { API_ENDPOINT } from "../env";
-import { Cross1Icon, DiscordLogoIcon, EnterIcon, InfoCircledIcon, PlusIcon } from "@radix-ui/react-icons";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../hooks/use-auth";
-import { fetchGetJson } from "../lib/util";
-import { useToast } from "../hooks/use-toast";
-import { SyncRoom } from "../lib/types";
+import {
+  Button,
+  Callout,
+  Card,
+  Checkbox,
+  Flex,
+  IconButton,
+  Link,
+  Text,
+  TextField,
+  Tooltip
+} from '@radix-ui/themes';
+import { useEffect, useRef, useState } from 'react';
+import { API_ENDPOINT } from '../env';
+import {
+  Cross1Icon,
+  DiscordLogoIcon,
+  EnterIcon,
+  InfoCircledIcon,
+  PlusIcon
+} from '@radix-ui/react-icons';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/use-auth';
+import { fetchGetJson } from '../lib/util';
+import { useToast } from '../hooks/use-toast';
+import { SyncRoom } from '../lib/types';
 
 function SignIn() {
   const username_input = useRef<HTMLInputElement>(null);
@@ -26,7 +43,8 @@ function SignIn() {
     if (!value || !/^[a-z0-9-_.]+$/i.test(value)) {
       toast({
         title: 'Error signing in',
-        description: 'Usernames can only contain alphanumeric, -, ., or _ characters'
+        description:
+          'Usernames can only contain alphanumeric, -, ., or _ characters'
       });
 
       return;
@@ -49,7 +67,7 @@ function SignIn() {
           description: 'Please try again'
         });
       });
-  }
+  };
 
   return (
     <Flex className='items-center justify-center min-h-screen'>
@@ -65,10 +83,7 @@ function SignIn() {
             onKeyDown={(e) => e.key === 'Enter' && signIn()}
           >
             <TextField.Slot side='right'>
-              <IconButton
-                variant='ghost'
-                onClick={signIn}
-              >
+              <IconButton variant='ghost' onClick={signIn}>
                 <EnterIcon />
               </IconButton>
             </TextField.Slot>
@@ -87,7 +102,7 @@ function SignIn() {
 
 function RoomList({ userid }: { userid: string }) {
   const { toast } = useToast();
-  const [ rooms, setRooms ] = useState<SyncRoom[]>();
+  const [rooms, setRooms] = useState<SyncRoom[]>();
   const navigate = useNavigate();
 
   const inputbar = useRef<HTMLInputElement>(null);
@@ -124,7 +139,7 @@ function RoomList({ userid }: { userid: string }) {
           title: 'Error joining room',
           description: 'Please try again later'
         });
-      })
+      });
   };
 
   const deleteRoom = (roomid: string) => {
@@ -142,10 +157,10 @@ function RoomList({ userid }: { userid: string }) {
           description: 'Please try again later'
         });
       });
-  }
+  };
 
   const createRoom = () => {
-    if(!inputbar.current) {
+    if (!inputbar.current) {
       return;
     }
 
@@ -179,8 +194,8 @@ function RoomList({ userid }: { userid: string }) {
           title: 'Error creating room',
           description: 'Please try again later'
         });
-      })
-  }
+      });
+  };
 
   return (
     <Flex className='flex-col items-center gap-24 min-h-screen pt-40 pb-16'>
@@ -195,10 +210,7 @@ function RoomList({ userid }: { userid: string }) {
           onKeyDown={(e) => e.key === 'Enter' && createRoom()}
         >
           <TextField.Slot side='right'>
-            <IconButton
-              variant='ghost'
-              onClick={createRoom}
-            >
+            <IconButton variant='ghost' onClick={createRoom}>
               <PlusIcon />
             </IconButton>
           </TextField.Slot>
@@ -222,32 +234,36 @@ function RoomList({ userid }: { userid: string }) {
             </Callout.Text>
           </Callout.Root>
         )}
-        {!!rooms?.length && rooms.map((room) => (
-          <Card key={room.id} className='flex flex-col p-4 items-stretch justify-between gap-4 w-80 max-w-[80vw] min-h-20'>
-            <Flex className='items-start justify-between'>
-              <Text className='text-lg break-all whitespace-pre-line'>
-                {room.name + '\n'}
-                <Text color='gray' className='text-sm'>hosted by {room.host.username}</Text>
-              </Text>
-              {room.host.id === userid && (
-                <Tooltip content='Close Room'>
-                  <IconButton
-                    variant='ghost'
-                    color='red'
-                    onClick={() => deleteRoom(room.id)}
-                  >
-                    <Cross1Icon />
-                  </IconButton>
-                </Tooltip>
-              )}
-            </Flex>
-            <Button
-              onClick={() => joinRoom(room.id)}
+        {!!rooms?.length &&
+          rooms.map((room) => (
+            <Card
+              key={room.id}
+              className='flex flex-col p-4 items-stretch justify-between gap-4 w-80 max-w-[80vw] min-h-20'
             >
-              <EnterIcon /> Join
-            </Button>
-          </Card>
-        ))}
+              <Flex className='items-start justify-between'>
+                <Text className='text-lg break-all whitespace-pre-line'>
+                  {room.name + '\n'}
+                  <Text color='gray' className='text-sm'>
+                    hosted by {room.host.username}
+                  </Text>
+                </Text>
+                {room.host.id === userid && (
+                  <Tooltip content='Close Room'>
+                    <IconButton
+                      variant='ghost'
+                      color='red'
+                      onClick={() => deleteRoom(room.id)}
+                    >
+                      <Cross1Icon />
+                    </IconButton>
+                  </Tooltip>
+                )}
+              </Flex>
+              <Button onClick={() => joinRoom(room.id)}>
+                <EnterIcon /> Join
+              </Button>
+            </Card>
+          ))}
       </Flex>
     </Flex>
   );

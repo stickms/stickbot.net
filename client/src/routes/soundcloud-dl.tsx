@@ -1,10 +1,22 @@
-import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
-import { Flex, IconButton, Link, Text, TextField, Card, Separator, Select, Button, Tooltip, Skeleton } from "@radix-ui/themes";
-import { useEffect, useRef, useState } from "react";
-import { API_ENDPOINT } from "../env";
-import { fetchGetJson } from "../lib/util";
+import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
+import {
+  Flex,
+  IconButton,
+  Link,
+  Text,
+  TextField,
+  Card,
+  Separator,
+  Select,
+  Button,
+  Tooltip,
+  Skeleton
+} from '@radix-ui/themes';
+import { useEffect, useRef, useState } from 'react';
+import { API_ENDPOINT } from '../env';
+import { fetchGetJson } from '../lib/util';
 import { type Payload } from 'youtube-dl-exec';
-import { useToast } from "../hooks/use-toast";
+import { useToast } from '../hooks/use-toast';
 
 // Payload doesn't include like_count (bug)
 type MediaPayload = Payload & { like_count: number };
@@ -12,20 +24,20 @@ type MediaPayload = Payload & { like_count: number };
 function MediaDownloader({ info }: { info?: MediaPayload }) {
   const { toast } = useToast();
 
-  const [ format, setFormat ] = useState<string>();
-  const [ downloading, setDownloading ] = useState<boolean>(false);
+  const [format, setFormat] = useState<string>();
+  const [downloading, setDownloading] = useState<boolean>(false);
 
   useEffect(() => {
     setFormat(undefined);
     setDownloading(false);
-  }, [ info?.original_url ]);
+  }, [info?.original_url]);
 
   if (!info) {
     return null;
   }
 
   const downloadMedia = () => {
-    if(!format) {
+    if (!format) {
       toast({
         title: 'Could not download media',
         description: 'Please select a valid format'
@@ -43,7 +55,7 @@ function MediaDownloader({ info }: { info?: MediaPayload }) {
     const params = new URLSearchParams({
       query: info.original_url,
       ext: extension,
-      format: format.split(':')[1],
+      format: format.split(':')[1]
     });
 
     url.search = params.toString();
@@ -51,55 +63,46 @@ function MediaDownloader({ info }: { info?: MediaPayload }) {
     window.location.href = url.toString();
 
     setTimeout(() => setDownloading(false), 2_500);
-  }
+  };
 
   // All possible file extensions from soundcloud
-  const extensions = [
-    ... new Set(info.formats.map((fmt) => fmt.ext))
-  ];
+  const extensions = [...new Set(info.formats.map((fmt) => fmt.ext))];
 
   return (
     <Flex className='flex-col gap-2'>
-      <Select.Root
-        onValueChange={setFormat}
-      >
-        <Select.Trigger 
+      <Select.Root onValueChange={setFormat}>
+        <Select.Trigger
           placeholder='Select format & quality...'
           className='w-72'
         />
 
         <Select.Content>
-          {
-            extensions.map((ext) => (
-              <Select.Group key={ext}>
-                <Select.Label>{ext.toUpperCase()}</Select.Label>
-                {
-                  info.formats
-                    .filter((fmt) => fmt.ext === ext)
-                    .map((fmt) => (
-                      <Select.Item
-                        key={fmt.format_id}
-                        value={`${ext}:${fmt.format_id}`}
-                      >
-                        {fmt.abr} kbps ({fmt.format_id})
-                      </Select.Item>
-                    ))
-                }
-              </Select.Group>
-            ))
-          }
+          {extensions.map((ext) => (
+            <Select.Group key={ext}>
+              <Select.Label>{ext.toUpperCase()}</Select.Label>
+              {info.formats
+                .filter((fmt) => fmt.ext === ext)
+                .map((fmt) => (
+                  <Select.Item
+                    key={fmt.format_id}
+                    value={`${ext}:${fmt.format_id}`}
+                  >
+                    {fmt.abr} kbps ({fmt.format_id})
+                  </Select.Item>
+                ))}
+            </Select.Group>
+          ))}
         </Select.Content>
-
       </Select.Root>
 
       <Button
-          className='w-40'
-          onClick={downloadMedia}
-          disabled={downloading}
-          loading={downloading}
-        >
-          Download Audio
-        </Button>
+        className='w-40'
+        onClick={downloadMedia}
+        disabled={downloading}
+        loading={downloading}
+      >
+        Download Audio
+      </Button>
     </Flex>
   );
 }
@@ -142,9 +145,10 @@ function MediaPreview({ info }: { info?: MediaPayload }) {
 
   const compactNumber = (num: number) => {
     return Intl.NumberFormat('en-US', {
-      notation: 'compact', maximumFractionDigits: 1
+      notation: 'compact',
+      maximumFractionDigits: 1
     }).format(num);
-  }
+  };
 
   return (
     <Card className='flex p-4 items-stretch justify-center gap-4 max-w-[80vw] flex-wrap'>
@@ -174,7 +178,7 @@ function MediaPreview({ info }: { info?: MediaPayload }) {
               fallback={'A'}
               radius='full'
             /> */}
-            <Link 
+            <Link
               href={info.uploader_url}
               target='_blank'
               rel='noopener noreferrer'
@@ -193,7 +197,7 @@ function MediaPreview({ info }: { info?: MediaPayload }) {
           <Flex className='gap-2 items-center'>
             <Tooltip content={info.view_count.toLocaleString('en-US')}>
               <Text className='text-sm' color='gray'>
-              {compactNumber(info.view_count)} views
+                {compactNumber(info.view_count)} views
               </Text>
             </Tooltip>
             <Separator orientation='vertical' />
@@ -238,14 +242,15 @@ function SoundcloudDl() {
     setMediaInfo(() => undefined);
     setLoading(() => true);
 
-    fetch(`${API_ENDPOINT}/tools/media-info?query=${query}`, 
-      { credentials: 'include' }
-    )
+    fetch(`${API_ENDPOINT}/tools/media-info?query=${query}`, {
+      credentials: 'include'
+    })
       .then(fetchGetJson)
       .then((data) => {
         const payload: MediaPayload = data['data'];
 
-        if (payload.webpage_url_domain !== 'soundcloud.com' ||
+        if (
+          payload.webpage_url_domain !== 'soundcloud.com' ||
           payload._type !== 'video'
         ) {
           throw new Error();
@@ -256,7 +261,8 @@ function SoundcloudDl() {
       .catch(() => {
         toast({
           title: 'Error looking up link',
-          description: 'Make sure link exists and isn\'t private or age/region restricted'
+          description:
+            "Make sure link exists and isn't private or age/region restricted"
         });
       })
       .finally(() => setLoading(() => false));

@@ -1,35 +1,47 @@
-import { GearIcon, PlusIcon } from "@radix-ui/react-icons";
-import { Flex, IconButton, TextField, AspectRatio, DropdownMenu, Dialog, Button, Select } from "@radix-ui/themes";
-import ReactPlayer from "react-player";
-import { useEffect, useRef, useState } from "react";
-import { useToast } from "../hooks/use-toast";
-import MediaQueue from "./media-queue";
-import { arrayMove } from "@dnd-kit/sortable";
-import { useStore } from "@nanostores/react";
-import { $syncsettings, setHideChat } from "../lib/store";
-import { SyncRoomQueue } from "../lib/types";
-import SocketConn from "../lib/socket";
+import { GearIcon, PlusIcon } from '@radix-ui/react-icons';
+import {
+  Flex,
+  IconButton,
+  TextField,
+  AspectRatio,
+  DropdownMenu,
+  Dialog,
+  Button,
+  Select
+} from '@radix-ui/themes';
+import ReactPlayer from 'react-player';
+import { useEffect, useRef, useState } from 'react';
+import { useToast } from '../hooks/use-toast';
+import MediaQueue from './media-queue';
+import { arrayMove } from '@dnd-kit/sortable';
+import { useStore } from '@nanostores/react';
+import { $syncsettings, setHideChat } from '../lib/store';
+import { SyncRoomQueue } from '../lib/types';
+import SocketConn from '../lib/socket';
 
 type MediaPlayerProps = {
   socket: SocketConn;
   playing: boolean;
   curtime: number;
   queue: SyncRoomQueue;
-  editRoomMeta: (meta: object) => void
+  editRoomMeta: (meta: object) => void;
 };
 
 function MediaPlayer({
-  socket, playing, curtime, queue, editRoomMeta
-}: MediaPlayerProps
-) {
+  socket,
+  playing,
+  curtime,
+  queue,
+  editRoomMeta
+}: MediaPlayerProps) {
   const syncsettings = useStore($syncsettings);
   const { toast } = useToast();
 
   const player = useRef<ReactPlayer>(null);
   const media_queue_input = useRef<HTMLInputElement>(null);
 
-  const [ ready, setReady ] = useState<boolean>(false);
-  const [ queueDirty, setQueueDirty ] = useState<boolean>(false);
+  const [ready, setReady] = useState<boolean>(false);
+  const [queueDirty, setQueueDirty] = useState<boolean>(false);
 
   useEffect(() => {
     if (!player.current) {
@@ -41,50 +53,62 @@ function MediaPlayer({
     }
 
     player.current.seekTo(curtime, 'seconds');
-  }, [ player, curtime ]);
+  }, [player, curtime]);
 
   function mediaPlay(curtime?: number) {
     if (!player.current) {
       return;
     }
 
-    const meta = { playing, curtime }
+    const meta = { playing, curtime };
 
     editRoomMeta({
       playing: true,
       curtime: curtime ?? Math.floor(player.current.getCurrentTime())
     });
 
-    socket.send({
-      command: 'play',
-      curtime: curtime ?? Math.floor(player.current.getCurrentTime())
-    }, undefined, () => { editRoomMeta(meta) });
-  };
+    socket.send(
+      {
+        command: 'play',
+        curtime: curtime ?? Math.floor(player.current.getCurrentTime())
+      },
+      undefined,
+      () => {
+        editRoomMeta(meta);
+      }
+    );
+  }
 
   function mediaPause(curtime?: number) {
     if (!player.current) {
       return;
     }
 
-    const meta = { playing, curtime }
+    const meta = { playing, curtime };
 
     editRoomMeta({
       playing: false,
       curtime: curtime ?? Math.floor(player.current.getCurrentTime())
     });
 
-    socket.send({
-      command: 'pause',
-      curtime: curtime ?? Math.floor(player.current.getCurrentTime())
-    }, undefined, () => { editRoomMeta(meta) });
-  };
+    socket.send(
+      {
+        command: 'pause',
+        curtime: curtime ?? Math.floor(player.current.getCurrentTime())
+      },
+      undefined,
+      () => {
+        editRoomMeta(meta);
+      }
+    );
+  }
 
   function onReady(player: ReactPlayer) {
     if (!ready) {
       setReady(true);
       player.seekTo(curtime, 'seconds');
     }
-  };
+  }
 
   function onPlay() {
     if (!player.current || playing) {
@@ -92,7 +116,7 @@ function MediaPlayer({
     }
 
     mediaPlay();
-  };
+  }
 
   function onPause() {
     if (!player.current || !playing) {
@@ -100,7 +124,7 @@ function MediaPlayer({
     }
 
     mediaPause();
-  };
+  }
 
   function onFinished() {
     console.log('finished');
@@ -144,12 +168,15 @@ function MediaPlayer({
 
     setQueueDirty(true);
 
-    socket.send({
-      command: 'queue',
-      add: url
-    }, ...serverRespHandler('Could not add item to queue'));
+    socket.send(
+      {
+        command: 'queue',
+        add: url
+      },
+      ...serverRespHandler('Could not add item to queue')
+    );
 
-    media_queue_input.current!.value = ''
+    media_queue_input.current!.value = '';
   }
 
   function queueRemove(id: string) {
@@ -164,10 +191,13 @@ function MediaPlayer({
       }
     }
 
-    socket.send({
-      command: 'queue',
-      remove: id.toString()
-    }, ...serverRespHandler('Could not remove item from queue'));
+    socket.send(
+      {
+        command: 'queue',
+        remove: id.toString()
+      },
+      ...serverRespHandler('Could not remove item from queue')
+    );
   }
 
   function queueClear() {
@@ -175,10 +205,13 @@ function MediaPlayer({
 
     mediaPause(0);
 
-    socket.send({
-      command: 'queue',
-      clear: true
-    }, ...serverRespHandler('Could not clear queue'));
+    socket.send(
+      {
+        command: 'queue',
+        clear: true
+      },
+      ...serverRespHandler('Could not clear queue')
+    );
   }
 
   function queueOrder(from: number, to: number) {
@@ -193,10 +226,17 @@ function MediaPlayer({
       }
     }
 
-    socket.send({
-      command: 'queue',
-      order: arrayMove(queue.map((_, i) => i), from, to)
-    }, ...serverRespHandler('Could not reorder queue'));
+    socket.send(
+      {
+        command: 'queue',
+        order: arrayMove(
+          queue.map((_, i) => i),
+          from,
+          to
+        )
+      },
+      ...serverRespHandler('Could not reorder queue')
+    );
   }
 
   return (
@@ -207,7 +247,7 @@ function MediaPlayer({
       {/* Player */}
       <AspectRatio ratio={16 / 9}>
         <ReactPlayer
-          style={{backgroundColor: 'var(--gray-2)', outline: 'none'}}
+          style={{ backgroundColor: 'var(--gray-2)', outline: 'none' }}
           width={'100%'}
           height={'100%'}
           ref={player}
@@ -216,15 +256,12 @@ function MediaPlayer({
           muted={true}
           controls={true}
           pip={false}
-
           playbackRate={1.0}
           light={false}
           loop={false}
-
           onReady={onReady}
           onPlay={onPlay}
           onPause={onPause}
-
           onEnded={onFinished}
           onError={(e) => console.log(e)}
         />
@@ -244,11 +281,7 @@ function MediaPlayer({
         >
           {/* Add media button */}
           <TextField.Slot side='right'>
-            <IconButton
-              variant='ghost'
-              onClick={queueAdd}
-              loading={queueDirty}
-            >
+            <IconButton variant='ghost' onClick={queueAdd} loading={queueDirty}>
               <PlusIcon />
             </IconButton>
           </TextField.Slot>
@@ -272,7 +305,7 @@ function SyncSettings({ socket }: { socket: SocketConn }) {
   const syncsettings = useStore($syncsettings);
   const bg_input = useRef<HTMLInputElement>(null);
 
-  const [ bgSize, setBgSize ] = useState<string>('cover');
+  const [bgSize, setBgSize] = useState<string>('cover');
 
   const changeBackground = () => {
     if (!bg_input.current) {
@@ -294,7 +327,7 @@ function SyncSettings({ socket }: { socket: SocketConn }) {
       background: {
         url: value,
         size: bgSize
-      },
+      }
     });
   };
 
@@ -318,9 +351,7 @@ function SyncSettings({ socket }: { socket: SocketConn }) {
 
           {/* Change Background Trigger */}
           <Dialog.Trigger>
-            <DropdownMenu.Item>
-              Change Background
-            </DropdownMenu.Item>
+            <DropdownMenu.Item>Change Background</DropdownMenu.Item>
           </Dialog.Trigger>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
@@ -331,7 +362,7 @@ function SyncSettings({ socket }: { socket: SocketConn }) {
           Please enter a direct image url, or leave input box empty to clear
         </Dialog.Description>
         <Flex className='mt-4 gap-3 flex-col'>
-          <TextField.Root ref={bg_input} className='w-full'/>
+          <TextField.Root ref={bg_input} className='w-full' />
           <Select.Root value={bgSize} onValueChange={setBgSize}>
             <Select.Trigger className='w-32' />
             <Select.Content>
@@ -346,14 +377,10 @@ function SyncSettings({ socket }: { socket: SocketConn }) {
           </Select.Root>
           <Flex className='gap-4 justify-end'>
             <Dialog.Close>
-              <Button color='gray'>
-                Cancel
-              </Button>
+              <Button color='gray'>Cancel</Button>
             </Dialog.Close>
             <Dialog.Trigger>
-              <Button onClick={() => changeBackground()}>
-                Change
-              </Button>
+              <Button onClick={() => changeBackground()}>Change</Button>
             </Dialog.Trigger>
           </Flex>
         </Flex>
