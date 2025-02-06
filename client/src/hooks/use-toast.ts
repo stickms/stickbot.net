@@ -9,7 +9,7 @@ type UserToastProps = {
   title: string;
   description?: string;
   color?: string;
-  timer?: number;
+  duration?: number;
 }
 
 export type ToastProps = UserToastProps & {

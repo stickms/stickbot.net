@@ -7,6 +7,8 @@ import { useLocation } from 'react-router-dom';
 function ToastDisplay({ toast }: { toast: ToastProps }) {
   const [open, setOpen] = useState<boolean>(false);
 
+  const duration = toast.duration ?? 2500;
+
   useEffect(() => {
     setTimeout(() => setOpen(true), 10);
 
@@ -16,7 +18,7 @@ function ToastDisplay({ toast }: { toast: ToastProps }) {
       setTimeout(() => {
         $toasts.set($toasts.get().filter((t) => t.id !== toast.id));
       }, 1000);
-    }, (toast.timer ?? 2500));
+    }, (duration));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -24,9 +26,9 @@ function ToastDisplay({ toast }: { toast: ToastProps }) {
     <Callout.Root
       highContrast
       data-open={open}
-      className='fixed w-96 max-w-[min(30rem,calc(100vw-3rem))] m-6 transition ease-in-out duration-200 bottom-0 right-0 translate-x-[--x] translate-y-[--y] data-[open=false]:translate-x-[150%] backdrop-blur-3xl'
+      className='fixed w-96 overflow-hidden max-w-[min(30rem,calc(100vw-3rem))] m-6 transition ease-in-out duration-200 bottom-0 right-0 translate-x-[--x] translate-y-[--y] data-[open=false]:translate-x-[150%] backdrop-blur-3xl'
     >
-      {/* <Box data-open={open} className='fixed bottom-0 right-0 bg-[--gray-a4] w-full h-2 origin-[left_center] duration-[2500ms] data-[open=true]:scale-x-0' /> */}
+      <Box data-open={open} className={`fixed bottom-0 left-0 bg-[--gray-a4] -col-start-3 w-full h-2 origin-[left_center] duration-[${duration}ms] ease-linear data-[open=true]:scale-x-0`} />
       <Callout.Icon>
         <InfoCircledIcon />
       </Callout.Icon>
