@@ -86,7 +86,7 @@ function QrCode({ data }: { data?: string }) {
         className='data-[open=false]:hidden data-[open=true]:block w-72 h-72 object-fill'
       />
 
-      <Flex className='flex-col justify-between items-stretch gap-4'>
+      <Flex className='flex-col justify-between items-stretch w-72 gap-4'>
         <Flex className='items-center justify-between gap-4'>
           <Text>Size (px)</Text>
           <TextField.Root
@@ -119,7 +119,7 @@ function QrCode({ data }: { data?: string }) {
             onValueChange={setErrorCorrection}
             defaultValue={errorCorrection}
           >
-            <Select.Trigger />
+            <Select.Trigger className='w-24' />
             <Select.Content>
               <Select.Group>
                 <Select.Label>Error Correction</Select.Label>

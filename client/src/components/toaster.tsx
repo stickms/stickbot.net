@@ -1,4 +1,4 @@
-import { Box, Card, Flex, IconButton, Text } from '@radix-ui/themes';
+import { Box, Card, Flex, Grid, IconButton, Text } from '@radix-ui/themes';
 import { Cross1Icon, InfoCircledIcon } from '@radix-ui/react-icons';
 import { clearToasts, removeToast, useToast, type ToastProps } from '../hooks/use-toast';
 import { CSSProperties, useEffect, useRef, useState } from 'react';
@@ -40,22 +40,18 @@ function ToastDisplay({ toast }: { toast: ToastProps }) {
         className='fixed bottom-0 left-0 bg-[--gray-a4] -col-start-3 w-full h-2 origin-[left_center] ease-linear data-[open=true]:scale-x-0'
       />
 
-      <Flex className='flex-col gap-2 mb-1 text-wrap text-[--focus-11]'>
-        {/* Icon & Close button */}
-        <Flex className='justify-between gap-2'>
-          <Flex className='items-center gap-2 '>
-            <InfoCircledIcon />
-            <Text className='text-sm'>{toast.title}</Text>
-          </Flex>
-          <IconButton variant='ghost' onClick={clearToast}>
-            <Cross1Icon />
-          </IconButton>
+      <Grid className='grid-cols-[auto_1fr_auto] grid-rows-1 gap-2 text-[--focus-11]'>
+        <InfoCircledIcon className='col-start-1' />
+        <Flex className='flex-col col-start-2 gap-2 mb-2'>
+          <Text className='text-sm leading-none'>{toast.title}</Text>
+          {toast.description && (
+            <Text className='text-xs'>{toast.description}</Text>
+          )}
         </Flex>
-
-        {toast.description && (
-          <Text className='text-xs'>{toast.description}</Text>
-        )}
-      </Flex>
+        <IconButton className='col-start-3' variant='ghost' onClick={clearToast}>
+          <Cross1Icon />
+        </IconButton>
+      </Grid>
     </Card>
   );
 }

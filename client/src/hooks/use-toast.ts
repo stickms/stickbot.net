@@ -3,7 +3,8 @@ import { atom } from 'nanostores';
 
 // Credits: https://github.com/radix-ui/primitives/issues/2804#issuecomment-216182370
 
-const MAX_TOASTS = 5;
+const MAX_TOASTS = 5;       // Normal screen sizes
+const MAX_TOASTS_MINI = 1;  // Small screen sizes
 
 type UserToastProps = {
   title: string;
@@ -32,7 +33,7 @@ export function useToast() {
     const id = toast_id++;
     const timer = 2_500;
 
-    const max_toasts = window.innerWidth < 768 ? 1 : MAX_TOASTS;
+    const max_toasts = window.innerWidth < 768 ? MAX_TOASTS_MINI : MAX_TOASTS;
     $toasts.set(
       [{ id, timer, ...toast }, ...$toasts.get()].slice(0, max_toasts)
     );
