@@ -1,11 +1,17 @@
 import { Flex, Text, Link } from '@radix-ui/themes';
 import { NavLink } from 'react-router-dom';
+import { TypeAnimation } from 'react-type-animation';
 
 function Root() {
   return (
     <Flex className='items-center justify-center min-h-screen pt-32 pb-16'>
       <Flex className='items-center justify-center flex-col gap-y-4'>
-        <Text className='text-3xl mb-20'>Stickbot.net</Text>
+        <Text className='text-3xl mb-20 font-[Bipolar] h-8'>
+          <TypeAnimation 
+            sequence={[250, 'STICKBOT.NET']}
+            cursor={false}
+          />
+        </Text>
         <Link asChild>
           <NavLink to='/watch-together'>Watch Together</NavLink>
         </Link>
