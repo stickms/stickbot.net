@@ -18,10 +18,7 @@ function DiscordList({ placeholder }: { placeholder: string }) {
 
   return (
     <Select.Root onValueChange={setGuildId}>
-      <Select.Trigger
-        className='w-56'
-        placeholder={placeholder}
-      />
+      <Select.Trigger className='w-56' placeholder={placeholder} />
       <Select.Content>
         <Select.Group>
           <Select.Label>{placeholder}</Select.Label>

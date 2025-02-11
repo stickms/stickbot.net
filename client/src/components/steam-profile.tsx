@@ -184,11 +184,7 @@ function QuickLinks({ summary }: { summary: SteamProfileSummary }) {
   );
 }
 
-function Sourcebans({
-  sourcebans
-}: {
-  sourcebans?: Sourceban[] | null;
-}) {
+function Sourcebans({ sourcebans }: { sourcebans?: Sourceban[] | null }) {
   return (
     <Box className='min-w-36 flex-grow'>
       <Box className='w-full'>
@@ -198,7 +194,9 @@ function Sourcebans({
       </Box>
       <Box className='w-full whitespace-pre-line'>
         {sourcebans === undefined && <Spinner size='3' />}
-        {sourcebans === null && <Text size='2'>❌ Error: Could not fetch sourcebans</Text>}
+        {sourcebans === null && (
+          <Text size='2'>❌ Error: Could not fetch sourcebans</Text>
+        )}
         {sourcebans && !sourcebans.length && (
           <Badge size='2' color='green'>
             None

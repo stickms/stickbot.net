@@ -5,120 +5,104 @@ import {
   Skeleton,
   Text,
   TextField,
-  Box
+  Box,
+  Slider,
+  Tooltip
 } from '@radix-ui/themes';
 import { useEffect, useRef, useState } from 'react';
-import { QRCodeToDataURLOptions, toDataURL } from 'qrcode';
-import { useToast } from '../hooks/use-toast';
+import {
+  QRCodeDataURLType,
+  QRCodeErrorCorrectionLevel,
+  toDataURL
+} from 'qrcode';
 
 function QrCode({ data }: { data?: string }) {
-  const { toast } = useToast();
-
   const imageRef = useRef<HTMLImageElement>(null);
 
-  const [generated, setGenerated] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
+
   const [type, setType] = useState<string>('image/png');
-  const [width, setWidth] = useState<number>(512);
+  const [size, setSize] = useState<number>(512);
   const [margin, setMargin] = useState<number>(1);
-  const [errorCorrection, setErrorCorrection] = useState<string>('M');
-  const [lightColor, setLightColor] = useState<string>('#ffffffff');
-  const [darkColor, setDarkColor] = useState<string>('#000000ff');
+  const [level, setLevel] = useState<string>('M');
+  const [fgColor, setFgColor] = useState<string>('#000000ff');
+  const [bgColor, setBgColor] = useState<string>('#ffffffff');
 
   useEffect(() => {
     if (!imageRef.current || !data) {
-      setGenerated(false);
-      return;
-    }
-
-    if (width > 2048 || width < 32) {
-      toast({
-        title: 'Invalid QR Code Specs',
-        description: 'Width must be >= 32px and <= 2048px'
-      });
-      return;
-    }
-
-    if (margin > 16 || margin < 0) {
-      toast({
-        title: 'Invalid QR Code Specs',
-        description: 'Margin must be >= 0px and <= 16px'
-      });
+      setLoading(true);
       return;
     }
 
     const opts = {
       margin: margin,
-      width: width,
-      type: type,
+      width: size,
+      type: type as QRCodeDataURLType,
       rendererOpts: {
         quality: 1
       },
       color: {
-        light: lightColor,
-        dark: darkColor
+        dark: fgColor,
+        light: bgColor
       },
-      errorCorrectionLevel: errorCorrection
+      errorCorrectionLevel: level as QRCodeErrorCorrectionLevel
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    toDataURL(data, opts as any as QRCodeToDataURLOptions)
+    toDataURL(data, opts)
       .then((value) => {
         imageRef.current!.src = value;
+        setLoading(false);
       })
-      .catch((e) => {
-        console.log(e);
-        toast({
-          title: 'Could not generate QR code',
-          description: 'Please try again later'
-        });
-      })
-      .finally(() => setGenerated(true));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, errorCorrection, margin, type, width, lightColor, darkColor]);
+      .catch(() => setLoading(true));
+  }, [data, type, size, level, margin, bgColor, fgColor]);
 
   return (
     <Card className='flex p-4 items-stretch justify-center gap-4 max-w-[80vw] flex-wrap'>
-      {!generated && <Skeleton className='w-72 h-72' />}
+      <Skeleton className='size-72' loading={loading} />
 
       <img
         ref={imageRef}
-        data-open={generated}
-        className='data-[open=false]:hidden data-[open=true]:block w-72 h-72 object-fill'
+        data-hide={loading}
+        className='size-72 object-fill data-[hide=true]:hidden'
       />
 
       <Flex className='flex-col justify-between items-stretch w-72 gap-4'>
-        <Flex className='items-center justify-between gap-4'>
-          <Text>Size (px)</Text>
-          <TextField.Root
-            className='w-24'
-            value={width}
-            onChange={(e) => {
-              if (e && !isNaN(+e.target.value)) {
-                setWidth(+e.target.value);
-              }
-            }}
-          />
-        </Flex>
+        <Tooltip
+          content={`${size} px`}
+          onPointerDownOutside={(e) => e.preventDefault()}
+        >
+          <Flex className='items-center justify-between gap-4'>
+            <Text>Size</Text>
+            <Slider
+              className='max-w-44'
+              value={[size]}
+              min={128}
+              max={1024}
+              step={32}
+              onValueChange={(e) => setSize(e[0])}
+            />
+          </Flex>
+        </Tooltip>
 
-        <Flex className='items-center justify-between gap-4'>
-          <Text>Margin (px)</Text>
-          <TextField.Root
-            className='w-24'
-            value={margin}
-            onChange={(e) => {
-              if (e && !isNaN(+e.target.value)) {
-                setMargin(+e.target.value);
-              }
-            }}
-          />
-        </Flex>
+        <Tooltip
+          content={`${margin} px`}
+          onPointerDownOutside={(e) => e.preventDefault()}
+        >
+          <Flex className='items-center justify-between gap-4'>
+            <Text>Margin</Text>
+            <Slider
+              className='max-w-44'
+              value={[margin]}
+              min={0}
+              max={8}
+              onValueChange={(e) => setMargin(e[0])}
+            />
+          </Flex>
+        </Tooltip>
 
         <Flex className='items-center justify-between gap-4'>
           <Text>Error Correction</Text>
-          <Select.Root
-            onValueChange={setErrorCorrection}
-            defaultValue={errorCorrection}
-          >
+          <Select.Root onValueChange={setLevel} defaultValue={level}>
             <Select.Trigger className='w-24' />
             <Select.Content>
               <Select.Group>
@@ -135,13 +119,13 @@ function QrCode({ data }: { data?: string }) {
         <Flex className='items-center justify-between gap-4'>
           <Text>Light Color</Text>
           <Box
-            style={{ backgroundColor: lightColor }}
+            style={{ backgroundColor: bgColor }}
             className={`rounded-lg h-8 w-16`}
           >
             <input
               type='color'
               className='opacity-0 cursor-pointer size-full'
-              onChange={(e) => setLightColor(e.target.value)}
+              onChange={(e) => setBgColor(e.target.value)}
             />
           </Box>
         </Flex>
@@ -149,13 +133,13 @@ function QrCode({ data }: { data?: string }) {
         <Flex className='items-center justify-between gap-4'>
           <Text>Dark Color</Text>
           <Box
-            style={{ backgroundColor: darkColor }}
+            style={{ backgroundColor: fgColor }}
             className={`rounded-lg h-8 w-16`}
           >
             <input
               type='color'
               className='opacity-0 cursor-pointer size-full'
-              onChange={(e) => setDarkColor(e.target.value)}
+              onChange={(e) => setFgColor(e.target.value)}
             />
           </Box>
         </Flex>

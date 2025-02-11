@@ -1,6 +1,11 @@
 import { Box, Card, Flex, Grid, IconButton, Text } from '@radix-ui/themes';
 import { Cross1Icon, InfoCircledIcon } from '@radix-ui/react-icons';
-import { clearToasts, removeToast, useToast, type ToastProps } from '../hooks/use-toast';
+import {
+  clearToasts,
+  removeToast,
+  useToast,
+  type ToastProps
+} from '../hooks/use-toast';
 import { CSSProperties, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -27,7 +32,7 @@ function ToastDisplay({ toast }: { toast: ToastProps }) {
     }, duration);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  
+
   return (
     <Card
       data-open={open}
@@ -36,7 +41,7 @@ function ToastDisplay({ toast }: { toast: ToastProps }) {
       {/* Progress bar */}
       <Box
         data-open={open}
-        style={{'transitionDuration': `${duration}ms`}}
+        style={{ 'transitionDuration': `${duration}ms` }}
         className='fixed bottom-0 left-0 bg-[--gray-a4] -col-start-3 w-full h-2 origin-[left_center] ease-linear data-[open=true]:scale-x-0'
       />
 
@@ -48,7 +53,11 @@ function ToastDisplay({ toast }: { toast: ToastProps }) {
             <Text className='text-xs'>{toast.description}</Text>
           )}
         </Flex>
-        <IconButton className='col-start-3' variant='ghost' onClick={clearToast}>
+        <IconButton
+          className='col-start-3'
+          variant='ghost'
+          onClick={clearToast}
+        >
           <Cross1Icon />
         </IconButton>
       </Grid>
