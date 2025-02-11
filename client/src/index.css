@@ -7,6 +7,10 @@
 	src: local('Bi_polarHandwriting-Regular'), url('./fonts/Bi_polarHandwriting-Regular.ttf') format('truetype');
 }
 
+html {
+	scroll-behavior: smooth;
+}
+
 .radix-themes {
 	--cursor-button: pointer;
 	--cursor-checkbox: pointer;

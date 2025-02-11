@@ -6,6 +6,8 @@ import { authGuard } from "../middleware/auth-guard.js";
 import { HTTPException } from "hono/http-exception";
 import { encodeBase64urlNoPadding } from "@oslojs/encoding";
 import { dispositionFilename } from "../lib/util.js";
+import { db, rooms, type Room } from "../db/schema.js";
+import { eq } from "drizzle-orm";
 
 const sync_route = new Hono<Context>();
 
@@ -44,57 +46,46 @@ type RoomMetadata = {
   }[];
 };
 
-type SyncRoom = {
-  name: string;
-  unlisted: boolean;
-  host: {
-    id: string;
-    username: string;
-  };
-  leaders: string[];
-  background: {
-    url?: string;
-    size?: string;
-  };
-  meta: RoomMetadata;
-};
+const defaultMetadata: RoomMetadata = {
+  queue: [],
+  queue_counter: 0,
+  start_time: 0,
+  stop_time: 0,
+  playing: false,
+  messages: []
+}
 
 type SyncRoomList = {
-  [id: string]: SyncRoom;
+  [id: string]: RoomMetadata;
 };
 
 let clients: SyncClient[] = [];
-let rooms: SyncRoomList = {};
+let roomdata: SyncRoomList = {};
 
-function editRoom(roomid: string, data: Partial<SyncRoom>) {
-  const room = rooms[roomid];
-  if (!room) {
-    return;
-  }
+const roomlist = await db.select({id: rooms.id}).from(rooms);
+for (const room of roomlist) {
+  roomdata[room.id] = defaultMetadata;
+}
 
-  rooms[roomid] = {
-    ...room,
-    ...data
-  };
+function getRoomById(roomid: string): Room | undefined {
+  return db.select().from(rooms).where(eq(rooms.id, roomid)).get();
 }
 
 function editRoomMeta(roomid: string, meta: Partial<RoomMetadata>) {
-  const room = rooms[roomid];
+  const room = getRoomById(roomid);
   if (!room) {
     return;
   }
 
-  rooms[roomid] = {
-    ...room,
-    meta: {
-      ...room.meta,
-      ...meta
-    }
+  roomdata[roomid] = {
+    ...roomdata[roomid],
+    ...meta
   };
 }
 
 function relayToRoom(roomid: string, data: {}) {
-  if (!rooms[roomid]) {
+  const room = getRoomById(roomid);
+  if (!room) {
     return;
   }
 
@@ -146,16 +137,16 @@ async function handleQueue(source: SyncClient, message: any) {
     return;
   }
 
-  const room = rooms[source.room];
+  const room = getRoomById(source.room);
   if (!room) {
     return
   }
 
-  editRoomMeta(source.room, {
-    queue_counter: room.meta.queue_counter + 1
+  editRoomMeta(room.id, {
+    queue_counter: roomdata[room.id].queue_counter + 1
   });
 
-  let queue = room.meta.queue;
+  let queue = roomdata[room.id].queue;
 
   if (message.add) {
     let title: string | null = null;
@@ -178,7 +169,7 @@ async function handleQueue(source: SyncClient, message: any) {
     }
 
     queue.push({
-      id: room.meta.queue_counter.toString(),
+      id: roomdata[room.id].queue_counter.toString(),
       url: message.add,
       title: title ?? message.add
     });
@@ -205,7 +196,7 @@ function handleChat(source: SyncClient, message: any) {
     return;
   }
 
-  const room = rooms[source.room];
+  const room = getRoomById(source.room);
   if (!room) {
     return
   }
@@ -219,11 +210,11 @@ function handleChat(source: SyncClient, message: any) {
     date: Date.now()
   }
 
-  editRoomMeta(source.room, {
-    messages: [...room.meta.messages, new_message]
+  editRoomMeta(room.id, {
+    messages: [...roomdata[room.id].messages, new_message]
   });
 
-  relayToRoom(source.room, {
+  relayToRoom(room.id, {
     acknowledged: message.message_id,
     chat: new_message
   });
@@ -234,9 +225,15 @@ function handleBackground(source: SyncClient, message: any) {
     return;
   }
 
-  editRoom(source.room, {
-    background: message.background
-  });
+  db
+    .update(rooms)
+    .set({
+      backgroundUrl: message.background.url ?? null,
+      backgroundSize: message.background.size ?? null
+    })
+    .where(eq(rooms.id, source.room))
+    .returning()
+    .get();
 
   relayToRoom(source.room, {
     acknowledged: message.message_id,
@@ -310,24 +307,27 @@ sync_route.get('/sync/ws', upgradeWebSocket((c) => {
 }));
 
 sync_route.get('/sync/rooms', authGuard, async (c) => {
-  // Only show non-unlisted rooms
-  const mapped = Object.entries(rooms)
-    .filter(([_, room]) => !room.unlisted)
-    .map(([id, room]) => ({
-      id,
-      name: room.name,
-      host: room.host
-    }));
+  const roomlist = await db
+    .select({
+      id: rooms.id,
+      name: rooms.name,
+      host: {
+        id: rooms.hostId,
+        username: rooms.hostUsername
+      }
+    })
+    .from(rooms)
+    .where(eq(rooms.unlisted, false));
 
   return c.json({
     success: true,
-    data: mapped
+    data: roomlist
   });
 });
 
 sync_route.get('/sync/rooms/:roomid', authGuard, async (c) => {
   const roomid = c.req.param('roomid');
-  const room = rooms[roomid];
+  const room = getRoomById(roomid);
 
   if (!room) {
     throw new HTTPException(404, {
@@ -344,11 +344,19 @@ sync_route.get('/sync/rooms/:roomid', authGuard, async (c) => {
   return c.json({
     success: true,
     data: {
-      ...room,
+      id: room.id,
+      host: {
+        id: room.hostId,
+        username: room.hostUsername
+      },
+      background: {
+        url: room.backgroundUrl,
+        size: room.backgroundSize
+      },
       users,
       meta: {
-        ...room.meta,
-        curtime: room.meta.stop_time ?? Math.floor((Date.now() - room.meta.start_time) / 1000)
+        ...roomdata[room.id],
+        curtime: roomdata[room.id].stop_time ?? Math.floor((Date.now() - roomdata[room.id].start_time) / 1000)
       }
     }
   });
@@ -368,28 +376,26 @@ sync_route.post('/sync/rooms/create', authGuard, async (c) => {
   crypto.getRandomValues(bytes);
   const roomid = encodeBase64urlNoPadding(bytes);
 
-  const room: SyncRoom = {
-    host: {
-      id: user.id,
-      username: user.username
-    },
-    leaders: [],
-    name: name,
-    background: {},
-    unlisted: unlisted,
+  const room = db
+    .insert(rooms)
+    .values({
+      id: roomid,
+      name: name,
+      unlisted: unlisted,
+      hostId: user.id,
+      hostUsername: user.username
+    })
+    .returning()
+    .get();
 
-    meta: {
-      queue: [],
-      queue_counter: 0,
-      start_time: 0,
-      stop_time: 0,
-      playing: false,
-      messages: [],
-    }
+  if (!room) {
+    throw new HTTPException(404, {
+      message: 'Could not create room'
+    });
   }
 
-  rooms[roomid] = room;
-
+  roomdata[room.id] = defaultMetadata;
+  
   return c.json({
     success: true,
     data: {
@@ -401,7 +407,7 @@ sync_route.post('/sync/rooms/create', authGuard, async (c) => {
 sync_route.get('/sync/rooms/:roomid/validate', authGuard, async (c) => {
   const roomid = c.req.param('roomid');
 
-  const room = rooms[roomid];
+  const room = getRoomById(roomid);
   if (!room) {
     throw new HTTPException(404, {
       message: 'Room not found'
@@ -417,31 +423,38 @@ sync_route.delete('/sync/rooms/:roomid', authGuard, async (c) => {
   const user = c.get('user')!;
   const roomid = c.req.param('roomid');
 
-  const room = rooms[roomid];
+  const room = getRoomById(roomid);
   if (!room) {
     throw new HTTPException(404, {
       message: 'Room not found'
     });
   }
 
-  if (room.host.id !== user.id) {
+  if (room.hostId !== user.id) {
     throw new HTTPException(401, {
       message: 'Unauthorized'
     });
   }
 
-  delete rooms[roomid];
-
-  const mapped = Object.entries(rooms)
-    .map(([id, room]) => ({
-      id,
-      name: room.name,
-      host: room.host
-    }));
+  await db
+    .delete(rooms)
+    .where(eq(rooms.id, roomid));
+  
+  const roomlist = await db
+    .select({
+      id: rooms.id,
+      name: rooms.name,
+      host: {
+        id: rooms.hostId,
+        username: rooms.hostUsername
+      }
+    })
+    .from(rooms)
+    .where((eq(rooms.unlisted, false)));
 
   return c.json({
     success: true,
-    data: mapped
+    data: roomlist
   });
 });
 

@@ -50,13 +50,15 @@ export const sessions = sqliteTable('sessions', {
 export const rooms = sqliteTable('rooms', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
-  host: text('host').references(() => users.id, {
+  unlisted: integer('unlisted', {
+    mode: 'boolean'
+  }).notNull(),
+  hostId: text('host_id').references(() => users.id, {
     onDelete: 'cascade'
-  }),
+  }).notNull(),
   hostUsername: text('host_username').notNull(),
-  leaders: text('leaders', {
-    mode: 'json'
-  }).notNull().$type<string[]>().default(sql`'[]'`)
+  backgroundUrl: text('background_url'),
+  backgroundSize: text('background_size')
 });
 
 export const links = sqliteTable('links', {
