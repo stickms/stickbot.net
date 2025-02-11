@@ -120,7 +120,7 @@ function QrCode({ data }: { data?: string }) {
           <Text>Light Color</Text>
           <Box
             style={{ backgroundColor: bgColor }}
-            className={`rounded-lg h-8 w-16`}
+            className={`rounded-lg h-8 w-24`}
           >
             <input
               type='color'
@@ -134,7 +134,7 @@ function QrCode({ data }: { data?: string }) {
           <Text>Dark Color</Text>
           <Box
             style={{ backgroundColor: fgColor }}
-            className={`rounded-lg h-8 w-16`}
+            className={`rounded-lg h-8 w-24`}
           >
             <input
               type='color'
@@ -147,7 +147,7 @@ function QrCode({ data }: { data?: string }) {
         <Flex className='items-center justify-between gap-4'>
           <Text>File Type</Text>
           <Select.Root onValueChange={setType} defaultValue={type}>
-            <Select.Trigger />
+            <Select.Trigger className='w-24' />
             <Select.Content>
               <Select.Group>
                 <Select.Label>File Type</Select.Label>

@@ -14,11 +14,13 @@ export function parseSteamID(steamid: string) {
     return steamid;
   }
 
+  // Steam ID 2
   if ((matches = steamid.match(/^STEAM_([0-1]):([0-1]):([0-9]+)$/))) {
     const accountid = parseInt(matches[3], 10) * 2 + parseInt(matches[2], 10);
     return `${(1n << 56n) | (1n << 52n) | (1n << 32n) | BigInt(accountid)}`;
   }
 
+  // Steam ID 3
   if ((matches = steamid.match(/^\[U:1:([0-9]+)]$/))) {
     const accountid = parseInt(matches[1]);
     return `${(1n << 56n) | (1n << 52n) | (1n << 32n) | BigInt(accountid)}`;

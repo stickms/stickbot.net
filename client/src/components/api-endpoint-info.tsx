@@ -34,8 +34,7 @@ function ApiEndpointInfo({ ...props }: EndpointInfoProps) {
           {props.method}
         </Badge>
         <Code size='4' className='text-center text-wrap'>
-          {API_ENDPOINT}
-          {props.name}
+          {API_ENDPOINT + props.name}
         </Code>
       </Flex>
 

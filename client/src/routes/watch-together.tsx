@@ -6,6 +6,7 @@ import {
   Flex,
   IconButton,
   Link,
+  Separator,
   Text,
   TextField,
   Tooltip
@@ -70,31 +71,33 @@ function SignIn() {
   };
 
   return (
-    <Flex className='items-center justify-center min-h-screen'>
-      <Flex className='mt-32 mb-16 flex-col items-center justify-evenly gap-24'>
-        <Text className='text-3xl'>Watch Together</Text>
+    <Flex className='flex-col items-center justify-center min-h-screen gap-24 py-32'>
+      <Text className='text-3xl'>Watch Together</Text>
 
-        <Flex className='flex-col items-center gap-4'>
-          <Text className='text-center'>Sign-in to continue</Text>
-          <TextField.Root
-            ref={username_input}
-            placeholder='Enter username...'
-            maxLength={32}
-            onKeyDown={(e) => e.key === 'Enter' && signIn()}
-          >
-            <TextField.Slot side='right'>
-              <IconButton variant='ghost' onClick={signIn}>
-                <EnterIcon />
-              </IconButton>
-            </TextField.Slot>
-          </TextField.Root>
-          <Text>- or -</Text>
-          <Link href={`${API_ENDPOINT}/login/discord${redirect}`}>
-            <Button>
-              <DiscordLogoIcon /> Login
-            </Button>
-          </Link>
+      <Flex className='flex-col items-center gap-4'>
+        <Text className='text-center'>Sign-in to continue</Text>
+        <TextField.Root
+          ref={username_input}
+          placeholder='Enter username...'
+          maxLength={32}
+          onKeyDown={(e) => e.key === 'Enter' && signIn()}
+        >
+          <TextField.Slot side='right'>
+            <IconButton variant='ghost' onClick={signIn}>
+              <EnterIcon />
+            </IconButton>
+          </TextField.Slot>
+        </TextField.Root>
+        <Flex className='items-center gap-4'>
+          <Separator size='2' />
+          <Text color='gray'>or</Text>
+          <Separator size='2' />
         </Flex>
+        <Link href={`${API_ENDPOINT}/login/discord${redirect}`}>
+          <Button>
+            <DiscordLogoIcon /> Login
+          </Button>
+        </Link>
       </Flex>
     </Flex>
   );
