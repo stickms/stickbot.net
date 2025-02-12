@@ -22,7 +22,7 @@ export const discordRefresh = async (c: HonoContext<Context>, next: Next) => {
   if (!user.discordId || !user.accessTokenExpiration || !user.refreshToken) {
     throw new HTTPException(400, {
       message: 'Please login to discord to use this feature'
-    })
+    });
   }
 
   if (new Date() > user.accessTokenExpiration) {

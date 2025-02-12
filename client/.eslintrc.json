@@ -1,7 +1,0 @@
-{
-  "extends": [
-    "some-other-config-you-use",
-    "plugin:prettier/recommended"
-  ],
-  "ignorePatterns": ["dist", ".eslintrc.cjs", "*.config.*"]
-}

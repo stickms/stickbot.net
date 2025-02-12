@@ -199,36 +199,31 @@ bot_route.post('/bot/addtag', validateToken, validateSteamId, async (c) => {
   });
 });
 
-bot_route.post(
-  '/bot/removetag',
-  validateToken,
-  validateSteamId,
-  async (c) => {
-    const user = c.get('user')!;
-    const steamid = c.req.query('steamid')!;
-    const tag = c.req.query('tag');
+bot_route.post('/bot/removetag', validateToken, validateSteamId, async (c) => {
+  const user = c.get('user')!;
+  const steamid = c.req.query('steamid')!;
+  const tag = c.req.query('tag');
 
-    const valid_tags = ['cheater', 'suspicious', 'popular', 'banwatch'];
+  const valid_tags = ['cheater', 'suspicious', 'popular', 'banwatch'];
 
-    if (!tag || !valid_tags.includes(tag)) {
-      throw new HTTPException(400, { message: 'Please specify a valid tag' });
-    }
-
-    await players.updateOne(
-      { _id: steamid },
-      {
-        $unset: {
-          [`tags.${user.apiGuild!}.${tag}`]: 1
-        }
-      },
-      { upsert: true }
-    );
-
-    return c.json({
-      success: true,
-      message: `Successfully removed tag '${tag}' from Steam ID ${steamid}`
-    });
+  if (!tag || !valid_tags.includes(tag)) {
+    throw new HTTPException(400, { message: 'Please specify a valid tag' });
   }
-);
+
+  await players.updateOne(
+    { _id: steamid },
+    {
+      $unset: {
+        [`tags.${user.apiGuild!}.${tag}`]: 1
+      }
+    },
+    { upsert: true }
+  );
+
+  return c.json({
+    success: true,
+    message: `Successfully removed tag '${tag}' from Steam ID ${steamid}`
+  });
+});
 
 export default bot_route;

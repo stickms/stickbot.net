@@ -1,4 +1,4 @@
-import type { WSContext } from "hono/ws";
+import type { WSContext } from 'hono/ws';
 
 // Server-specific
 
@@ -19,17 +19,17 @@ export type RoomMetadata = {
     url: string;
     title: string;
   }[];
-  queue_counter: number;      // Not shared, internal counter
-  start_time: number;         // MS since UTC epoch
-  stop_time?: number;         // If set, overrides start_time
+  queue_counter: number; // Not shared, internal counter
+  start_time: number; // MS since UTC epoch
+  stop_time?: number; // If set, overrides start_time
   playing: boolean;
   messages: {
     author: {
       id: string;
       username: string;
-    },
-    content: string,
-    date: number              // When was this message sent?
+    };
+    content: string;
+    date: number; // When was this message sent?
   }[];
 };
 
