@@ -1,6 +1,5 @@
 import { createNodeWebSocket } from "@hono/node-ws";
 import { Hono } from "hono";
-import { WSContext } from "hono/ws";
 import type { Context } from "../lib/context.js";
 import { authGuard } from "../middleware/auth-guard.js";
 import { HTTPException } from "hono/http-exception";
@@ -8,43 +7,13 @@ import { encodeBase64urlNoPadding } from "@oslojs/encoding";
 import { dispositionFilename } from "../lib/util.js";
 import { db, rooms, type Room } from "../db/schema.js";
 import { eq } from "drizzle-orm";
+import type { SyncClient, RoomMetadata } from "../lib/types.js";
 
 const sync_route = new Hono<Context>();
 
 export const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({
   app: sync_route as any,
 });
-
-type SyncClient = {
-  // User ID
-  id: string;
-  // Username
-  username: string;
-  // What room are we in?
-  room: string;
-  // WebSocket Context
-  ws: WSContext;
-};
-
-type RoomMetadata = {
-  queue: {
-    id: string;
-    url: string;
-    title: string;
-  }[];
-  queue_counter: number;      // Not shared, internal counter
-  start_time: number;         // MS since UTC epoch
-  stop_time?: number;         // If set, overrides start_time
-  playing: boolean;
-  messages: {
-    author: {
-      id: string;
-      username: string;
-    },
-    content: string,
-    date: number              // When was this message sent?
-  }[];
-};
 
 const defaultMetadata: RoomMetadata = {
   queue: [],
