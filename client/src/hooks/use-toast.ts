@@ -3,8 +3,8 @@ import { atom } from 'nanostores';
 
 // Credits: https://github.com/radix-ui/primitives/issues/2804#issuecomment-216182370
 
-const MAX_TOASTS = 5;       // Normal screen sizes
-const MAX_TOASTS_MINI = 1;  // Small screen sizes
+const MAX_TOASTS = 5; // Normal screen sizes
+const MAX_TOASTS_MINI = 1; // Small screen sizes
 
 type UserToastProps = {
   title: string;

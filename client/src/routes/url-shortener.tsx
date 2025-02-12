@@ -74,7 +74,7 @@ function UrlShortener() {
   };
 
   return (
-    <Flex className='flex-col items-center min-h-screen pt-40 pb-16 gap-24'>
+    <Flex className='flex-col justify-center items-center min-h-screen py-32 gap-16'>
       <Text className='text-3xl text-center'>URL Shortener</Text>
 
       <Flex className='items-center justify-center gap-4 max-w-[80vw]'>
@@ -82,7 +82,7 @@ function UrlShortener() {
           ref={url_input}
           className='w-96 max-w-[80vw]'
           placeholder='Enter url to shorten...'
-          maxLength={256}
+          maxLength={512}
           onKeyDown={(e) => e.key === 'Enter' && shortenUrl()}
           disabled={loading}
         >
@@ -95,7 +95,7 @@ function UrlShortener() {
 
         <Select.Root value={expires} onValueChange={setExpires}>
           <Tooltip content='Link Expires After'>
-            <Select.Trigger />
+            <Select.Trigger className='w-24' />
           </Tooltip>
           <Select.Content>
             <Select.Group>

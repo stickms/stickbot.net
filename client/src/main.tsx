@@ -24,6 +24,7 @@ import SyncRoom from './routes/sync-room.tsx';
 
 import '@radix-ui/themes/styles.css';
 import './index.css';
+import Background from './components/background.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -41,10 +42,11 @@ createRoot(document.getElementById('root')!).render(
       />
       <meta property='og:description' content='' />
     </Helmet>
-    <ThemeProvider attribute='class'>
+    <ThemeProvider attribute='class' enableSystem={false} defaultTheme='dark'>
       <Theme accentColor='iris' grayColor='sand' radius='large'>
         <Router>
           <Header />
+          <Background />
           <Routes>
             <Route index element={<Root />} />
             <Route path='/lookup' element={<ProfileLookup />} />

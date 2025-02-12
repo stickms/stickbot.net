@@ -70,10 +70,15 @@ function DiscordLogin() {
 }
 
 function Header() {
+  const location = useLocation();
   const { theme, setTheme } = useTheme();
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   return (
-    <Flex className='fixed top-0 w-full px-6 h-16 justify-between items-center z-50 backdrop-blur-3xl bg-[--gray-a2]'>
+    <Flex className='fixed top-0 w-full px-6 h-16 justify-between items-center z-50 backdrop-blur-[8px] sm:backdrop-blur-none'>
       {/* Left */}
       <Flex className='items-center'>
         <Link asChild color='gray' highContrast underline='hover'>

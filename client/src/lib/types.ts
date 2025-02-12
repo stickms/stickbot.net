@@ -36,7 +36,6 @@ export type SyncRoom = {
     id: string;
     username: string;
   };
-  leaders: string[];
   users: string[];
   background: {
     url?: string;
