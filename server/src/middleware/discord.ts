@@ -5,7 +5,7 @@ import {
   DISCORD_CLIENT_SECRET,
   DISCORD_REDIRECT_URI
 } from '../env.js';
-import { db, users, type User } from '../db/schema.js';
+import { db, users } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 import type { Context } from '../lib/context.js';
 import { HTTPException } from 'hono/http-exception';
@@ -22,7 +22,7 @@ export const discordRefresh = async (c: HonoContext<Context>, next: Next) => {
   if (!user.discordId || !user.accessTokenExpiration || !user.refreshToken) {
     throw new HTTPException(400, {
       message: 'Please login to discord to use this feature'
-    })
+    });
   }
 
   if (new Date() > user.accessTokenExpiration) {

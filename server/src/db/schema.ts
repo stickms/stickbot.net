@@ -1,7 +1,7 @@
 import sqlite from 'better-sqlite3';
 import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
-import { sql, type InferSelectModel } from 'drizzle-orm';
+import { type InferSelectModel } from 'drizzle-orm';
 import { encodeBase32LowerCaseNoPadding } from '@oslojs/encoding';
 
 export const connection = sqlite('sqlite.db');
@@ -15,7 +15,9 @@ function createId() {
 
 export const users = sqliteTable('users', {
   // Same as Discord ID
-  id: text('id').primaryKey().$defaultFn(() => createId()),
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => createId()),
   // Discord ID
   discordId: text('discord_id').unique(),
   // Discord Profile Stuff
@@ -53,9 +55,11 @@ export const rooms = sqliteTable('rooms', {
   unlisted: integer('unlisted', {
     mode: 'boolean'
   }).notNull(),
-  hostId: text('host_id').references(() => users.id, {
-    onDelete: 'cascade'
-  }).notNull(),
+  hostId: text('host_id')
+    .references(() => users.id, {
+      onDelete: 'cascade'
+    })
+    .notNull(),
   hostUsername: text('host_username').notNull(),
   backgroundUrl: text('background_url'),
   backgroundSize: text('background_size')
@@ -68,8 +72,7 @@ export const links = sqliteTable('links', {
   expiresAt: integer('expires_at', {
     mode: 'timestamp'
   }),
-  userId: text('user_id')
-    .references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id').references(() => users.id, { onDelete: 'cascade' })
 });
 
 export type User = InferSelectModel<typeof users>;

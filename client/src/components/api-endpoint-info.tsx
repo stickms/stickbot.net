@@ -1,6 +1,5 @@
 import { CheckIcon } from '@radix-ui/react-icons';
 import { Badge, Flex, Table, Code } from '@radix-ui/themes';
-import { API_ENDPOINT } from '../env';
 
 type EndpointInfoProps = {
   name: string;
@@ -34,7 +33,7 @@ function ApiEndpointInfo({ ...props }: EndpointInfoProps) {
           {props.method}
         </Badge>
         <Code size='4' className='text-center text-wrap'>
-          {API_ENDPOINT + props.name}
+          {props.name}
         </Code>
       </Flex>
 

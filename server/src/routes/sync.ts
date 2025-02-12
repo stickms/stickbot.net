@@ -1,18 +1,27 @@
-import { createNodeWebSocket } from "@hono/node-ws";
-import { Hono } from "hono";
-import type { Context } from "../lib/context.js";
-import { authGuard } from "../middleware/auth-guard.js";
-import { HTTPException } from "hono/http-exception";
-import { encodeBase64urlNoPadding } from "@oslojs/encoding";
-import { dispositionFilename } from "../lib/util.js";
-import { db, rooms, type Room } from "../db/schema.js";
-import { eq } from "drizzle-orm";
-import type { SyncClient, RoomMetadata } from "../lib/types.js";
+import { createNodeWebSocket } from '@hono/node-ws';
+import { Hono } from 'hono';
+import type { Context } from '../lib/context.js';
+import { authGuard } from '../middleware/auth-guard.js';
+import { HTTPException } from 'hono/http-exception';
+import { encodeBase64urlNoPadding } from '@oslojs/encoding';
+import { dispositionFilename } from '../lib/util.js';
+import { db, rooms, type Room } from '../db/schema.js';
+import { eq } from 'drizzle-orm';
+import type {
+  SyncClient,
+  RoomMetadata,
+  SyncRoomList,
+  PlayPauseCommand,
+  QueueCommand,
+  ChatCommand,
+  BackgroundCommand
+} from '../lib/types.js';
 
 const sync_route = new Hono<Context>();
 
 export const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({
-  app: sync_route as any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  app: sync_route as any
 });
 
 const defaultMetadata: RoomMetadata = {
@@ -22,16 +31,13 @@ const defaultMetadata: RoomMetadata = {
   stop_time: 0,
   playing: false,
   messages: []
-}
-
-type SyncRoomList = {
-  [id: string]: RoomMetadata;
 };
 
 let clients: SyncClient[] = [];
-let roomdata: SyncRoomList = {};
+const roomdata: SyncRoomList = {};
 
-const roomlist = await db.select({id: rooms.id}).from(rooms);
+// Initialize Rooms
+const roomlist = await db.select({ id: rooms.id }).from(rooms);
 for (const room of roomlist) {
   roomdata[room.id] = defaultMetadata;
 }
@@ -52,7 +58,7 @@ function editRoomMeta(roomid: string, meta: Partial<RoomMetadata>) {
   };
 }
 
-function relayToRoom(roomid: string, data: {}) {
+function relayToRoom(roomid: string, data: object) {
   const room = getRoomById(roomid);
   if (!room) {
     return;
@@ -69,27 +75,25 @@ function relayToRoom(roomid: string, data: {}) {
 
 function handleJoin(source: SyncClient) {
   const users = clients
-    .filter((client) => (
-      client.room === source.room
-    ))
+    .filter((client) => client.room === source.room)
     .map((client) => `${client.id}:${client.username}`);
-  
+
   users.push(`${source.id}:${source.username}`);
 
   relayToRoom(source.room, {
     source: source.id,
-    users: [ ...new Set(users) ]
+    users: [...new Set(users)]
   });
 }
 
-function handlePlayPause(source: SyncClient, message: any) {
+function handlePlayPause(source: SyncClient, message: PlayPauseCommand) {
   if (!source.room) {
     return;
   }
 
   editRoomMeta(source.room, {
     playing: message.command === 'play',
-    start_time: Date.now() - (message.curtime * 1000),
+    start_time: Date.now() - message.curtime * 1000,
     stop_time: message.command === 'pause' ? message.curtime : undefined
   });
 
@@ -101,14 +105,14 @@ function handlePlayPause(source: SyncClient, message: any) {
   });
 }
 
-async function handleQueue(source: SyncClient, message: any) {
+async function handleQueue(source: SyncClient, message: QueueCommand) {
   if (!source.room) {
     return;
   }
 
   const room = getRoomById(source.room);
   if (!room) {
-    return
+    return;
   }
 
   editRoomMeta(room.id, {
@@ -134,7 +138,7 @@ async function handleQueue(source: SyncClient, message: any) {
       const headers = resps[1].headers;
       if (headers.get('Content-Type')?.startsWith('video/')) {
         title = dispositionFilename(headers.get('Content-Disposition'));
-      }  
+      }
     }
 
     queue.push({
@@ -160,14 +164,14 @@ async function handleQueue(source: SyncClient, message: any) {
   });
 }
 
-function handleChat(source: SyncClient, message: any) {
+function handleChat(source: SyncClient, message: ChatCommand) {
   if (!source.room) {
     return;
   }
 
   const room = getRoomById(source.room);
   if (!room) {
-    return
+    return;
   }
 
   const new_message = {
@@ -177,7 +181,7 @@ function handleChat(source: SyncClient, message: any) {
     },
     content: message.content,
     date: Date.now()
-  }
+  };
 
   editRoomMeta(room.id, {
     messages: [...roomdata[room.id].messages, new_message]
@@ -189,13 +193,12 @@ function handleChat(source: SyncClient, message: any) {
   });
 }
 
-function handleBackground(source: SyncClient, message: any) {
+function handleBackground(source: SyncClient, message: BackgroundCommand) {
   if (!source.room) {
     return;
   }
 
-  db
-    .update(rooms)
+  db.update(rooms)
     .set({
       backgroundUrl: message.background.url ?? null,
       backgroundSize: message.background.size ?? null
@@ -213,67 +216,70 @@ function handleBackground(source: SyncClient, message: any) {
   });
 }
 
-sync_route.get('/sync/ws', upgradeWebSocket((c) => {
-  return {
-    onOpen(event, ws) {
-      const { id, username, room } = c.req.query();
-      const new_client: SyncClient = {
-        ws,
-        id,
-        username,
-        room
-      };
+sync_route.get(
+  '/sync/ws',
+  upgradeWebSocket((c) => {
+    return {
+      onOpen(event, ws) {
+        const { id, username, room } = c.req.query();
+        const new_client: SyncClient = {
+          ws,
+          id,
+          username,
+          room
+        };
 
-      clients.push(new_client);
-      handleJoin(new_client);
-    },
-    onMessage(event, ws) {
-      const source = clients.find((client) => client.ws === ws);
-      if (!source) {
-        return;
+        clients.push(new_client);
+        handleJoin(new_client);
+      },
+      onMessage(event, ws) {
+        const source = clients.find((client) => client.ws === ws);
+        if (!source) {
+          return;
+        }
+
+        const message = JSON.parse(event.data.toString());
+
+        switch (message.command) {
+          case 'play':
+          case 'pause':
+            handlePlayPause(source, message);
+            break;
+
+          case 'queue':
+            handleQueue(source, message);
+            break;
+
+          case 'chat':
+            handleChat(source, message);
+            break;
+
+          case 'background':
+            handleBackground(source, message);
+            break;
+        }
+      },
+      onClose(event, ws) {
+        const source = clients.find((client) => client.ws === ws);
+
+        if (source?.room) {
+          const users = clients
+            .filter(
+              (client) => client.room === source.room && client.ws !== source.ws
+            )
+            .map((client) => `${client.id}:${client.username}`);
+
+          relayToRoom(source.room, {
+            source: source.id,
+            users: [...new Set(users)]
+          });
+        }
+
+        clients = clients.filter((client) => client.ws !== ws);
       }
-
-      const message = JSON.parse(event.data.toString());
-
-      switch (message.command) {
-        case 'play':
-        case 'pause':
-          handlePlayPause(source, message);
-          break;
-        
-        case 'queue':
-          handleQueue(source, message);
-          break;
-
-        case 'chat':
-          handleChat(source, message);
-          break;
-
-        case 'background':
-          handleBackground(source, message);
-          break;
-      }
-    },
-    onClose(event, ws) {
-      const source = clients.find((client) => client.ws === ws);
-
-      if (source?.room) {
-        const users = clients
-          .filter((client) => (
-            client.room === source.room && client.ws !== source.ws
-          ))
-          .map((client) => `${client.id}:${client.username}`);
-    
-        relayToRoom(source.room, {
-          source: source.id,
-          users: [ ...new Set(users) ] 
-        });
-      }
-
-      clients = clients.filter((client) => client.ws !== ws);
-    }
-  }
-}));
+    };
+  })
+);
 
 sync_route.get('/sync/rooms', authGuard, async (c) => {
   const roomlist = await db
@@ -308,7 +314,7 @@ sync_route.get('/sync/rooms/:roomid', authGuard, async (c) => {
     .filter((client) => !!client.id && client.room === roomid)
     .map((client) => `${client.id}:${client.username}`);
 
-  users = [ ...new Set(users) ];
+  users = [...new Set(users)];
 
   return c.json({
     success: true,
@@ -325,7 +331,9 @@ sync_route.get('/sync/rooms/:roomid', authGuard, async (c) => {
       users,
       meta: {
         ...roomdata[room.id],
-        curtime: roomdata[room.id].stop_time ?? Math.floor((Date.now() - roomdata[room.id].start_time) / 1000)
+        curtime:
+          roomdata[room.id].stop_time ??
+          Math.floor((Date.now() - roomdata[room.id].start_time) / 1000)
       }
     }
   });
@@ -364,7 +372,7 @@ sync_route.post('/sync/rooms/create', authGuard, async (c) => {
   }
 
   roomdata[room.id] = defaultMetadata;
-  
+
   return c.json({
     success: true,
     data: {
@@ -405,10 +413,8 @@ sync_route.delete('/sync/rooms/:roomid', authGuard, async (c) => {
     });
   }
 
-  await db
-    .delete(rooms)
-    .where(eq(rooms.id, roomid));
-  
+  await db.delete(rooms).where(eq(rooms.id, roomid));
+
   const roomlist = await db
     .select({
       id: rooms.id,
@@ -419,7 +425,7 @@ sync_route.delete('/sync/rooms/:roomid', authGuard, async (c) => {
       }
     })
     .from(rooms)
-    .where((eq(rooms.unlisted, false)));
+    .where(eq(rooms.unlisted, false));
 
   return c.json({
     success: true,

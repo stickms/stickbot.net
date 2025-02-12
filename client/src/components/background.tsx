@@ -7,7 +7,7 @@ function Background() {
 
   return (
     <div
-      className='absolute top-0 left-0 size-full bg-no-repeat bg-center bg-cover -z-50'
+      className='fixed top-0 left-0 size-full bg-no-repeat bg-center bg-cover -z-50'
       style={{ backgroundImage: bgImage }}
     />
   );

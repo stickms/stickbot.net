@@ -19,7 +19,7 @@ export const validateSteamId = async (c: Context, next: Next) => {
 
   if (!json['response']?.['players']?.[0]) {
     throw new HTTPException(404, {
-      message: `Steam profile \'${steamid}\' not found`
+      message: `Steam profile '${steamid}' not found`
     });
   }
 

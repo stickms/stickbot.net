@@ -3,7 +3,7 @@ import type { Context } from '../lib/context.js';
 import { adminGuard } from '../middleware/admin-guard.js';
 import { HTTPException } from 'hono/http-exception';
 import { db, users } from '../db/schema.js';
-import { eq, isNotNull, sql } from 'drizzle-orm';
+import { eq, isNotNull } from 'drizzle-orm';
 
 const admin_route = new Hono<Context>();
 

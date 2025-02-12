@@ -72,7 +72,7 @@ export function dispositionFilename(disposition: string | null): string | null {
     return null;
   }
 
-  const utf8FilenameRegex = /filename\*=UTF-8''([\w%\-\.]+)(?:; ?|$)/i;
+  const utf8FilenameRegex = /filename\*=UTF-8''([\w%\-.]+)(?:; ?|$)/i;
   const asciiFilenameRegex = /^filename=(["']?)(.*?[^\\])\1(?:; ?|$)/i;
 
   let fileName: string | null = null;
@@ -84,7 +84,7 @@ export function dispositionFilename(disposition: string | null): string | null {
     const filenameStart = disposition.toLowerCase().indexOf('filename=');
     if (filenameStart >= 0) {
       const partialDisposition = disposition.slice(filenameStart);
-      const matches = asciiFilenameRegex.exec(partialDisposition );
+      const matches = asciiFilenameRegex.exec(partialDisposition);
       if (matches != null && matches[2]) {
         fileName = matches[2];
       }
