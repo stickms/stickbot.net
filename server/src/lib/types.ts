@@ -2,6 +2,34 @@ import type { WSContext } from 'hono/ws';
 
 // Server-specific
 
+export type BaseCommand = {
+  command: string;
+  message_id: string;
+};
+
+export type PlayPauseCommand = BaseCommand & {
+  curtime: number;
+};
+
+export type QueueCommand = BaseCommand & {
+  add?: string;
+  remove?: string;
+  order?: number[];
+  clear?: boolean;
+};
+
+export type ChatCommand = BaseCommand & {
+  content: string;
+};
+
+export type BackgroundCommand = BaseCommand & {
+  message_id: string;
+  background: {
+    url: string;
+    size: string;
+  };
+};
+
 export type SyncClient = {
   // User ID
   id: string;
@@ -31,6 +59,10 @@ export type RoomMetadata = {
     content: string;
     date: number; // When was this message sent?
   }[];
+};
+
+export type SyncRoomList = {
+  [id: string]: RoomMetadata;
 };
 
 // Steam API

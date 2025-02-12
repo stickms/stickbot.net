@@ -72,7 +72,7 @@ export function dispositionFilename(disposition: string | null): string | null {
     return null;
   }
 
-  const utf8FilenameRegex = /filename\*=UTF-8''([\w%\-\.]+)(?:; ?|$)/i;
+  const utf8FilenameRegex = /filename\*=UTF-8''([\w%\-.]+)(?:; ?|$)/i;
   const asciiFilenameRegex = /^filename=(["']?)(.*?[^\\])\1(?:; ?|$)/i;
 
   let fileName: string | null = null;

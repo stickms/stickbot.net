@@ -7,11 +7,20 @@ import { encodeBase64urlNoPadding } from '@oslojs/encoding';
 import { dispositionFilename } from '../lib/util.js';
 import { db, rooms, type Room } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
-import type { SyncClient, RoomMetadata } from '../lib/types.js';
+import type {
+  SyncClient,
+  RoomMetadata,
+  SyncRoomList,
+  PlayPauseCommand,
+  QueueCommand,
+  ChatCommand,
+  BackgroundCommand
+} from '../lib/types.js';
 
 const sync_route = new Hono<Context>();
 
 export const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   app: sync_route as any
 });
 
@@ -24,13 +33,10 @@ const defaultMetadata: RoomMetadata = {
   messages: []
 };
 
-type SyncRoomList = {
-  [id: string]: RoomMetadata;
-};
-
 let clients: SyncClient[] = [];
 const roomdata: SyncRoomList = {};
 
+// Initialize Rooms
 const roomlist = await db.select({ id: rooms.id }).from(rooms);
 for (const room of roomlist) {
   roomdata[room.id] = defaultMetadata;
@@ -52,7 +58,7 @@ function editRoomMeta(roomid: string, meta: Partial<RoomMetadata>) {
   };
 }
 
-function relayToRoom(roomid: string, data: {}) {
+function relayToRoom(roomid: string, data: object) {
   const room = getRoomById(roomid);
   if (!room) {
     return;
@@ -80,7 +86,7 @@ function handleJoin(source: SyncClient) {
   });
 }
 
-function handlePlayPause(source: SyncClient, message: any) {
+function handlePlayPause(source: SyncClient, message: PlayPauseCommand) {
   if (!source.room) {
     return;
   }
@@ -99,7 +105,7 @@ function handlePlayPause(source: SyncClient, message: any) {
   });
 }
 
-async function handleQueue(source: SyncClient, message: any) {
+async function handleQueue(source: SyncClient, message: QueueCommand) {
   if (!source.room) {
     return;
   }
@@ -158,7 +164,7 @@ async function handleQueue(source: SyncClient, message: any) {
   });
 }
 
-function handleChat(source: SyncClient, message: any) {
+function handleChat(source: SyncClient, message: ChatCommand) {
   if (!source.room) {
     return;
   }
@@ -187,7 +193,7 @@ function handleChat(source: SyncClient, message: any) {
   });
 }
 
-function handleBackground(source: SyncClient, message: any) {
+function handleBackground(source: SyncClient, message: BackgroundCommand) {
   if (!source.room) {
     return;
   }

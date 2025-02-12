@@ -82,6 +82,7 @@ tools_route.get('/tools/soundcloud-dl', async (c) => {
   c.header('Content-Type', 'application/octet-stream; charset=utf-8');
   c.header('Content-Disposition', `attachment; filename="audio.${ext}"`);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return c.body(exec_process.stdout! as any as ReadableStream);
 });
 
@@ -135,6 +136,7 @@ tools_route.get('/tools/youtube-dl', async (c) => {
   c.header('Content-Type', 'application/octet-stream; charset=utf-8');
   c.header('Content-Disposition', `attachment; filename="video.mp4"`);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return c.body(exec_process.stdout! as any as ReadableStream);
 });
 

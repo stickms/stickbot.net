@@ -5,7 +5,7 @@ import {
   DISCORD_CLIENT_SECRET,
   DISCORD_REDIRECT_URI
 } from '../env.js';
-import { db, users, type User } from '../db/schema.js';
+import { db, users } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 import type { Context } from '../lib/context.js';
 import { HTTPException } from 'hono/http-exception';
