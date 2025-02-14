@@ -118,6 +118,7 @@ tools_route.get('/tools/youtube-dl', async (c) => {
       userAgent:
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:134.0) Gecko/20100101 Firefox/134.0',
       referer: query,
+      cookies: '../../cookies.txt',
       addHeader: ['Origin: https://stickbot.net/']
     },
     {

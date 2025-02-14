@@ -235,7 +235,7 @@ function RoomList({ userid }: { userid: string }) {
       </Flex>
 
       <Flex className='items-stretch justify-center flex-wrap gap-4 max-w-[80vw]'>
-        {!rooms?.length && (
+        {rooms && !rooms.length && (
           <Callout.Root>
             <Callout.Icon>
               <InfoCircledIcon />
