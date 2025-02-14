@@ -24,6 +24,7 @@ import {
   PlusIcon
 } from '@radix-ui/react-icons';
 import { fetchGetJson, getDiscordAvatar } from '../lib/util';
+import { TypeAnimation } from 'react-type-animation';
 
 type UserListType = {
   id: string;
@@ -199,8 +200,10 @@ function AdminPortal() {
 
   return (
     <Flex className='items-center justify-center flex-col gap-16 pt-40 pb-16'>
-      <Flex className='flex-wrap items-center justify-center gap-y-6 text-center'>
-        <Text className='text-3xl w-full'>Admin Portal</Text>
+      <Flex className='flex-col items-center justify-center gap-6 text-center'>
+        <Text className='text-3xl text-center font-[Bipolar] h-8'>
+          <TypeAnimation sequence={[100, 'ADMIN PORTAL']} cursor={false} />
+        </Text>
         <Text className='text-lg'>
           Welcome, <Code>{user.username}</Code>
         </Text>

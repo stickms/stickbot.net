@@ -25,6 +25,7 @@ import { useAuth } from '../hooks/use-auth';
 import { fetchGetJson } from '../lib/util';
 import { useToast } from '../hooks/use-toast';
 import { SyncRoom } from '../lib/types';
+import { TypeAnimation } from 'react-type-animation';
 
 function SignIn() {
   const username_input = useRef<HTMLInputElement>(null);
@@ -72,7 +73,9 @@ function SignIn() {
 
   return (
     <Flex className='flex-col items-center justify-center min-h-screen gap-24 py-32'>
-      <Text className='text-3xl'>Watch Together</Text>
+      <Text className='text-3xl text-center font-[Bipolar] h-8'>
+        <TypeAnimation sequence={[100, 'WATCH TOGETHER']} cursor={false} />
+      </Text>
 
       <Flex className='flex-col items-center gap-4'>
         <Text className='text-center'>Sign-in to continue</Text>
@@ -202,7 +205,12 @@ function RoomList({ userid }: { userid: string }) {
 
   return (
     <Flex className='flex-col items-center gap-24 min-h-screen pt-40 pb-16'>
-      <Text className='text-3xl'>Watch Together Rooms</Text>
+      <Text className='text-3xl text-center font-[Bipolar] h-8'>
+        <TypeAnimation
+          sequence={[100, 'WATCH TOGETHER ROOMS']}
+          cursor={false}
+        />
+      </Text>
 
       <Flex className='items-center justify-center flex-col gap-4'>
         <TextField.Root

@@ -2,13 +2,16 @@ import { Code, Flex, Text } from '@radix-ui/themes';
 import ApiEndpointInfo from '../components/api-endpoint-info';
 import TokenHandler from '../components/token-handler';
 import { API_ENDPOINT } from '../env';
+import { TypeAnimation } from 'react-type-animation';
 
 function ApiReference() {
   return (
     <Flex className='items-center justify-center flex-col gap-y-20 pt-40 pb-16'>
-      <Flex className='flex-wrap items-center justify-center gap-y-6 text-center'>
-        <Text className='text-3xl w-full text-center'>API Reference</Text>
-        <Code size='3'>{API_ENDPOINT}/</Code>
+      <Flex className='flex-col items-center justify-center gap-6 text-center'>
+        <Text className='text-3xl text-center font-[Bipolar] h-8'>
+          <TypeAnimation sequence={[100, 'API REFERENCE']} cursor={false} />
+        </Text>
+        <Code size='4'>{API_ENDPOINT}/</Code>
       </Flex>
 
       <TokenHandler />

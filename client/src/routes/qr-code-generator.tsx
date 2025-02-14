@@ -15,6 +15,7 @@ import {
   QRCodeErrorCorrectionLevel,
   toDataURL
 } from 'qrcode';
+import { TypeAnimation } from 'react-type-animation';
 
 function QrCode({ data }: { data?: string }) {
   const imageRef = useRef<HTMLImageElement>(null);
@@ -168,7 +169,9 @@ function QrCodeGenerator() {
 
   return (
     <Flex className='flex-col items-center pt-40 pb-16 gap-16'>
-      <Text className='text-3xl text-center'>QR Code Generator</Text>
+      <Text className='text-3xl text-center font-[Bipolar] h-8'>
+        <TypeAnimation sequence={[100, 'QR CODE GENERATOR']} cursor={false} />
+      </Text>
 
       <Flex className='items-center justify-center gap-4'>
         <TextField.Root

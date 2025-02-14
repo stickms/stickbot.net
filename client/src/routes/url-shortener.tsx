@@ -14,6 +14,7 @@ import { useRef, useState } from 'react';
 import { API_ENDPOINT } from '../env';
 import { fetchGetJson } from '../lib/util';
 import { useToast } from '../hooks/use-toast';
+import { TypeAnimation } from 'react-type-animation';
 
 function UrlShortener() {
   const { toast } = useToast();
@@ -75,7 +76,9 @@ function UrlShortener() {
 
   return (
     <Flex className='flex-col justify-center items-center min-h-screen py-32 gap-16'>
-      <Text className='text-3xl text-center'>URL Shortener</Text>
+      <Text className='text-3xl text-center font-[Bipolar] h-8'>
+        <TypeAnimation sequence={[100, 'URL SHORTENER']} cursor={false} />
+      </Text>
 
       <Flex className='items-center justify-center gap-4 max-w-[80vw]'>
         <TextField.Root
