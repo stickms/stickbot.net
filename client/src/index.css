@@ -12,6 +12,14 @@ html {
 }
 
 .radix-themes {
+	--default-font-family: 'Poppins', serif;
+	--code-font-family: 'Atkinson Hyperlegible Mono', serif;
+
+	--font-weight-light: 300;
+	--font-weight-regular: 400;
+	--font-weight-medium: 500;
+	--font-weight-bold: 700;
+
 	--cursor-button: pointer;
 	--cursor-checkbox: pointer;
 	--cursor-disabled: default;

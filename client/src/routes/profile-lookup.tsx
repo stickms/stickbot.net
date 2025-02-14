@@ -4,6 +4,7 @@ import SteamProfile from '../components/steam-profile';
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import DiscordList from '../components/discord-list';
 import { useToast } from '../hooks/use-toast';
+import { TypeAnimation } from 'react-type-animation';
 
 function ProfileLookup() {
   const { toast } = useToast();
@@ -33,7 +34,12 @@ function ProfileLookup() {
 
   return (
     <Flex className='flex-col items-center gap-y-20 min-h-screen pt-40 pb-16'>
-      <Text className='text-3xl text-center'>Steam Profile Lookup</Text>
+      <Text className='text-3xl text-center font-[Bipolar] h-8'>
+        <TypeAnimation
+          sequence={[100, 'STEAM PROFILE LOOKUP']}
+          cursor={false}
+        />
+      </Text>
       <Flex className='flex-wrap gap-4 items-center justify-center max-w-[80vw]'>
         <TextField.Root
           ref={input}

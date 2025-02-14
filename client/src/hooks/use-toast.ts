@@ -31,12 +31,8 @@ export function useToast() {
 
   const toast = (toast: UserToastProps) => {
     const id = toast_id++;
-    const timer = 2_500;
-
-    const max_toasts = window.innerWidth < 768 ? MAX_TOASTS_MINI : MAX_TOASTS;
-    $toasts.set(
-      [{ id, timer, ...toast }, ...$toasts.get()].slice(0, max_toasts)
-    );
+    const max_toasts = window.innerWidth < 1024 ? MAX_TOASTS_MINI : MAX_TOASTS;
+    $toasts.set([{ id, ...toast }, ...$toasts.get()].slice(0, max_toasts));
   };
 
   return {

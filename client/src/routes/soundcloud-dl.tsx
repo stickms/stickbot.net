@@ -17,6 +17,7 @@ import { API_ENDPOINT } from '../env';
 import { fetchGetJson } from '../lib/util';
 import { type Payload } from 'youtube-dl-exec';
 import { useToast } from '../hooks/use-toast';
+import { TypeAnimation } from 'react-type-animation';
 
 // Payload doesn't include like_count (bug)
 type MediaPayload = Payload & { like_count: number };
@@ -270,8 +271,12 @@ function SoundcloudDl() {
 
   return (
     <Flex className='items-center min-h-screen flex-col gap-y-24 pt-40 pb-16'>
-      <Text className='text-3xl text-center'>Soundcloud Downloader</Text>
-
+      <Text className='text-3xl text-center font-[Bipolar] h-8'>
+        <TypeAnimation
+          sequence={[100, 'SOUNDCLOUD DOWNLOADER']}
+          cursor={false}
+        />
+      </Text>
       <Flex className='items-center justify-center gap-4'>
         <TextField.Root
           ref={url_input}

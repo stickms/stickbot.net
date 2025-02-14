@@ -7,7 +7,7 @@ function Root() {
     <Flex className='items-center justify-center min-h-screen pt-32 pb-16'>
       <Flex className='items-center justify-center flex-col gap-y-4'>
         <Text className='text-3xl mb-20 font-[Bipolar] h-8'>
-          <TypeAnimation sequence={[250, 'STICKBOT.NET']} cursor={false} />
+          <TypeAnimation sequence={[100, 'STICKBOT.NET']} cursor={false} />
         </Text>
         <Link asChild>
           <NavLink to='/watch-together'>Watch Together</NavLink>
