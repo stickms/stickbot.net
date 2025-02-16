@@ -14,6 +14,7 @@ html {
 .radix-themes {
 	--default-font-family: 'Poppins', serif;
 	--code-font-family: 'Atkinson Hyperlegible Mono', serif;
+	--em-font-family: 'Poppins', serif;
 
 	--font-weight-light: 300;
 	--font-weight-regular: 400;

@@ -11,7 +11,7 @@ function OpenUrl() {
   });
 
   return (
-    <Flex className='items-center justify-center h-screen'>
+    <Flex className='items-center justify-center h-screen py-32'>
       <Text className='text-3xl'>Redirecting...</Text>
     </Flex>
   );

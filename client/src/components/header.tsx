@@ -6,22 +6,16 @@ import {
   IconButton,
   Link
 } from '@radix-ui/themes';
-import {
-  DiscordLogoIcon,
-  GitHubLogoIcon,
-  MoonIcon,
-  SunIcon
-} from '@radix-ui/react-icons';
-import { API_ENDPOINT } from '../env';
+import { GitHubLogoIcon, MoonIcon, SunIcon } from '@radix-ui/react-icons';
 import { useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/use-auth';
 import { getDiscordAvatar } from '../lib/util';
 import { useTheme } from 'next-themes';
+import LoginButton from './login-button';
 
 function DiscordLogin() {
   const { user, getUser, validateAdmin, logout } = useAuth();
-  const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -31,14 +25,7 @@ function DiscordLogin() {
   }, []);
 
   if (!user.id) {
-    const redirect = `?redirect=${encodeURIComponent(location.pathname)}`;
-    return (
-      <Link href={`${API_ENDPOINT}/login/discord${redirect}`}>
-        <Button>
-          <DiscordLogoIcon /> Login
-        </Button>
-      </Link>
-    );
+    return <LoginButton />;
   }
 
   return (

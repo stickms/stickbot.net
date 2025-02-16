@@ -18,19 +18,26 @@ export const users = sqliteTable('users', {
   id: text('id')
     .primaryKey()
     .$defaultFn(() => createId()),
-  // Discord ID
-  discordId: text('discord_id').unique(),
-  // Discord Profile Stuff
   username: text('username').notNull(),
+
+  // Discord-related
+  discordId: text('discord_id').unique(),
   avatar: text('avatar'),
+
   // When was this user made an Admin?
   // Null if user is not an admin
   promotedOn: integer('promoted_on', {
     mode: 'timestamp'
   }),
+
   // Website API
   apiToken: text('api_token'),
   apiGuild: text('api_guild'),
+
+  // Username/password logins
+  email: text('email'),
+  passwordHash: text('password_hash'),
+
   // Discord OAuth2
   refreshToken: text('refresh_token'),
   accessToken: text('access_token'),

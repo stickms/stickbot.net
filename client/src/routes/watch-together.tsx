@@ -5,8 +5,6 @@ import {
   Checkbox,
   Flex,
   IconButton,
-  Link,
-  Separator,
   Text,
   TextField,
   Tooltip
@@ -15,62 +13,19 @@ import { useEffect, useRef, useState } from 'react';
 import { API_ENDPOINT } from '../env';
 import {
   Cross1Icon,
-  DiscordLogoIcon,
   EnterIcon,
   InfoCircledIcon,
   PlusIcon
 } from '@radix-ui/react-icons';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/use-auth';
 import { fetchGetJson } from '../lib/util';
 import { useToast } from '../hooks/use-toast';
 import { SyncRoom } from '../lib/types';
 import { TypeAnimation } from 'react-type-animation';
+import LoginButton from '../components/login-button';
 
 function SignIn() {
-  const username_input = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
-  const { getUser } = useAuth();
-
-  const location = useLocation();
-  const redirect = `?redirect=${encodeURIComponent(location.pathname)}`;
-
-  const signIn = () => {
-    if (!username_input.current) {
-      return;
-    }
-
-    const value = username_input.current.value.trim();
-
-    if (!value || !/^[a-z0-9-_.]+$/i.test(value)) {
-      toast({
-        title: 'Error signing in',
-        description:
-          'Usernames can only contain alphanumeric, -, ., or _ characters'
-      });
-
-      return;
-    }
-
-    fetch(`${API_ENDPOINT}/login/username`, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({
-        username: value
-      })
-    })
-      .then(fetchGetJson)
-      .then(() => {
-        getUser();
-      })
-      .catch(() => {
-        toast({
-          title: 'Error signing in',
-          description: 'Please try again'
-        });
-      });
-  };
-
   return (
     <Flex className='flex-col items-center justify-center min-h-screen gap-24 py-32'>
       <Text className='text-3xl text-center font-[Bipolar] h-8'>
@@ -79,28 +34,7 @@ function SignIn() {
 
       <Flex className='flex-col items-center gap-4'>
         <Text className='text-center'>Sign-in to continue</Text>
-        <TextField.Root
-          ref={username_input}
-          placeholder='Enter username...'
-          maxLength={32}
-          onKeyDown={(e) => e.key === 'Enter' && signIn()}
-        >
-          <TextField.Slot side='right'>
-            <IconButton variant='ghost' onClick={signIn}>
-              <EnterIcon />
-            </IconButton>
-          </TextField.Slot>
-        </TextField.Root>
-        <Flex className='items-center gap-4'>
-          <Separator size='2' />
-          <Text color='gray'>or</Text>
-          <Separator size='2' />
-        </Flex>
-        <Link href={`${API_ENDPOINT}/login/discord${redirect}`}>
-          <Button>
-            <DiscordLogoIcon /> Login
-          </Button>
-        </Link>
+        <LoginButton />
       </Flex>
     </Flex>
   );
@@ -235,7 +169,7 @@ function RoomList({ userid }: { userid: string }) {
       </Flex>
 
       <Flex className='items-stretch justify-center flex-wrap gap-4 max-w-[80vw]'>
-        {!rooms?.length && (
+        {rooms && !rooms.length && (
           <Callout.Root>
             <Callout.Icon>
               <InfoCircledIcon />

@@ -23,7 +23,7 @@ function UrlShortener() {
 
   const [loading, setLoading] = useState<boolean>(false);
   const [shortenedUrl, setShortenedUrl] = useState<string>();
-  const [expires, setExpires] = useState<string>('7');
+  const [expires, setExpires] = useState<string>('never');
 
   const shortenUrl = () => {
     if (!url_input.current) {

@@ -171,7 +171,7 @@ tools_route.post('/tools/shorten-url', async (c) => {
   crypto.getRandomValues(bytes);
 
   let expiration: Date | null = null;
-  if (expires !== 'none') {
+  if (expires !== 'never') {
     expiration = new Date();
     expiration.setDate(expiration.getDate() + +expires);
   }
