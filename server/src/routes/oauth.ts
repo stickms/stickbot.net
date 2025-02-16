@@ -3,7 +3,7 @@ import { generateState } from 'arctic';
 import { CLIENT_URL } from '../env.js';
 import { getCookie, setCookie } from 'hono/cookie';
 import { db, users } from '../db/schema.js';
-import { eq } from 'drizzle-orm';
+import { eq, and, isNotNull } from 'drizzle-orm';
 import {
   createSession,
   deleteSessionTokenCookie,
@@ -17,6 +17,7 @@ import type { Context } from '../lib/context.js';
 import { discord, discordRefresh } from '../middleware/discord.js';
 import { HTTPException } from 'hono/http-exception';
 import { callDiscordApi } from '../lib/util.js';
+import { hashPassword, verifyPassword } from '../lib/password.js';
 
 const oauth_route = new Hono<Context>();
 
@@ -25,6 +26,83 @@ oauth_route.post('/validate-session', authGuard, async (c) => {
   return c.json({
     success: true,
     message: 'Validated session'
+  });
+});
+
+oauth_route.post('/login', async (c) => {
+  const { email, password } = await c.req.json();
+
+  const user = db
+    .select()
+    .from(users)
+    .where(and(eq(users.email, email), isNotNull(users.passwordHash)))
+    .get();
+
+  if (!user) {
+    throw new HTTPException(404, {
+      message: 'User not found'
+    });
+  }
+
+  const verified = await verifyPassword(password, user.passwordHash!);
+
+  if (!verified) {
+    throw new HTTPException(401, {
+      message: 'Unauthorized'
+    });
+  }
+
+  // Set session-related cookies
+  const sessionToken = generateSessionToken();
+  const session = await createSession(sessionToken, user.id);
+  setSessionTokenCookie(c, sessionToken, session.expiresAt);
+
+  return c.json({
+    success: true,
+    message: 'Successfully logged in'
+  });
+});
+
+oauth_route.post('/register', async (c) => {
+  const { username, email, password } = await c.req.json();
+
+  if (email) {
+    const existing_user = db
+      .select()
+      .from(users)
+      .where(and(eq(users.email, email), isNotNull(users.passwordHash)))
+      .get();
+
+    if (existing_user) {
+      throw new HTTPException(409, {
+        message: 'An account already exists with that email'
+      });
+    }
+  }
+
+  const password_hash = password ? await hashPassword(password) : null;
+
+  const user = db
+    .insert(users)
+    .values({
+      username: username,
+      email: email ? email : null,
+      passwordHash: password_hash
+    })
+    .returning()
+    .get();
+
+  if (!user) {
+    throw new HTTPException(400, { message: 'Could not create/update user' });
+  }
+
+  // Set session-related cookies
+  const sessionToken = generateSessionToken();
+  const session = await createSession(sessionToken, user.id);
+  setSessionTokenCookie(c, sessionToken, session.expiresAt);
+
+  return c.json({
+    success: true
   });
 });
 

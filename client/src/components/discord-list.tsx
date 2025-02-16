@@ -30,7 +30,9 @@ function DiscordList({ placeholder }: { placeholder: string }) {
                   fallback={guild.name[0]}
                   size='1'
                 />
-                <Text>{guild.name}</Text>
+                <Text className='max-w-72' truncate>
+                  {guild.name}
+                </Text>
               </Flex>
             </Select.Item>
           ))}

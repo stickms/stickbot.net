@@ -118,7 +118,6 @@ tools_route.get('/tools/youtube-dl', async (c) => {
       userAgent:
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:134.0) Gecko/20100101 Firefox/134.0',
       referer: query,
-      cookies: '../../cookies.txt',
       addHeader: ['Origin: https://stickbot.net/']
     },
     {
@@ -172,7 +171,7 @@ tools_route.post('/tools/shorten-url', async (c) => {
   crypto.getRandomValues(bytes);
 
   let expiration: Date | null = null;
-  if (expires !== 'none') {
+  if (expires !== 'never') {
     expiration = new Date();
     expiration.setDate(expiration.getDate() + +expires);
   }
