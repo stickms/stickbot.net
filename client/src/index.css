@@ -51,3 +51,11 @@ html {
 	}
 }
 
+.rt-DropdownMenuItem {
+	/* Remove outline on Firefox */
+	@supports (-moz-appearance: none) {
+		&:focus {
+			outline: none;
+		}
+	}
+}
