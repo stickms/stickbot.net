@@ -4,6 +4,7 @@ import {
   Em,
   Flex,
   Link,
+  Popover,
   Separator,
   Tabs,
   Text,
@@ -14,17 +15,21 @@ import { API_ENDPOINT } from '../env';
 import { DiscordLogoIcon } from '@radix-ui/react-icons';
 import { useRef, useState } from 'react';
 import { useAuth } from '../hooks/use-auth';
-import { useToast } from '../hooks/use-toast';
 import { fetchGetJson } from '../lib/util';
 
 function LoginTab({ setOpen }: { setOpen: (open: boolean) => void }) {
-  const { toast } = useToast();
   const { getUser } = useAuth();
 
   const email_ref = useRef<HTMLInputElement>(null);
   const password_ref = useRef<HTMLInputElement>(null);
 
+  const [loading, setLoading] = useState<boolean>(false);
+  const [errorOpen, setErrorOpen] = useState<boolean>(false);
+  const [error, setError] = useState<string>();
+
   function login() {
+    setErrorOpen(false);
+
     if (!email_ref.current || !password_ref.current) {
       return;
     }
@@ -33,13 +38,12 @@ function LoginTab({ setOpen }: { setOpen: (open: boolean) => void }) {
     const password = password_ref.current.value;
 
     if (!email || !password) {
-      toast({
-        title: 'Error signing in',
-        description: 'Please enter an email and password'
-      });
-
+      setError('Please enter an email and password');
+      setErrorOpen(true);
       return;
     }
+
+    setLoading(true);
 
     fetch(`${API_ENDPOINT}/login`, {
       method: 'POST',
@@ -51,11 +55,10 @@ function LoginTab({ setOpen }: { setOpen: (open: boolean) => void }) {
         getUser().then(() => setOpen(false));
       })
       .catch(() => {
-        toast({
-          title: 'Error signing in',
-          description: 'Please try again'
-        });
-      });
+        setError('Please try again');
+        setErrorOpen(true);
+      })
+      .finally(() => setLoading(false));
   }
 
   return (
@@ -75,19 +78,33 @@ function LoginTab({ setOpen }: { setOpen: (open: boolean) => void }) {
             Cancel
           </Button>
         </Dialog.Close>
-        <Button onClick={login}>Login</Button>
+        <Popover.Root open={errorOpen} onOpenChange={setErrorOpen}>
+          <Popover.Trigger>
+            <Button onClick={login} loading={loading}>
+              Login
+            </Button>
+          </Popover.Trigger>
+          <Popover.Content size='1'>
+            <Text color='gray' size='1' as='p' trim='both'>
+              {error}
+            </Text>
+          </Popover.Content>
+        </Popover.Root>
       </Flex>
     </Tabs.Content>
   );
 }
 
 function RegisterTab({ setOpen }: { setOpen: (open: boolean) => void }) {
-  const { toast } = useToast();
   const { getUser } = useAuth();
 
   const username_ref = useRef<HTMLInputElement>(null);
   const email_ref = useRef<HTMLInputElement>(null);
   const password_ref = useRef<HTMLInputElement>(null);
+
+  const [loading, setLoading] = useState<boolean>(false);
+  const [errorOpen, setErrorOpen] = useState<boolean>(false);
+  const [error, setError] = useState<string>();
 
   function isInfoValid(
     username: string,
@@ -139,6 +156,8 @@ function RegisterTab({ setOpen }: { setOpen: (open: boolean) => void }) {
   }
 
   function register() {
+    setErrorOpen(false);
+
     if (!username_ref.current || !email_ref.current || !password_ref.current) {
       return;
     }
@@ -150,13 +169,12 @@ function RegisterTab({ setOpen }: { setOpen: (open: boolean) => void }) {
     const valid = isInfoValid(username, email, password);
 
     if (!valid.success) {
-      toast({
-        title: 'Error signing in',
-        description: valid.message!
-      });
-
+      setError(valid.message!);
+      setErrorOpen(true);
       return;
     }
+
+    setLoading(true);
 
     fetch(`${API_ENDPOINT}/register`, {
       method: 'POST',
@@ -168,11 +186,10 @@ function RegisterTab({ setOpen }: { setOpen: (open: boolean) => void }) {
         getUser().then(() => setOpen(false));
       })
       .catch(() => {
-        toast({
-          title: 'Error signing in',
-          description: 'Please try again'
-        });
-      });
+        setError('Please try again');
+        setErrorOpen(true);
+      })
+      .finally(() => setLoading(false));
   }
 
   return (
@@ -202,7 +219,18 @@ function RegisterTab({ setOpen }: { setOpen: (open: boolean) => void }) {
             Cancel
           </Button>
         </Dialog.Close>
-        <Button onClick={register}>Register</Button>
+        <Popover.Root open={errorOpen} onOpenChange={setErrorOpen}>
+          <Popover.Trigger>
+            <Button onClick={register} loading={loading}>
+              Register
+            </Button>
+          </Popover.Trigger>
+          <Popover.Content size='1'>
+            <Text color='gray' size='1' as='p' trim='both'>
+              {error}
+            </Text>
+          </Popover.Content>
+        </Popover.Root>
       </Flex>
     </Tabs.Content>
   );
@@ -244,7 +272,7 @@ function LoginButton() {
 
           <Link href={`${API_ENDPOINT}/login/discord${redirect}`}>
             <Button>
-              <DiscordLogoIcon /> Login
+              <DiscordLogoIcon /> Discord Login
             </Button>
           </Link>
         </Flex>
