@@ -71,8 +71,8 @@ oauth_route.post(
     'json',
     z.object({
       username: z.string().min(3).max(32),
-      email: z.string().nonempty().email(),
-      password: z.string().min(6)
+      email: z.string().nonempty().email().optional(),
+      password: z.string().min(6).optional()
     })
   ),
   async (c) => {
