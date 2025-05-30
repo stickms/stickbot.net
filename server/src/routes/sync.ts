@@ -16,6 +16,8 @@ import type {
   ChatCommand,
   BackgroundCommand
 } from '../lib/types.js';
+import { zValidator } from '@hono/zod-validator';
+import z from 'zod';
 
 const sync_route = new Hono<Context>();
 
@@ -339,47 +341,58 @@ sync_route.get('/sync/rooms/:roomid', authGuard, async (c) => {
   });
 });
 
-sync_route.post('/sync/rooms/create', authGuard, async (c) => {
-  const user = c.get('user')!;
-  const { name, unlisted } = await c.req.json();
-
-  if (!name) {
-    throw new HTTPException(400, {
-      message: 'Please specify a name'
-    });
-  }
-
-  const bytes = new Uint8Array(8);
-  crypto.getRandomValues(bytes);
-  const roomid = encodeBase64urlNoPadding(bytes);
-
-  const room = db
-    .insert(rooms)
-    .values({
-      id: roomid,
-      name: name,
-      unlisted: unlisted,
-      hostId: user.id,
-      hostUsername: user.username
+sync_route.post(
+  '/sync/rooms/create',
+  zValidator(
+    'json',
+    z.object({
+      name: z.string().min(3).max(64),
+      unlisted: z.coerce.boolean()
     })
-    .returning()
-    .get();
+  ),
+  authGuard,
+  async (c) => {
+    const user = c.get('user')!;
+    const { name, unlisted } = c.req.valid('json');
 
-  if (!room) {
-    throw new HTTPException(404, {
-      message: 'Could not create room'
+    if (!name) {
+      throw new HTTPException(400, {
+        message: 'Please specify a name'
+      });
+    }
+
+    const bytes = new Uint8Array(8);
+    crypto.getRandomValues(bytes);
+    const roomid = encodeBase64urlNoPadding(bytes);
+
+    const room = db
+      .insert(rooms)
+      .values({
+        id: roomid,
+        name: name,
+        unlisted: unlisted,
+        hostId: user.id,
+        hostUsername: user.username
+      })
+      .returning()
+      .get();
+
+    if (!room) {
+      throw new HTTPException(404, {
+        message: 'Could not create room'
+      });
+    }
+
+    roomdata[room.id] = defaultMetadata;
+
+    return c.json({
+      success: true,
+      data: {
+        roomid
+      }
     });
   }
-
-  roomdata[room.id] = defaultMetadata;
-
-  return c.json({
-    success: true,
-    data: {
-      roomid
-    }
-  });
-});
+);
 
 sync_route.get('/sync/rooms/:roomid/validate', authGuard, async (c) => {
   const roomid = c.req.param('roomid');

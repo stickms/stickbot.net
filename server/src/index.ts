@@ -7,7 +7,7 @@ import { auth } from './middleware/auth.js';
 import { OAuth2RequestError } from 'arctic';
 import { HTTPException } from 'hono/http-exception';
 import { trimTrailingSlash } from 'hono/trailing-slash';
-import type { Context } from './lib/context.js';
+import { rateLimiter } from 'hono-rate-limiter';
 
 import lookup_route from './routes/lookup.js';
 import oauth_route from './routes/oauth.js';
@@ -15,6 +15,9 @@ import bot_route from './routes/bot.js';
 import tools_route from './routes/tools.js';
 import admin_route from './routes/admin.js';
 import sync_route, { injectWebSocket } from './routes/sync.js';
+
+import type { Context } from './lib/context.js';
+import { getConnInfo } from '@hono/node-server/conninfo';
 
 const app = new Hono<Context>();
 
@@ -36,6 +39,18 @@ app.use(
       'Content-Disposition',
       'Content-Length'
     ]
+  })
+);
+
+app.use(
+  '/*',
+  rateLimiter({
+    limit: 30,
+    standardHeaders: 'draft-6',
+    keyGenerator: (c) => {
+      const info = getConnInfo(c);
+      return info.remote.address ?? 'unknown';
+    }
   })
 );
 

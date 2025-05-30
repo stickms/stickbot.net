@@ -48,6 +48,7 @@ function LoginTab({ setOpen }: { setOpen: (open: boolean) => void }) {
     fetch(`${API_ENDPOINT}/login`, {
       method: 'POST',
       credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     })
       .then(fetchGetJson)
@@ -113,7 +114,7 @@ function RegisterTab({ setOpen }: { setOpen: (open: boolean) => void }) {
   ): { success: boolean; message?: string } {
     const temporary = !email && !password;
 
-    if (username.length < 3 || username.length > 32) {
+    if (!username || username.length < 3 || username.length > 32) {
       return {
         success: false,
         message: 'Usernames must be between 3-32 characters long'
@@ -179,7 +180,12 @@ function RegisterTab({ setOpen }: { setOpen: (open: boolean) => void }) {
     fetch(`${API_ENDPOINT}/register`, {
       method: 'POST',
       credentials: 'include',
-      body: JSON.stringify({ username, email, password })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username,
+        email: email.length ? email : undefined,
+        password: password.length ? password : undefined
+      })
     })
       .then(fetchGetJson)
       .then(() => {

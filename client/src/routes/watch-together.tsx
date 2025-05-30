@@ -106,10 +106,10 @@ function RoomList({ userid }: { userid: string }) {
 
     const name = inputbar.current.value.trim();
 
-    if (!name) {
+    if (name.length < 3) {
       toast({
         title: 'Error creating room',
-        description: 'Please enter a room name'
+        description: 'Room names must be between 3-64 characters'
       });
 
       return;
@@ -120,6 +120,7 @@ function RoomList({ userid }: { userid: string }) {
     fetch(`${API_ENDPOINT}/sync/rooms/create`, {
       method: 'POST',
       credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name,
         unlisted

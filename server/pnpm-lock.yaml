@@ -44,6 +44,9 @@ importers:
       hono:
         specifier: ^4.6.8
         version: 4.6.8
+      hono-rate-limiter:
+        specifier: ^0.4.2
+        version: 0.4.2(hono@4.6.8)
       mongodb:
         specifier: ^6.12.0
         version: 6.12.0
@@ -1312,6 +1315,11 @@ packages:
   he@1.2.0:
     resolution: {integrity: sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==}
     hasBin: true
+
+  hono-rate-limiter@0.4.2:
+    resolution: {integrity: sha512-AAtFqgADyrmbDijcRTT/HJfwqfvhalya2Zo+MgfdrMPas3zSMD8SU03cv+ZsYwRU1swv7zgVt0shwN059yzhjw==}
+    peerDependencies:
+      hono: ^4.1.1
 
   hono@4.6.8:
     resolution: {integrity: sha512-f+2Ec9JAzabT61pglDiLJcF/DjiSefZkjCn9bzm1cYLGkD5ExJ3Jnv93ax9h0bn7UPLHF81KktoyjdQfWI2n1Q==}
@@ -2841,6 +2849,10 @@ snapshots:
   has-flag@4.0.0: {}
 
   he@1.2.0: {}
+
+  hono-rate-limiter@0.4.2(hono@4.6.8):
+    dependencies:
+      hono: 4.6.8
 
   hono@4.6.8: {}
 
