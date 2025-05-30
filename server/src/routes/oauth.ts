@@ -18,6 +18,8 @@ import { discord, discordRefresh } from '../middleware/discord.js';
 import { HTTPException } from 'hono/http-exception';
 import { callDiscordApi } from '../lib/util.js';
 import { hashPassword, verifyPassword } from '../lib/password.js';
+import { zValidator } from '@hono/zod-validator';
+import z from 'zod';
 
 const oauth_route = new Hono<Context>();
 
@@ -63,72 +65,59 @@ oauth_route.post('/login', async (c) => {
   });
 });
 
-oauth_route.post('/register', async (c) => {
-  const { username, email, password } = await c.req.json();
+oauth_route.post(
+  '/register',
+  zValidator(
+    'json',
+    z.object({
+      username: z.string().min(3).max(32),
+      email: z.string().nonempty().email(),
+      password: z.string().min(6)
+    })
+  ),
+  async (c) => {
+    const { username, email, password } = c.req.valid('json');
 
-  if (email) {
-    const existing_user = db
-      .select()
-      .from(users)
-      .where(and(eq(users.email, email), isNotNull(users.passwordHash)))
+    if (email) {
+      const existing_user = db
+        .select()
+        .from(users)
+        .where(and(eq(users.email, email), isNotNull(users.passwordHash)))
+        .get();
+
+      if (existing_user) {
+        throw new HTTPException(409, {
+          message: 'An account already exists with that email'
+        });
+      }
+    }
+
+    const password_hash = password ? await hashPassword(password) : null;
+
+    const user = db
+      .insert(users)
+      .values({
+        username: username,
+        email: email ? email : null,
+        passwordHash: password_hash
+      })
+      .returning()
       .get();
 
-    if (existing_user) {
-      throw new HTTPException(409, {
-        message: 'An account already exists with that email'
-      });
+    if (!user) {
+      throw new HTTPException(400, { message: 'Could not create/update user' });
     }
+
+    // Set session-related cookies
+    const sessionToken = generateSessionToken();
+    const session = await createSession(sessionToken, user.id);
+    setSessionTokenCookie(c, sessionToken, session.expiresAt);
+
+    return c.json({
+      success: true
+    });
   }
-
-  const password_hash = password ? await hashPassword(password) : null;
-
-  const user = db
-    .insert(users)
-    .values({
-      username: username,
-      email: email ? email : null,
-      passwordHash: password_hash
-    })
-    .returning()
-    .get();
-
-  if (!user) {
-    throw new HTTPException(400, { message: 'Could not create/update user' });
-  }
-
-  // Set session-related cookies
-  const sessionToken = generateSessionToken();
-  const session = await createSession(sessionToken, user.id);
-  setSessionTokenCookie(c, sessionToken, session.expiresAt);
-
-  return c.json({
-    success: true
-  });
-});
-
-oauth_route.post('/login/username', async (c) => {
-  const { username } = await c.req.json();
-
-  const user = db
-    .insert(users)
-    .values({
-      username: username
-    })
-    .returning()
-    .get();
-
-  if (!user) {
-    throw new HTTPException(400, { message: 'Could not create/update user' });
-  }
-
-  const sessionToken = generateSessionToken();
-  const session = await createSession(sessionToken, user.id);
-  setSessionTokenCookie(c, sessionToken, session.expiresAt);
-
-  return c.json({
-    success: true
-  });
-});
+);
 
 oauth_route.get('/login/discord', async (c) => {
   const redirect = c.req.query('redirect') ?? '/';

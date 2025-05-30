@@ -113,10 +113,10 @@ function RegisterTab({ setOpen }: { setOpen: (open: boolean) => void }) {
   ): { success: boolean; message?: string } {
     const temporary = !email && !password;
 
-    if (username.length < 2) {
+    if (username.length < 3 || username.length > 32) {
       return {
         success: false,
-        message: 'Usernames must be at least 2 characters long'
+        message: 'Usernames must be between 3-32 characters long'
       };
     }
 
