@@ -2,22 +2,31 @@ import sqlite from 'better-sqlite3';
 import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { type InferSelectModel } from 'drizzle-orm';
-import { encodeBase32LowerCaseNoPadding } from '@oslojs/encoding';
+import {
+  encodeBase32LowerCaseNoPadding,
+  encodeBase64urlNoPadding
+} from '@oslojs/encoding';
 
 export const connection = sqlite('sqlite.db');
 export const db = drizzle(connection);
 
-function createId() {
+function createUserId() {
   const bytes = new Uint8Array(10);
   crypto.getRandomValues(bytes);
   return encodeBase32LowerCaseNoPadding(bytes);
+}
+
+function createRoomId() {
+  const bytes = new Uint8Array(10);
+  crypto.getRandomValues(bytes);
+  return encodeBase64urlNoPadding(bytes);
 }
 
 export const users = sqliteTable('users', {
   // Same as Discord ID
   id: text('id')
     .primaryKey()
-    .$defaultFn(() => createId()),
+    .$defaultFn(() => createUserId()),
   username: text('username').notNull(),
 
   // Discord-related
@@ -57,7 +66,9 @@ export const sessions = sqliteTable('sessions', {
 });
 
 export const rooms = sqliteTable('rooms', {
-  id: text('id').primaryKey(),
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => createRoomId()),
   name: text('name').notNull(),
   unlisted: integer('unlisted', {
     mode: 'boolean'

@@ -3,7 +3,6 @@ import { Hono } from 'hono';
 import type { Context } from '../lib/context.js';
 import { authGuard } from '../middleware/auth-guard.js';
 import { HTTPException } from 'hono/http-exception';
-import { encodeBase64urlNoPadding } from '@oslojs/encoding';
 import { dispositionFilename } from '../lib/util.js';
 import { db, rooms, type Room } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
@@ -40,8 +39,8 @@ const roomdata: SyncRoomList = {};
 
 // Initialize Rooms
 const roomlist = await db.select({ id: rooms.id }).from(rooms);
-for (const room of roomlist) {
-  roomdata[room.id] = defaultMetadata;
+for (const { id } of roomlist) {
+  roomdata[id] = defaultMetadata;
 }
 
 function getRoomById(roomid: string): Room | undefined {
@@ -361,14 +360,9 @@ sync_route.post(
       });
     }
 
-    const bytes = new Uint8Array(8);
-    crypto.getRandomValues(bytes);
-    const roomid = encodeBase64urlNoPadding(bytes);
-
     const room = db
       .insert(rooms)
       .values({
-        id: roomid,
         name: name,
         unlisted: unlisted,
         hostId: user.id,
@@ -388,7 +382,7 @@ sync_route.post(
     return c.json({
       success: true,
       data: {
-        roomid
+        roomid: room.id
       }
     });
   }
@@ -439,6 +433,8 @@ sync_route.delete('/sync/rooms/:roomid', authGuard, async (c) => {
     })
     .from(rooms)
     .where(eq(rooms.unlisted, false));
+
+  delete roomdata[room.id];
 
   return c.json({
     success: true,
