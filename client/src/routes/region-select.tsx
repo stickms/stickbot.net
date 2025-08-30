@@ -132,7 +132,9 @@ function RegionSelect() {
             <Select.Group>
               <Select.Label>Select a game</Select.Label>
               <Select.Item value='440'>Team Fortress 2</Select.Item>
+              <Select.Item value='570'>Dota 2</Select.Item>
               <Select.Item value='730'>Counter-Strike 2</Select.Item>
+              <Select.Item value='1422450'>Deadlock</Select.Item>
             </Select.Group>
           </Select.Content>
         </Select.Root>
