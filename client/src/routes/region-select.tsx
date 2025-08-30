@@ -1,11 +1,13 @@
 import {
   Button,
+  Card,
   CheckboxGroup,
   Dialog,
   Flex,
   IconButton,
   ScrollArea,
   Select,
+  Skeleton,
   Text,
   TextField,
   Tooltip
@@ -26,7 +28,9 @@ type SDRConfigResult = {
       geo: [number, number];
       partners: number;
       tier: number;
-      // We exclude non-null relays
+      // No idea when this is not undefined, but seems to be when on VPS
+      has_gameservers?: boolean;
+      // We exclude null/undefined relays
       relays: {
         ipv4: string;
         port_range: [number, number];
@@ -35,51 +39,24 @@ type SDRConfigResult = {
   >;
 };
 
-function BlockerModal({ iplist }: { iplist: string[] }) {
-  const code =
-    'netsh advfirewall ' +
-    'firewall delete rule name="stickbot-region-select" ; ' +
-    'netsh advfirewall firewall add rule name="stickbot-region-select" ' +
-    `dir=out action=block remoteip=${iplist.join()}`;
-
+function CopyCodeModal({
+  label,
+  title,
+  code,
+  disabled
+}: {
+  label: string;
+  title: string;
+  code: string;
+  disabled?: boolean;
+}) {
   return (
     <Dialog.Root>
       <Dialog.Trigger>
-        <Button>Block Selected</Button>
+        <Button disabled={disabled}>{label}</Button>
       </Dialog.Trigger>
       <Dialog.Content>
-        <Dialog.Title>Block Selected Regions</Dialog.Title>
-        <Dialog.Description size='2' className='mb-4'>
-          Copy & Paste this code into an Administrator Powershell Window:
-        </Dialog.Description>
-        <TextField.Root disabled value={code} size='2'>
-          <TextField.Slot side='right'>
-            <Tooltip content='click to copy'>
-              <IconButton
-                variant='ghost'
-                onClick={() => navigator.clipboard.writeText(code)}
-              >
-                <CopyIcon />
-              </IconButton>
-            </Tooltip>
-          </TextField.Slot>
-        </TextField.Root>
-      </Dialog.Content>
-    </Dialog.Root>
-  );
-}
-
-function UnblockerModal() {
-  const code =
-    'netsh advfirewall firewall delete rule name="stickbot-region-select"';
-
-  return (
-    <Dialog.Root>
-      <Dialog.Trigger>
-        <Button>Unblock All</Button>
-      </Dialog.Trigger>
-      <Dialog.Content>
-        <Dialog.Title>Unblock All Regions</Dialog.Title>
+        <Dialog.Title>{title}</Dialog.Title>
         <Dialog.Description size='2' className='mb-4'>
           Copy & Paste this code into an Administrator Powershell Window:
         </Dialog.Description>
@@ -114,7 +91,11 @@ function RegionSelect() {
         const data: SDRConfigResult = json['data'];
 
         const filteredServers = Object.entries(data.pops).filter(
-          (server) => !!server[1].relays
+          (server) =>
+            !!server[1].relays &&
+            (server[1].has_gameservers === undefined
+              ? true
+              : server[1].has_gameservers)
         );
 
         data.pops = Object.fromEntries(filteredServers);
@@ -124,9 +105,9 @@ function RegionSelect() {
       .catch(() => setSdrData(null));
   }, [appId]);
 
-  const getIpList = (): string[] => {
+  const getJoinedIpList = (): string => {
     if (!sdrdata) {
-      return [];
+      return '';
     }
 
     const iplist: string[] = [];
@@ -135,7 +116,7 @@ function RegionSelect() {
       iplist.push(...sdrdata.pops[server].relays.map((relay) => relay.ipv4));
     }
 
-    return iplist;
+    return iplist.join();
   };
 
   return (
@@ -158,20 +139,27 @@ function RegionSelect() {
 
         <Flex className='gap-4'>
           <Flex className='flex-col gap-2 items-center'>
-            <ScrollArea
-              className='max-h-72 pr-3 pl-1 whitespace-pre-line'
-              type='always'
-              scrollbars='vertical'
-            >
-              <CheckboxGroup.Root value={servers} onValueChange={setServers}>
-                {!!sdrdata &&
-                  Object.entries(sdrdata.pops).map((pop) => (
-                    <CheckboxGroup.Item value={pop[0]}>
-                      ({pop[0]}) / {pop[1].desc}
-                    </CheckboxGroup.Item>
-                  ))}
-              </CheckboxGroup.Root>
-            </ScrollArea>
+            <Card>
+              <Skeleton loading={!sdrdata} className='h-72 w-full'>
+                <ScrollArea
+                  className='max-h-72 pr-3 pl-1 whitespace-pre-line'
+                  type='always'
+                  scrollbars='vertical'
+                >
+                  <CheckboxGroup.Root
+                    value={servers}
+                    onValueChange={setServers}
+                  >
+                    {!!sdrdata &&
+                      Object.entries(sdrdata.pops).map((pop) => (
+                        <CheckboxGroup.Item value={pop[0]} key={pop[0]}>
+                          ({pop[0]}) / {pop[1].desc}
+                        </CheckboxGroup.Item>
+                      ))}
+                  </CheckboxGroup.Root>
+                </ScrollArea>
+              </Skeleton>
+            </Card>
             <Flex className='gap-2 flex-wrap justify-center items-center'>
               <Button
                 onClick={() => setServers(Object.keys(sdrdata?.pops ?? []))}
@@ -179,8 +167,25 @@ function RegionSelect() {
                 Select All
               </Button>
               <Button onClick={() => setServers([])}>Deselect All</Button>
-              <BlockerModal iplist={getIpList()} />
-              <UnblockerModal />
+              <CopyCodeModal
+                label='Block Selected'
+                title='Block Selected Regions'
+                code={
+                  'netsh advfirewall ' +
+                  'firewall delete rule name="stickbot-region-select" ; ' +
+                  'netsh advfirewall firewall add rule name="stickbot-region-select" ' +
+                  `dir=out action=block remoteip=${getJoinedIpList()}`
+                }
+                disabled={!servers.length}
+              />
+              <CopyCodeModal
+                label='Unblock All'
+                title='Unblock All Regions'
+                code={
+                  'netsh advfirewall ' +
+                  'firewall delete rule name="stickbot-region-select"'
+                }
+              />
             </Flex>
           </Flex>
         </Flex>
