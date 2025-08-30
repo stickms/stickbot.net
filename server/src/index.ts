@@ -92,6 +92,8 @@ app.onError((error, c) => {
     );
   }
 
+  console.log(error);
+
   return c.json(
     {
       success: false,

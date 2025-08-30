@@ -16,6 +16,9 @@ function Root() {
           <NavLink to='/lookup'>Steam Profile Lookup</NavLink>
         </Link>
         <Link asChild>
+          <NavLink to='/region-select'>TF2/CS2 Region Selector</NavLink>
+        </Link>
+        <Link asChild>
           <NavLink to='/soundcloud-dl'>Soundcloud Downloader</NavLink>
         </Link>
         <Link asChild>

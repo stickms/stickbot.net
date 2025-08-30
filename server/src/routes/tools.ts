@@ -202,4 +202,19 @@ tools_route.post('/tools/shorten-url', async (c) => {
   });
 });
 
+tools_route.get('/tools/sdr-data/:appid', async (c) => {
+  const appid = c.req.param('appid');
+
+  const resp = await fetch(`https://api.steampowered.com/ISteamApps/GetSDRConfig/v1/?appid=${appid}`);
+  
+  if (!resp.ok) {
+    throw new HTTPException(400, { message: 'Could not reach Steam servers' });
+  }
+
+  return c.json({
+    success: true,
+    data: await resp.json()
+  });
+});
+
 export default tools_route;
