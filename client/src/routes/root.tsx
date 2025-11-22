@@ -16,6 +16,9 @@ function Root() {
           <NavLink to='/lookup'>Steam Profile Lookup</NavLink>
         </Link>
         <Link asChild>
+          <NavLink to='/hud-editor'>TF2 Hud Editor</NavLink>
+        </Link>
+        <Link asChild>
           <NavLink to='/region-select'>TF2/CS2 Region Selector</NavLink>
         </Link>
         <Link asChild>

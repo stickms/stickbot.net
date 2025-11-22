@@ -22,6 +22,7 @@ import OpenUrl from './routes/open-url.tsx';
 import WatchTogether from './routes/watch-together.tsx';
 import SyncRoom from './routes/sync-room.tsx';
 import RegionSelect from './routes/region-select.tsx';
+import HudEditor from './routes/hud-editor.tsx';
 
 import '@radix-ui/themes/styles.css';
 import './index.css';
@@ -58,6 +59,7 @@ createRoot(document.getElementById('root')!).render(
             <Route path='/soundcloud-dl' element={<SoundcloudDl />} />
             <Route path='/watch-together' element={<WatchTogether />} />
             <Route path='/region-select' element={<RegionSelect />} />
+            <Route path='/hud-editor' element={<HudEditor />} />
             <Route path='/sync/room/:roomid' element={<SyncRoom />} />
             <Route path='/admin-portal' element={<AdminPortal />} />
             <Route path='/openprofile/:id' element={<OpenProfile />} />

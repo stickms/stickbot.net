@@ -1,0 +1,7 @@
+Progress: resolved 0, reused 1, downloaded 0, added 0
+ΓÇëWARNΓÇë deprecated @types/jszip@3.4.1: This is a stub types definition. jszip provides its own type definitions, so you do not need this installed.
+ΓÇëWARNΓÇë 1 deprecated subdependencies found: bin-version-check@6.0.0
+Packages: +438
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 476, reused 438, downloaded 0, added 0
+ΓÇëERR_PNPM_EPERMΓÇë EPERM, Permission denied: \\?\C:\Users\Amadeus\Documents\Development\stickbot.net\client\node_modules\.pnpm\@rollup+rollup-win32-x64-msvc@4.24.0\node_modules\@rollup\rollup-win32-x64-msvc '\\?\C:\Users\Amadeus\Documents\Development\stickbot.net\client\node_modules\.pnpm\@rollup+rollup-win32-x64-msvc@4.24.0\node_modules\@rollup\rollup-win32-x64-msvc'
