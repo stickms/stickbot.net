@@ -1,0 +1,3878 @@
+[
+  {
+    "name": "resource",
+    "type": "folder",
+    "path": "resource",
+    "children": [
+      {
+        "name": "chatscheme.res",
+        "type": "file",
+        "path": "resource/chatscheme.res"
+      },
+      {
+        "name": "clientscheme.res",
+        "type": "file",
+        "path": "resource/clientscheme.res"
+      },
+      {
+        "name": "commentaryexplanationdialog.res",
+        "type": "file",
+        "path": "resource/commentaryexplanationdialog.res"
+      },
+      {
+        "name": "commentaryitem.res",
+        "type": "file",
+        "path": "resource/commentaryitem.res"
+      },
+      {
+        "name": "createofflinepracticepage.res",
+        "type": "file",
+        "path": "resource/createofflinepracticepage.res"
+      },
+      {
+        "name": "g15.res",
+        "type": "file",
+        "path": "resource/g15.res"
+      },
+      {
+        "name": "gamelogo.res",
+        "type": "file",
+        "path": "resource/gamelogo.res"
+      },
+      {
+        "name": "gamemenu.res",
+        "type": "file",
+        "path": "resource/gamemenu.res"
+      },
+      {
+        "name": "loadcommentarydialog.res",
+        "type": "file",
+        "path": "resource/loadcommentarydialog.res"
+      },
+      {
+        "name": "loadingdialog.res",
+        "type": "file",
+        "path": "resource/loadingdialog.res"
+      },
+      {
+        "name": "loadingdialognobanner.res",
+        "type": "file",
+        "path": "resource/loadingdialognobanner.res"
+      },
+      {
+        "name": "modevents.res",
+        "type": "file",
+        "path": "resource/modevents.res"
+      },
+      {
+        "name": "muteplayerdialog.res",
+        "type": "file",
+        "path": "resource/muteplayerdialog.res"
+      },
+      {
+        "name": "newgamechapterpanel.res",
+        "type": "file",
+        "path": "resource/newgamechapterpanel.res"
+      },
+      {
+        "name": "newgamedialog.res",
+        "type": "file",
+        "path": "resource/newgamedialog.res"
+      },
+      {
+        "name": "offline_practice.res",
+        "type": "file",
+        "path": "resource/offline_practice.res"
+      },
+      {
+        "name": "optionssubmultiplayer.res",
+        "type": "file",
+        "path": "resource/optionssubmultiplayer.res"
+      },
+      {
+        "name": "pdacontrolpanelscheme.res",
+        "type": "file",
+        "path": "resource/pdacontrolpanelscheme.res"
+      },
+      {
+        "name": "playerlistdialog.res",
+        "type": "file",
+        "path": "resource/playerlistdialog.res"
+      },
+      {
+        "name": "reportplayerdialog.res",
+        "type": "file",
+        "path": "resource/reportplayerdialog.res"
+      },
+      {
+        "name": "roundinfo",
+        "type": "folder",
+        "path": "resource/roundinfo",
+        "children": [
+          {
+            "name": "tc_hydro.res",
+            "type": "file",
+            "path": "resource/roundinfo/tc_hydro.res"
+          }
+        ]
+      },
+      {
+        "name": "sourcescheme.res",
+        "type": "file",
+        "path": "resource/sourcescheme.res"
+      },
+      {
+        "name": "spectatormenu.res",
+        "type": "file",
+        "path": "resource/spectatormenu.res"
+      },
+      {
+        "name": "spectatormodes.res",
+        "type": "file",
+        "path": "resource/spectatormodes.res"
+      },
+      {
+        "name": "training.res",
+        "type": "file",
+        "path": "resource/training.res"
+      },
+      {
+        "name": "ui",
+        "type": "folder",
+        "path": "resource/ui",
+        "children": [
+          {
+            "name": "abusereportsubmitdialog.res",
+            "type": "file",
+            "path": "resource/ui/abusereportsubmitdialog.res"
+          },
+          {
+            "name": "achievementsdialog.res",
+            "type": "file",
+            "path": "resource/ui/achievementsdialog.res"
+          },
+          {
+            "name": "annotationspanelcallout.res",
+            "type": "file",
+            "path": "resource/ui/annotationspanelcallout.res"
+          },
+          {
+            "name": "badgepanel.res",
+            "type": "file",
+            "path": "resource/ui/badgepanel.res"
+          },
+          {
+            "name": "build_menu",
+            "type": "folder",
+            "path": "resource/ui/build_menu",
+            "children": [
+              {
+                "name": "base_active.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/base_active.res"
+              },
+              {
+                "name": "base_active_teleport_target.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/base_active_teleport_target.res"
+              },
+              {
+                "name": "base_already_built.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/base_already_built.res"
+              },
+              {
+                "name": "base_cant_afford.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/base_cant_afford.res"
+              },
+              {
+                "name": "base_selectable.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/base_selectable.res"
+              },
+              {
+                "name": "base_unavailable.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/base_unavailable.res"
+              },
+              {
+                "name": "base_unavailable_teleport_target.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/base_unavailable_teleport_target.res"
+              },
+              {
+                "name": "dispenser_active.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/dispenser_active.res"
+              },
+              {
+                "name": "dispenser_already_built.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/dispenser_already_built.res"
+              },
+              {
+                "name": "dispenser_cant_afford.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/dispenser_cant_afford.res"
+              },
+              {
+                "name": "dispenser_selectable.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/dispenser_selectable.res"
+              },
+              {
+                "name": "dispenser_unavailable.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/dispenser_unavailable.res"
+              },
+              {
+                "name": "eureka_target_home_avail.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/eureka_target_home_avail.res"
+              },
+              {
+                "name": "eureka_target_home_unavail.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/eureka_target_home_unavail.res"
+              },
+              {
+                "name": "eureka_target_tele_exit_avail.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/eureka_target_tele_exit_avail.res"
+              },
+              {
+                "name": "eureka_target_tele_exit_unavail.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/eureka_target_tele_exit_unavail.res"
+              },
+              {
+                "name": "hudmenuengybuild.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/hudmenuengybuild.res"
+              },
+              {
+                "name": "hudmenueurekaeffect.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/hudmenueurekaeffect.res"
+              },
+              {
+                "name": "pipboy",
+                "type": "folder",
+                "path": "resource/ui/build_menu/pipboy",
+                "children": [
+                  {
+                    "name": "base_active.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/base_active.res"
+                  },
+                  {
+                    "name": "base_active_teleport_target.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/base_active_teleport_target.res"
+                  },
+                  {
+                    "name": "base_already_built.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/base_already_built.res"
+                  },
+                  {
+                    "name": "base_cant_afford.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/base_cant_afford.res"
+                  },
+                  {
+                    "name": "base_selectable.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/base_selectable.res"
+                  },
+                  {
+                    "name": "base_unavailable.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/base_unavailable.res"
+                  },
+                  {
+                    "name": "base_unavailable_teleport_target.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/base_unavailable_teleport_target.res"
+                  },
+                  {
+                    "name": "dispenser_active.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/dispenser_active.res"
+                  },
+                  {
+                    "name": "dispenser_already_built.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/dispenser_already_built.res"
+                  },
+                  {
+                    "name": "dispenser_cant_afford.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/dispenser_cant_afford.res"
+                  },
+                  {
+                    "name": "dispenser_selectable.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/dispenser_selectable.res"
+                  },
+                  {
+                    "name": "dispenser_unavailable.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/dispenser_unavailable.res"
+                  },
+                  {
+                    "name": "eureka_target_home_avail.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/eureka_target_home_avail.res"
+                  },
+                  {
+                    "name": "eureka_target_home_unavail.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/eureka_target_home_unavail.res"
+                  },
+                  {
+                    "name": "eureka_target_tele_exit_avail.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/eureka_target_tele_exit_avail.res"
+                  },
+                  {
+                    "name": "eureka_target_tele_exit_unavail.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/eureka_target_tele_exit_unavail.res"
+                  },
+                  {
+                    "name": "hudmenuengybuild.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/hudmenuengybuild.res"
+                  },
+                  {
+                    "name": "hudmenueurekaeffect.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/hudmenueurekaeffect.res"
+                  },
+                  {
+                    "name": "sentry_active.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/sentry_active.res"
+                  },
+                  {
+                    "name": "sentry_already_built.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/sentry_already_built.res"
+                  },
+                  {
+                    "name": "sentry_cant_afford.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/sentry_cant_afford.res"
+                  },
+                  {
+                    "name": "sentry_selectable.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/sentry_selectable.res"
+                  },
+                  {
+                    "name": "sentry_unavailable.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/sentry_unavailable.res"
+                  },
+                  {
+                    "name": "tele_entrance_active.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/tele_entrance_active.res"
+                  },
+                  {
+                    "name": "tele_entrance_already_built.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/tele_entrance_already_built.res"
+                  },
+                  {
+                    "name": "tele_entrance_cant_afford.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/tele_entrance_cant_afford.res"
+                  },
+                  {
+                    "name": "tele_entrance_unavailable.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/tele_entrance_unavailable.res"
+                  },
+                  {
+                    "name": "tele_exit_active.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/tele_exit_active.res"
+                  },
+                  {
+                    "name": "tele_exit_already_built.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/tele_exit_already_built.res"
+                  },
+                  {
+                    "name": "tele_exit_cant_afford.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/tele_exit_cant_afford.res"
+                  },
+                  {
+                    "name": "tele_exit_unavailable.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/tele_exit_unavailable.res"
+                  },
+                  {
+                    "name": "tele_selectable.res",
+                    "type": "file",
+                    "path": "resource/ui/build_menu/pipboy/tele_selectable.res"
+                  }
+                ]
+              },
+              {
+                "name": "sentry_active.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/sentry_active.res"
+              },
+              {
+                "name": "sentry_already_built.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/sentry_already_built.res"
+              },
+              {
+                "name": "sentry_cant_afford.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/sentry_cant_afford.res"
+              },
+              {
+                "name": "sentry_selectable.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/sentry_selectable.res"
+              },
+              {
+                "name": "sentry_unavailable.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/sentry_unavailable.res"
+              },
+              {
+                "name": "tele_entrance_active.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/tele_entrance_active.res"
+              },
+              {
+                "name": "tele_entrance_already_built.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/tele_entrance_already_built.res"
+              },
+              {
+                "name": "tele_entrance_cant_afford.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/tele_entrance_cant_afford.res"
+              },
+              {
+                "name": "tele_entrance_unavailable.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/tele_entrance_unavailable.res"
+              },
+              {
+                "name": "tele_exit_active.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/tele_exit_active.res"
+              },
+              {
+                "name": "tele_exit_already_built.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/tele_exit_already_built.res"
+              },
+              {
+                "name": "tele_exit_cant_afford.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/tele_exit_cant_afford.res"
+              },
+              {
+                "name": "tele_exit_unavailable.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/tele_exit_unavailable.res"
+              },
+              {
+                "name": "tele_selectable.res",
+                "type": "file",
+                "path": "resource/ui/build_menu/tele_selectable.res"
+              }
+            ]
+          },
+          {
+            "name": "build_menu_360",
+            "type": "folder",
+            "path": "resource/ui/build_menu_360",
+            "children": [
+              {
+                "name": "base_active.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_360/base_active.res"
+              },
+              {
+                "name": "base_already_built.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_360/base_already_built.res"
+              },
+              {
+                "name": "base_cant_afford.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_360/base_cant_afford.res"
+              },
+              {
+                "name": "dispenser_active.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_360/dispenser_active.res"
+              },
+              {
+                "name": "dispenser_already_built.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_360/dispenser_already_built.res"
+              },
+              {
+                "name": "dispenser_cant_afford.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_360/dispenser_cant_afford.res"
+              },
+              {
+                "name": "hudmenuengybuild.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_360/hudmenuengybuild.res"
+              },
+              {
+                "name": "sentry_active.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_360/sentry_active.res"
+              },
+              {
+                "name": "sentry_already_built.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_360/sentry_already_built.res"
+              },
+              {
+                "name": "sentry_cant_afford.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_360/sentry_cant_afford.res"
+              },
+              {
+                "name": "tele_entrance_active.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_360/tele_entrance_active.res"
+              },
+              {
+                "name": "tele_entrance_already_built.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_360/tele_entrance_already_built.res"
+              },
+              {
+                "name": "tele_entrance_cant_afford.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_360/tele_entrance_cant_afford.res"
+              },
+              {
+                "name": "tele_exit_active.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_360/tele_exit_active.res"
+              },
+              {
+                "name": "tele_exit_already_built.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_360/tele_exit_already_built.res"
+              },
+              {
+                "name": "tele_exit_cant_afford.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_360/tele_exit_cant_afford.res"
+              }
+            ]
+          },
+          {
+            "name": "build_menu_sc",
+            "type": "folder",
+            "path": "resource/ui/build_menu_sc",
+            "children": [
+              {
+                "name": "base_active.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_sc/base_active.res"
+              },
+              {
+                "name": "base_active_teleport_target.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_sc/base_active_teleport_target.res"
+              },
+              {
+                "name": "base_already_built.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_sc/base_already_built.res"
+              },
+              {
+                "name": "base_cant_afford.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_sc/base_cant_afford.res"
+              },
+              {
+                "name": "base_unavailable_teleport_target.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_sc/base_unavailable_teleport_target.res"
+              },
+              {
+                "name": "dispenser_active.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_sc/dispenser_active.res"
+              },
+              {
+                "name": "dispenser_already_built.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_sc/dispenser_already_built.res"
+              },
+              {
+                "name": "dispenser_cant_afford.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_sc/dispenser_cant_afford.res"
+              },
+              {
+                "name": "eureka_target_home_avail.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_sc/eureka_target_home_avail.res"
+              },
+              {
+                "name": "eureka_target_home_unavail.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_sc/eureka_target_home_unavail.res"
+              },
+              {
+                "name": "eureka_target_tele_exit_avail.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_sc/eureka_target_tele_exit_avail.res"
+              },
+              {
+                "name": "eureka_target_tele_exit_unavail.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_sc/eureka_target_tele_exit_unavail.res"
+              },
+              {
+                "name": "hudmenuengybuild.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_sc/hudmenuengybuild.res"
+              },
+              {
+                "name": "hudmenueurekaeffect.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_sc/hudmenueurekaeffect.res"
+              },
+              {
+                "name": "sentry_active.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_sc/sentry_active.res"
+              },
+              {
+                "name": "sentry_already_built.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_sc/sentry_already_built.res"
+              },
+              {
+                "name": "sentry_cant_afford.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_sc/sentry_cant_afford.res"
+              },
+              {
+                "name": "tele_entrance_active.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_sc/tele_entrance_active.res"
+              },
+              {
+                "name": "tele_entrance_already_built.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_sc/tele_entrance_already_built.res"
+              },
+              {
+                "name": "tele_entrance_cant_afford.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_sc/tele_entrance_cant_afford.res"
+              },
+              {
+                "name": "tele_exit_active.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_sc/tele_exit_active.res"
+              },
+              {
+                "name": "tele_exit_already_built.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_sc/tele_exit_already_built.res"
+              },
+              {
+                "name": "tele_exit_cant_afford.res",
+                "type": "file",
+                "path": "resource/ui/build_menu_sc/tele_exit_cant_afford.res"
+              }
+            ]
+          },
+          {
+            "name": "casualrankpanel.res",
+            "type": "file",
+            "path": "resource/ui/casualrankpanel.res"
+          },
+          {
+            "name": "casualwelcomedialog.res",
+            "type": "file",
+            "path": "resource/ui/casualwelcomedialog.res"
+          },
+          {
+            "name": "charinfoarmorysubpanel.res",
+            "type": "file",
+            "path": "resource/ui/charinfoarmorysubpanel.res"
+          },
+          {
+            "name": "charinfoloadoutsubpanel.res",
+            "type": "file",
+            "path": "resource/ui/charinfoloadoutsubpanel.res"
+          },
+          {
+            "name": "charinfopanel.res",
+            "type": "file",
+            "path": "resource/ui/charinfopanel.res"
+          },
+          {
+            "name": "chatpopup.res",
+            "type": "file",
+            "path": "resource/ui/chatpopup.res"
+          },
+          {
+            "name": "cheatdetectiondialog.res",
+            "type": "file",
+            "path": "resource/ui/cheatdetectiondialog.res"
+          },
+          {
+            "name": "classloadoutpanel.res",
+            "type": "file",
+            "path": "resource/ui/classloadoutpanel.res"
+          },
+          {
+            "name": "classmenu.res",
+            "type": "file",
+            "path": "resource/ui/classmenu.res"
+          },
+          {
+            "name": "classselection.res",
+            "type": "file",
+            "path": "resource/ui/classselection.res"
+          },
+          {
+            "name": "classselection_sc.res",
+            "type": "file",
+            "path": "resource/ui/classselection_sc.res"
+          },
+          {
+            "name": "classtipsitem.res",
+            "type": "file",
+            "path": "resource/ui/classtipsitem.res"
+          },
+          {
+            "name": "classtipslist.res",
+            "type": "file",
+            "path": "resource/ui/classtipslist.res"
+          },
+          {
+            "name": "coachedbypanel.res",
+            "type": "file",
+            "path": "resource/ui/coachedbypanel.res"
+          },
+          {
+            "name": "competitiveaccessinfo.res",
+            "type": "file",
+            "path": "resource/ui/competitiveaccessinfo.res"
+          },
+          {
+            "name": "competitivewelcomedialog.res",
+            "type": "file",
+            "path": "resource/ui/competitivewelcomedialog.res"
+          },
+          {
+            "name": "comprankpanel.res",
+            "type": "file",
+            "path": "resource/ui/comprankpanel.res"
+          },
+          {
+            "name": "comprankstooltip.res",
+            "type": "file",
+            "path": "resource/ui/comprankstooltip.res"
+          },
+          {
+            "name": "compstats.res",
+            "type": "file",
+            "path": "resource/ui/compstats.res"
+          },
+          {
+            "name": "confirmabandondialog.res",
+            "type": "file",
+            "path": "resource/ui/confirmabandondialog.res"
+          },
+          {
+            "name": "controlpointcountdown.res",
+            "type": "file",
+            "path": "resource/ui/controlpointcountdown.res"
+          },
+          {
+            "name": "controlpointicon.res",
+            "type": "file",
+            "path": "resource/ui/controlpointicon.res"
+          },
+          {
+            "name": "controlpointprogressbar.res",
+            "type": "file",
+            "path": "resource/ui/controlpointprogressbar.res"
+          },
+          {
+            "name": "craftingpanel.res",
+            "type": "file",
+            "path": "resource/ui/craftingpanel.res"
+          },
+          {
+            "name": "craftingstatusdialog.res",
+            "type": "file",
+            "path": "resource/ui/craftingstatusdialog.res"
+          },
+          {
+            "name": "dashboardpartymember.res",
+            "type": "file",
+            "path": "resource/ui/dashboardpartymember.res"
+          },
+          {
+            "name": "destroy_menu",
+            "type": "folder",
+            "path": "resource/ui/destroy_menu",
+            "children": [
+              {
+                "name": "base_active.res",
+                "type": "file",
+                "path": "resource/ui/destroy_menu/base_active.res"
+              },
+              {
+                "name": "base_inactive.res",
+                "type": "file",
+                "path": "resource/ui/destroy_menu/base_inactive.res"
+              },
+              {
+                "name": "dispenser_active.res",
+                "type": "file",
+                "path": "resource/ui/destroy_menu/dispenser_active.res"
+              },
+              {
+                "name": "dispenser_inactive.res",
+                "type": "file",
+                "path": "resource/ui/destroy_menu/dispenser_inactive.res"
+              },
+              {
+                "name": "hudmenuengydestroy.res",
+                "type": "file",
+                "path": "resource/ui/destroy_menu/hudmenuengydestroy.res"
+              },
+              {
+                "name": "pipboy",
+                "type": "folder",
+                "path": "resource/ui/destroy_menu/pipboy",
+                "children": [
+                  {
+                    "name": "base_active.res",
+                    "type": "file",
+                    "path": "resource/ui/destroy_menu/pipboy/base_active.res"
+                  },
+                  {
+                    "name": "base_inactive.res",
+                    "type": "file",
+                    "path": "resource/ui/destroy_menu/pipboy/base_inactive.res"
+                  },
+                  {
+                    "name": "dispenser_active.res",
+                    "type": "file",
+                    "path": "resource/ui/destroy_menu/pipboy/dispenser_active.res"
+                  },
+                  {
+                    "name": "dispenser_inactive.res",
+                    "type": "file",
+                    "path": "resource/ui/destroy_menu/pipboy/dispenser_inactive.res"
+                  },
+                  {
+                    "name": "hudmenuengydestroy.res",
+                    "type": "file",
+                    "path": "resource/ui/destroy_menu/pipboy/hudmenuengydestroy.res"
+                  },
+                  {
+                    "name": "sentry_active.res",
+                    "type": "file",
+                    "path": "resource/ui/destroy_menu/pipboy/sentry_active.res"
+                  },
+                  {
+                    "name": "sentry_inactive.res",
+                    "type": "file",
+                    "path": "resource/ui/destroy_menu/pipboy/sentry_inactive.res"
+                  },
+                  {
+                    "name": "tele_entrance_active.res",
+                    "type": "file",
+                    "path": "resource/ui/destroy_menu/pipboy/tele_entrance_active.res"
+                  },
+                  {
+                    "name": "tele_entrance_inactive.res",
+                    "type": "file",
+                    "path": "resource/ui/destroy_menu/pipboy/tele_entrance_inactive.res"
+                  },
+                  {
+                    "name": "tele_exit_active.res",
+                    "type": "file",
+                    "path": "resource/ui/destroy_menu/pipboy/tele_exit_active.res"
+                  },
+                  {
+                    "name": "tele_exit_inactive.res",
+                    "type": "file",
+                    "path": "resource/ui/destroy_menu/pipboy/tele_exit_inactive.res"
+                  }
+                ]
+              },
+              {
+                "name": "sentry_active.res",
+                "type": "file",
+                "path": "resource/ui/destroy_menu/sentry_active.res"
+              },
+              {
+                "name": "sentry_inactive.res",
+                "type": "file",
+                "path": "resource/ui/destroy_menu/sentry_inactive.res"
+              },
+              {
+                "name": "tele_entrance_active.res",
+                "type": "file",
+                "path": "resource/ui/destroy_menu/tele_entrance_active.res"
+              },
+              {
+                "name": "tele_entrance_inactive.res",
+                "type": "file",
+                "path": "resource/ui/destroy_menu/tele_entrance_inactive.res"
+              },
+              {
+                "name": "tele_exit_active.res",
+                "type": "file",
+                "path": "resource/ui/destroy_menu/tele_exit_active.res"
+              },
+              {
+                "name": "tele_exit_inactive.res",
+                "type": "file",
+                "path": "resource/ui/destroy_menu/tele_exit_inactive.res"
+              }
+            ]
+          },
+          {
+            "name": "disguisestatuspanel.res",
+            "type": "file",
+            "path": "resource/ui/disguisestatuspanel.res"
+          },
+          {
+            "name": "disguise_menu",
+            "type": "folder",
+            "path": "resource/ui/disguise_menu",
+            "children": [
+              {
+                "name": "demoman_blue.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu/demoman_blue.res"
+              },
+              {
+                "name": "demoman_red.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu/demoman_red.res"
+              },
+              {
+                "name": "engineer_blue.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu/engineer_blue.res"
+              },
+              {
+                "name": "engineer_red.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu/engineer_red.res"
+              },
+              {
+                "name": "heavy_blue.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu/heavy_blue.res"
+              },
+              {
+                "name": "heavy_red.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu/heavy_red.res"
+              },
+              {
+                "name": "hudmenuspydisguise.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu/hudmenuspydisguise.res"
+              },
+              {
+                "name": "medic_blue.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu/medic_blue.res"
+              },
+              {
+                "name": "medic_red.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu/medic_red.res"
+              },
+              {
+                "name": "pyro_blue.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu/pyro_blue.res"
+              },
+              {
+                "name": "pyro_red.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu/pyro_red.res"
+              },
+              {
+                "name": "scout_blue.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu/scout_blue.res"
+              },
+              {
+                "name": "scout_red.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu/scout_red.res"
+              },
+              {
+                "name": "sniper_blue.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu/sniper_blue.res"
+              },
+              {
+                "name": "sniper_red.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu/sniper_red.res"
+              },
+              {
+                "name": "soldier_blue.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu/soldier_blue.res"
+              },
+              {
+                "name": "soldier_red.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu/soldier_red.res"
+              },
+              {
+                "name": "spy_blue.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu/spy_blue.res"
+              },
+              {
+                "name": "spy_red.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu/spy_red.res"
+              }
+            ]
+          },
+          {
+            "name": "disguise_menu_360",
+            "type": "folder",
+            "path": "resource/ui/disguise_menu_360",
+            "children": [
+              {
+                "name": "base.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_360/base.res"
+              },
+              {
+                "name": "demoman_blue.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_360/demoman_blue.res"
+              },
+              {
+                "name": "demoman_red.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_360/demoman_red.res"
+              },
+              {
+                "name": "engineer_blue.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_360/engineer_blue.res"
+              },
+              {
+                "name": "engineer_red.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_360/engineer_red.res"
+              },
+              {
+                "name": "heavy_blue.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_360/heavy_blue.res"
+              },
+              {
+                "name": "heavy_red.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_360/heavy_red.res"
+              },
+              {
+                "name": "hudmenuspydisguise.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_360/hudmenuspydisguise.res"
+              },
+              {
+                "name": "medic_blue.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_360/medic_blue.res"
+              },
+              {
+                "name": "medic_red.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_360/medic_red.res"
+              },
+              {
+                "name": "pyro_blue.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_360/pyro_blue.res"
+              },
+              {
+                "name": "pyro_red.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_360/pyro_red.res"
+              },
+              {
+                "name": "scout_blue.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_360/scout_blue.res"
+              },
+              {
+                "name": "scout_red.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_360/scout_red.res"
+              },
+              {
+                "name": "sniper_blue.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_360/sniper_blue.res"
+              },
+              {
+                "name": "sniper_red.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_360/sniper_red.res"
+              },
+              {
+                "name": "soldier_blue.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_360/soldier_blue.res"
+              },
+              {
+                "name": "soldier_red.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_360/soldier_red.res"
+              },
+              {
+                "name": "spy_blue.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_360/spy_blue.res"
+              },
+              {
+                "name": "spy_red.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_360/spy_red.res"
+              }
+            ]
+          },
+          {
+            "name": "disguise_menu_sc",
+            "type": "folder",
+            "path": "resource/ui/disguise_menu_sc",
+            "children": [
+              {
+                "name": "base.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_sc/base.res"
+              },
+              {
+                "name": "demoman_blue.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_sc/demoman_blue.res"
+              },
+              {
+                "name": "demoman_red.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_sc/demoman_red.res"
+              },
+              {
+                "name": "engineer_blue.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_sc/engineer_blue.res"
+              },
+              {
+                "name": "engineer_red.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_sc/engineer_red.res"
+              },
+              {
+                "name": "heavy_blue.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_sc/heavy_blue.res"
+              },
+              {
+                "name": "heavy_red.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_sc/heavy_red.res"
+              },
+              {
+                "name": "hudmenuspydisguise.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_sc/hudmenuspydisguise.res"
+              },
+              {
+                "name": "medic_blue.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_sc/medic_blue.res"
+              },
+              {
+                "name": "medic_red.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_sc/medic_red.res"
+              },
+              {
+                "name": "pyro_blue.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_sc/pyro_blue.res"
+              },
+              {
+                "name": "pyro_red.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_sc/pyro_red.res"
+              },
+              {
+                "name": "scout_blue.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_sc/scout_blue.res"
+              },
+              {
+                "name": "scout_red.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_sc/scout_red.res"
+              },
+              {
+                "name": "sniper_blue.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_sc/sniper_blue.res"
+              },
+              {
+                "name": "sniper_red.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_sc/sniper_red.res"
+              },
+              {
+                "name": "soldier_blue.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_sc/soldier_blue.res"
+              },
+              {
+                "name": "soldier_red.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_sc/soldier_red.res"
+              },
+              {
+                "name": "spy_blue.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_sc/spy_blue.res"
+              },
+              {
+                "name": "spy_red.res",
+                "type": "file",
+                "path": "resource/ui/disguise_menu_sc/spy_red.res"
+              }
+            ]
+          },
+          {
+            "name": "dynamicrecipepanel.res",
+            "type": "file",
+            "path": "resource/ui/dynamicrecipepanel.res"
+          },
+          {
+            "name": "econ",
+            "type": "folder",
+            "path": "resource/ui/econ",
+            "children": [
+              {
+                "name": "backpackpanel.res",
+                "type": "file",
+                "path": "resource/ui/econ/backpackpanel.res"
+              },
+              {
+                "name": "collectioncraftingdialog.res",
+                "type": "file",
+                "path": "resource/ui/econ/collectioncraftingdialog.res"
+              },
+              {
+                "name": "collectioncraftingdialog_base.res",
+                "type": "file",
+                "path": "resource/ui/econ/collectioncraftingdialog_base.res"
+              },
+              {
+                "name": "comboboxbackpackoverlaydialog.res",
+                "type": "file",
+                "path": "resource/ui/econ/comboboxbackpackoverlaydialog.res"
+              },
+              {
+                "name": "confirmapplycardupgradeapplicationdialog.res",
+                "type": "file",
+                "path": "resource/ui/econ/confirmapplycardupgradeapplicationdialog.res"
+              },
+              {
+                "name": "confirmapplydecodedialog.res",
+                "type": "file",
+                "path": "resource/ui/econ/confirmapplydecodedialog.res"
+              },
+              {
+                "name": "confirmapplyducktokendialog.res",
+                "type": "file",
+                "path": "resource/ui/econ/confirmapplyducktokendialog.res"
+              },
+              {
+                "name": "confirmapplygiftwrapdialog.res",
+                "type": "file",
+                "path": "resource/ui/econ/confirmapplygiftwrapdialog.res"
+              },
+              {
+                "name": "confirmapplypaintcandialog.res",
+                "type": "file",
+                "path": "resource/ui/econ/confirmapplypaintcandialog.res"
+              },
+              {
+                "name": "confirmapplypaintkitdialog.res",
+                "type": "file",
+                "path": "resource/ui/econ/confirmapplypaintkitdialog.res"
+              },
+              {
+                "name": "confirmapplystrangepartapplicationdialog.res",
+                "type": "file",
+                "path": "resource/ui/econ/confirmapplystrangepartapplicationdialog.res"
+              },
+              {
+                "name": "confirmapplystrangerestrictionapplicationdialog.res",
+                "type": "file",
+                "path": "resource/ui/econ/confirmapplystrangerestrictionapplicationdialog.res"
+              },
+              {
+                "name": "confirmapplystrangifierdialog.res",
+                "type": "file",
+                "path": "resource/ui/econ/confirmapplystrangifierdialog.res"
+              },
+              {
+                "name": "confirmapplyteamcolorpaintcandialog.res",
+                "type": "file",
+                "path": "resource/ui/econ/confirmapplyteamcolorpaintcandialog.res"
+              },
+              {
+                "name": "confirmcustomizetexturedialog.res",
+                "type": "file",
+                "path": "resource/ui/econ/confirmcustomizetexturedialog.res"
+              },
+              {
+                "name": "confirmdialogabandonnopenalty.res",
+                "type": "file",
+                "path": "resource/ui/econ/confirmdialogabandonnopenalty.res"
+              },
+              {
+                "name": "confirmdialogabandonpenalty.res",
+                "type": "file",
+                "path": "resource/ui/econ/confirmdialogabandonpenalty.res"
+              },
+              {
+                "name": "confirmdialogabandonsafe.res",
+                "type": "file",
+                "path": "resource/ui/econ/confirmdialogabandonsafe.res"
+              },
+              {
+                "name": "confirmdialogoptout.res",
+                "type": "file",
+                "path": "resource/ui/econ/confirmdialogoptout.res"
+              },
+              {
+                "name": "confirmitempreviewdialog.res",
+                "type": "file",
+                "path": "resource/ui/econ/confirmitempreviewdialog.res"
+              },
+              {
+                "name": "confirmspellbookpageapplicationdialog.res",
+                "type": "file",
+                "path": "resource/ui/econ/confirmspellbookpageapplicationdialog.res"
+              },
+              {
+                "name": "confirmtransmogrifyapplicationdialog.res",
+                "type": "file",
+                "path": "resource/ui/econ/confirmtransmogrifyapplicationdialog.res"
+              },
+              {
+                "name": "cyclingadcontainer.res",
+                "type": "file",
+                "path": "resource/ui/econ/cyclingadcontainer.res"
+              },
+              {
+                "name": "ducksleaderboardpanel.res",
+                "type": "file",
+                "path": "resource/ui/econ/ducksleaderboardpanel.res"
+              },
+              {
+                "name": "ducksleaderboards.res",
+                "type": "file",
+                "path": "resource/ui/econ/ducksleaderboards.res"
+              },
+              {
+                "name": "genericnotificationtoast.res",
+                "type": "file",
+                "path": "resource/ui/econ/genericnotificationtoast.res"
+              },
+              {
+                "name": "genericnotificationtoastmainmenu.res",
+                "type": "file",
+                "path": "resource/ui/econ/genericnotificationtoastmainmenu.res"
+              },
+              {
+                "name": "genericwaitingdialog.res",
+                "type": "file",
+                "path": "resource/ui/econ/genericwaitingdialog.res"
+              },
+              {
+                "name": "halloweenofferingdialog.res",
+                "type": "file",
+                "path": "resource/ui/econ/halloweenofferingdialog.res"
+              },
+              {
+                "name": "inputstringforitembackpackoverlaydialog.res",
+                "type": "file",
+                "path": "resource/ui/econ/inputstringforitembackpackoverlaydialog.res"
+              },
+              {
+                "name": "inspectionpanel.res",
+                "type": "file",
+                "path": "resource/ui/econ/inspectionpanel.res"
+              },
+              {
+                "name": "inspectionpanel_cosmetic.res",
+                "type": "file",
+                "path": "resource/ui/econ/inspectionpanel_cosmetic.res"
+              },
+              {
+                "name": "itemaddefault.res",
+                "type": "file",
+                "path": "resource/ui/econ/itemaddefault.res"
+              },
+              {
+                "name": "itemdiscardpanel.res",
+                "type": "file",
+                "path": "resource/ui/econ/itemdiscardpanel.res"
+              },
+              {
+                "name": "itemmodelpanel.res",
+                "type": "file",
+                "path": "resource/ui/econ/itemmodelpanel.res"
+              },
+              {
+                "name": "itemmodelpanelcollectioncosmeticitem.res",
+                "type": "file",
+                "path": "resource/ui/econ/itemmodelpanelcollectioncosmeticitem.res"
+              },
+              {
+                "name": "itemmodelpanelcollectionitem.res",
+                "type": "file",
+                "path": "resource/ui/econ/itemmodelpanelcollectionitem.res"
+              },
+              {
+                "name": "itempickuppanel.res",
+                "type": "file",
+                "path": "resource/ui/econ/itempickuppanel.res"
+              },
+              {
+                "name": "leaderboardpanel.res",
+                "type": "file",
+                "path": "resource/ui/econ/leaderboardpanel.res"
+              },
+              {
+                "name": "lobbyleaderboard.res",
+                "type": "file",
+                "path": "resource/ui/econ/lobbyleaderboard.res"
+              },
+              {
+                "name": "manncotrade_commonstatclock.res",
+                "type": "file",
+                "path": "resource/ui/econ/manncotrade_commonstatclock.res"
+              },
+              {
+                "name": "notificationqueuepanel.res",
+                "type": "file",
+                "path": "resource/ui/econ/notificationqueuepanel.res"
+              },
+              {
+                "name": "notificationspresentpanel.res",
+                "type": "file",
+                "path": "resource/ui/econ/notificationspresentpanel.res"
+              },
+              {
+                "name": "notificationtoastcontainer.res",
+                "type": "file",
+                "path": "resource/ui/econ/notificationtoastcontainer.res"
+              },
+              {
+                "name": "notificationtoastcontrol.res",
+                "type": "file",
+                "path": "resource/ui/econ/notificationtoastcontrol.res"
+              },
+              {
+                "name": "paintkitconsumedialog.res",
+                "type": "file",
+                "path": "resource/ui/econ/paintkitconsumedialog.res"
+              },
+              {
+                "name": "questdefinitionviewpanel.res",
+                "type": "file",
+                "path": "resource/ui/econ/questdefinitionviewpanel.res"
+              },
+              {
+                "name": "questdetailspanel.res",
+                "type": "file",
+                "path": "resource/ui/econ/questdetailspanel.res"
+              },
+              {
+                "name": "questeditor.res",
+                "type": "file",
+                "path": "resource/ui/econ/questeditor.res"
+              },
+              {
+                "name": "questlogpanel.res",
+                "type": "file",
+                "path": "resource/ui/econ/questlogpanel.res"
+              },
+              {
+                "name": "questlogpanel_halloween.res",
+                "type": "file",
+                "path": "resource/ui/econ/questlogpanel_halloween.res"
+              },
+              {
+                "name": "questmapnodepanel.res",
+                "type": "file",
+                "path": "resource/ui/econ/questmapnodepanel.res"
+              },
+              {
+                "name": "questmapnodetooltippanel.res",
+                "type": "file",
+                "path": "resource/ui/econ/questmapnodetooltippanel.res"
+              },
+              {
+                "name": "questmappanel.res",
+                "type": "file",
+                "path": "resource/ui/econ/questmappanel.res"
+              },
+              {
+                "name": "questmaprewarditempanel.res",
+                "type": "file",
+                "path": "resource/ui/econ/questmaprewarditempanel.res"
+              },
+              {
+                "name": "questnotificationpanel_base.res",
+                "type": "file",
+                "path": "resource/ui/econ/questnotificationpanel_base.res"
+              },
+              {
+                "name": "questnotificationpanel_pauling_standard.res",
+                "type": "file",
+                "path": "resource/ui/econ/questnotificationpanel_pauling_standard.res"
+              },
+              {
+                "name": "questviewsubpanel.res",
+                "type": "file",
+                "path": "resource/ui/econ/questviewsubpanel.res"
+              },
+              {
+                "name": "scrollablequestdetails.res",
+                "type": "file",
+                "path": "resource/ui/econ/scrollablequestdetails.res"
+              },
+              {
+                "name": "scrollablequestlist.res",
+                "type": "file",
+                "path": "resource/ui/econ/scrollablequestlist.res"
+              },
+              {
+                "name": "scrollablequestlist_halloween.res",
+                "type": "file",
+                "path": "resource/ui/econ/scrollablequestlist_halloween.res"
+              },
+              {
+                "name": "scrollablequestlist_toughbreak.res",
+                "type": "file",
+                "path": "resource/ui/econ/scrollablequestlist_toughbreak.res"
+              },
+              {
+                "name": "store",
+                "type": "folder",
+                "path": "resource/ui/econ/store",
+                "children": [
+                  {
+                    "name": "v1",
+                    "type": "folder",
+                    "path": "resource/ui/econ/store/v1",
+                    "children": [
+                      {
+                        "name": "storehome.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v1/storehome.res"
+                      },
+                      {
+                        "name": "storehome_freetrial.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v1/storehome_freetrial.res"
+                      },
+                      {
+                        "name": "storehome_winter1.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v1/storehome_winter1.res"
+                      },
+                      {
+                        "name": "storehome_winter2.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v1/storehome_winter2.res"
+                      },
+                      {
+                        "name": "storehome_winter3.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v1/storehome_winter3.res"
+                      },
+                      {
+                        "name": "storeitemcontrols.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v1/storeitemcontrols.res"
+                      },
+                      {
+                        "name": "storepage.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v1/storepage.res"
+                      },
+                      {
+                        "name": "storepage_bundles.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v1/storepage_bundles.res"
+                      },
+                      {
+                        "name": "storepage_cgtrading.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v1/storepage_cgtrading.res"
+                      },
+                      {
+                        "name": "storepage_drgrordbort.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v1/storepage_drgrordbort.res"
+                      },
+                      {
+                        "name": "storepage_halloween.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v1/storepage_halloween.res"
+                      },
+                      {
+                        "name": "storepage_maps.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v1/storepage_maps.res"
+                      },
+                      {
+                        "name": "storepage_new.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v1/storepage_new.res"
+                      },
+                      {
+                        "name": "storepage_popular.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v1/storepage_popular.res"
+                      },
+                      {
+                        "name": "storepage_previewable.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v1/storepage_previewable.res"
+                      },
+                      {
+                        "name": "storepage_summer.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v1/storepage_summer.res"
+                      },
+                      {
+                        "name": "storepanel.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v1/storepanel.res"
+                      },
+                      {
+                        "name": "storepreviewitempanel.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v1/storepreviewitempanel.res"
+                      },
+                      {
+                        "name": "storepreviewitempanel_maps.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v1/storepreviewitempanel_maps.res"
+                      },
+                      {
+                        "name": "storeprice.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v1/storeprice.res"
+                      },
+                      {
+                        "name": "storeprice_bundles.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v1/storeprice_bundles.res"
+                      },
+                      {
+                        "name": "storeprice_jumbo.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v1/storeprice_jumbo.res"
+                      },
+                      {
+                        "name": "storeprice_new.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v1/storeprice_new.res"
+                      },
+                      {
+                        "name": "storeprice_popular.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v1/storeprice_popular.res"
+                      },
+                      {
+                        "name": "storestatusdialog.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v1/storestatusdialog.res"
+                      },
+                      {
+                        "name": "storeviewcartpanel.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v1/storeviewcartpanel.res"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "v2",
+                    "type": "folder",
+                    "path": "resource/ui/econ/store/v2",
+                    "children": [
+                      {
+                        "name": "storehome_base.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v2/storehome_base.res"
+                      },
+                      {
+                        "name": "storehome_freetrial.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v2/storehome_freetrial.res"
+                      },
+                      {
+                        "name": "storehome_premium.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v2/storehome_premium.res"
+                      },
+                      {
+                        "name": "storeitemcontrols.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v2/storeitemcontrols.res"
+                      },
+                      {
+                        "name": "storemapstampsinfodialog.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v2/storemapstampsinfodialog.res"
+                      },
+                      {
+                        "name": "storepage.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v2/storepage.res"
+                      },
+                      {
+                        "name": "storepage_bundles.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v2/storepage_bundles.res"
+                      },
+                      {
+                        "name": "storepage_items.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v2/storepage_items.res"
+                      },
+                      {
+                        "name": "storepage_maps.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v2/storepage_maps.res"
+                      },
+                      {
+                        "name": "storepanel.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v2/storepanel.res"
+                      },
+                      {
+                        "name": "storepreviewitempanel.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v2/storepreviewitempanel.res"
+                      },
+                      {
+                        "name": "storepreviewitempanel_fullscreen.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v2/storepreviewitempanel_fullscreen.res"
+                      },
+                      {
+                        "name": "storepreviewitempanel_maps.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v2/storepreviewitempanel_maps.res"
+                      },
+                      {
+                        "name": "storeviewcartpanel.res",
+                        "type": "file",
+                        "path": "resource/ui/econ/store/v2/storeviewcartpanel.res"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "strangecounttransferdialog.res",
+                "type": "file",
+                "path": "resource/ui/econ/strangecounttransferdialog.res"
+              },
+              {
+                "name": "tradingpanel.res",
+                "type": "file",
+                "path": "resource/ui/econ/tradingpanel.res"
+              },
+              {
+                "name": "tradingstartdialog.res",
+                "type": "file",
+                "path": "resource/ui/econ/tradingstartdialog.res"
+              },
+              {
+                "name": "warjoinpanel.res",
+                "type": "file",
+                "path": "resource/ui/econ/warjoinpanel.res"
+              },
+              {
+                "name": "warstandingpanel.res",
+                "type": "file",
+                "path": "resource/ui/econ/warstandingpanel.res"
+              }
+            ]
+          },
+          {
+            "name": "enemycountpanel.res",
+            "type": "file",
+            "path": "resource/ui/enemycountpanel.res"
+          },
+          {
+            "name": "explanationpopup.res",
+            "type": "file",
+            "path": "resource/ui/explanationpopup.res"
+          },
+          {
+            "name": "flagcalloutpanel.res",
+            "type": "file",
+            "path": "resource/ui/flagcalloutpanel.res"
+          },
+          {
+            "name": "flagstatus.res",
+            "type": "file",
+            "path": "resource/ui/flagstatus.res"
+          },
+          {
+            "name": "freezepanelcallout.res",
+            "type": "file",
+            "path": "resource/ui/freezepanelcallout.res"
+          },
+          {
+            "name": "freezepanelkillerhealth.res",
+            "type": "file",
+            "path": "resource/ui/freezepanelkillerhealth.res"
+          },
+          {
+            "name": "freezepanel_basic.res",
+            "type": "file",
+            "path": "resource/ui/freezepanel_basic.res"
+          },
+          {
+            "name": "giveawayitempanel.res",
+            "type": "file",
+            "path": "resource/ui/giveawayitempanel.res"
+          },
+          {
+            "name": "globalchat.res",
+            "type": "file",
+            "path": "resource/ui/globalchat.res"
+          },
+          {
+            "name": "globalexplanations.res",
+            "type": "file",
+            "path": "resource/ui/globalexplanations.res"
+          },
+          {
+            "name": "healthiconpanel.res",
+            "type": "file",
+            "path": "resource/ui/healthiconpanel.res"
+          },
+          {
+            "name": "hudaccountpanel.res",
+            "type": "file",
+            "path": "resource/ui/hudaccountpanel.res"
+          },
+          {
+            "name": "hudachievementfloatingnumber.res",
+            "type": "file",
+            "path": "resource/ui/hudachievementfloatingnumber.res"
+          },
+          {
+            "name": "hudachievementtrackeritem.res",
+            "type": "file",
+            "path": "resource/ui/hudachievementtrackeritem.res"
+          },
+          {
+            "name": "hudalert.res",
+            "type": "file",
+            "path": "resource/ui/hudalert.res"
+          },
+          {
+            "name": "hudammoweapons.res",
+            "type": "file",
+            "path": "resource/ui/hudammoweapons.res"
+          },
+          {
+            "name": "hudarenacappointcountdown.res",
+            "type": "file",
+            "path": "resource/ui/hudarenacappointcountdown.res"
+          },
+          {
+            "name": "hudarenaclasslayout.res",
+            "type": "file",
+            "path": "resource/ui/hudarenaclasslayout.res"
+          },
+          {
+            "name": "hudarenanotification.res",
+            "type": "file",
+            "path": "resource/ui/hudarenanotification.res"
+          },
+          {
+            "name": "hudarenaplayercount.res",
+            "type": "file",
+            "path": "resource/ui/hudarenaplayercount.res"
+          },
+          {
+            "name": "hudarenateammenu.res",
+            "type": "file",
+            "path": "resource/ui/hudarenateammenu.res"
+          },
+          {
+            "name": "hudarenateammenu_sc.res",
+            "type": "file",
+            "path": "resource/ui/hudarenateammenu_sc.res"
+          },
+          {
+            "name": "hudarenavspanel.res",
+            "type": "file",
+            "path": "resource/ui/hudarenavspanel.res"
+          },
+          {
+            "name": "hudarenawinpanel.res",
+            "type": "file",
+            "path": "resource/ui/hudarenawinpanel.res"
+          },
+          {
+            "name": "hudbosshealth.res",
+            "type": "file",
+            "path": "resource/ui/hudbosshealth.res"
+          },
+          {
+            "name": "hudbowcharge.res",
+            "type": "file",
+            "path": "resource/ui/hudbowcharge.res"
+          },
+          {
+            "name": "hudcurrencyaccount.res",
+            "type": "file",
+            "path": "resource/ui/hudcurrencyaccount.res"
+          },
+          {
+            "name": "huddamageaccount.res",
+            "type": "file",
+            "path": "resource/ui/huddamageaccount.res"
+          },
+          {
+            "name": "huddemomancharge.res",
+            "type": "file",
+            "path": "resource/ui/huddemomancharge.res"
+          },
+          {
+            "name": "huddemomanpipes.res",
+            "type": "file",
+            "path": "resource/ui/huddemomanpipes.res"
+          },
+          {
+            "name": "hudhealthaccount.res",
+            "type": "file",
+            "path": "resource/ui/hudhealthaccount.res"
+          },
+          {
+            "name": "hudinspectpanel.res",
+            "type": "file",
+            "path": "resource/ui/hudinspectpanel.res"
+          },
+          {
+            "name": "huditemattributetracker.res",
+            "type": "file",
+            "path": "resource/ui/huditemattributetracker.res"
+          },
+          {
+            "name": "huditemeffectmeter.res",
+            "type": "file",
+            "path": "resource/ui/huditemeffectmeter.res"
+          },
+          {
+            "name": "huditemeffectmeter_cleaver.res",
+            "type": "file",
+            "path": "resource/ui/huditemeffectmeter_cleaver.res"
+          },
+          {
+            "name": "huditemeffectmeter_demoman.res",
+            "type": "file",
+            "path": "resource/ui/huditemeffectmeter_demoman.res"
+          },
+          {
+            "name": "huditemeffectmeter_engineer.res",
+            "type": "file",
+            "path": "resource/ui/huditemeffectmeter_engineer.res"
+          },
+          {
+            "name": "huditemeffectmeter_halloweensouls.res",
+            "type": "file",
+            "path": "resource/ui/huditemeffectmeter_halloweensouls.res"
+          },
+          {
+            "name": "huditemeffectmeter_heavy.res",
+            "type": "file",
+            "path": "resource/ui/huditemeffectmeter_heavy.res"
+          },
+          {
+            "name": "huditemeffectmeter_kartcharge.res",
+            "type": "file",
+            "path": "resource/ui/huditemeffectmeter_kartcharge.res"
+          },
+          {
+            "name": "huditemeffectmeter_killstreak.res",
+            "type": "file",
+            "path": "resource/ui/huditemeffectmeter_killstreak.res"
+          },
+          {
+            "name": "huditemeffectmeter_organs.res",
+            "type": "file",
+            "path": "resource/ui/huditemeffectmeter_organs.res"
+          },
+          {
+            "name": "huditemeffectmeter_particlecannon.res",
+            "type": "file",
+            "path": "resource/ui/huditemeffectmeter_particlecannon.res"
+          },
+          {
+            "name": "huditemeffectmeter_pomson.res",
+            "type": "file",
+            "path": "resource/ui/huditemeffectmeter_pomson.res"
+          },
+          {
+            "name": "huditemeffectmeter_powerupbottle.res",
+            "type": "file",
+            "path": "resource/ui/huditemeffectmeter_powerupbottle.res"
+          },
+          {
+            "name": "huditemeffectmeter_pyro.res",
+            "type": "file",
+            "path": "resource/ui/huditemeffectmeter_pyro.res"
+          },
+          {
+            "name": "huditemeffectmeter_raygun.res",
+            "type": "file",
+            "path": "resource/ui/huditemeffectmeter_raygun.res"
+          },
+          {
+            "name": "huditemeffectmeter_sapper.res",
+            "type": "file",
+            "path": "resource/ui/huditemeffectmeter_sapper.res"
+          },
+          {
+            "name": "huditemeffectmeter_scout.res",
+            "type": "file",
+            "path": "resource/ui/huditemeffectmeter_scout.res"
+          },
+          {
+            "name": "huditemeffectmeter_sniper.res",
+            "type": "file",
+            "path": "resource/ui/huditemeffectmeter_sniper.res"
+          },
+          {
+            "name": "huditemeffectmeter_sniperfocus.res",
+            "type": "file",
+            "path": "resource/ui/huditemeffectmeter_sniperfocus.res"
+          },
+          {
+            "name": "huditemeffectmeter_sodapopper.res",
+            "type": "file",
+            "path": "resource/ui/huditemeffectmeter_sodapopper.res"
+          },
+          {
+            "name": "huditemeffectmeter_spy.res",
+            "type": "file",
+            "path": "resource/ui/huditemeffectmeter_spy.res"
+          },
+          {
+            "name": "huditemeffectmeter_spyknife.res",
+            "type": "file",
+            "path": "resource/ui/huditemeffectmeter_spyknife.res"
+          },
+          {
+            "name": "hudkillstreaknotice.res",
+            "type": "file",
+            "path": "resource/ui/hudkillstreaknotice.res"
+          },
+          {
+            "name": "hudmannvsmachinestatus.res",
+            "type": "file",
+            "path": "resource/ui/hudmannvsmachinestatus.res"
+          },
+          {
+            "name": "hudmatchstatus.res",
+            "type": "file",
+            "path": "resource/ui/hudmatchstatus.res"
+          },
+          {
+            "name": "hudmatchsummary.res",
+            "type": "file",
+            "path": "resource/ui/hudmatchsummary.res"
+          },
+          {
+            "name": "hudmediccharge.res",
+            "type": "file",
+            "path": "resource/ui/hudmediccharge.res"
+          },
+          {
+            "name": "hudmenutauntselection.res",
+            "type": "file",
+            "path": "resource/ui/hudmenutauntselection.res"
+          },
+          {
+            "name": "hudmenutauntselection_sc.res",
+            "type": "file",
+            "path": "resource/ui/hudmenutauntselection_sc.res"
+          },
+          {
+            "name": "hudminigame_base.res",
+            "type": "file",
+            "path": "resource/ui/hudminigame_base.res"
+          },
+          {
+            "name": "hudminigame_collection.res",
+            "type": "file",
+            "path": "resource/ui/hudminigame_collection.res"
+          },
+          {
+            "name": "hudminigame_platform.res",
+            "type": "file",
+            "path": "resource/ui/hudminigame_platform.res"
+          },
+          {
+            "name": "hudminigame_soccer.res",
+            "type": "file",
+            "path": "resource/ui/hudminigame_soccer.res"
+          },
+          {
+            "name": "hudminigame_soccersuddendeath.res",
+            "type": "file",
+            "path": "resource/ui/hudminigame_soccersuddendeath.res"
+          },
+          {
+            "name": "hudobjectiveflagpanel.res",
+            "type": "file",
+            "path": "resource/ui/hudobjectiveflagpanel.res"
+          },
+          {
+            "name": "hudobjectivekothtimepanel.res",
+            "type": "file",
+            "path": "resource/ui/hudobjectivekothtimepanel.res"
+          },
+          {
+            "name": "hudobjectiveplayerdestruction.res",
+            "type": "file",
+            "path": "resource/ui/hudobjectiveplayerdestruction.res"
+          },
+          {
+            "name": "hudobjectiverobotdestruction.res",
+            "type": "file",
+            "path": "resource/ui/hudobjectiverobotdestruction.res"
+          },
+          {
+            "name": "hudobjectivestatus.res",
+            "type": "file",
+            "path": "resource/ui/hudobjectivestatus.res"
+          },
+          {
+            "name": "hudobjectivetimepanel.res",
+            "type": "file",
+            "path": "resource/ui/hudobjectivetimepanel.res"
+          },
+          {
+            "name": "hudpasstime.res",
+            "type": "file",
+            "path": "resource/ui/hudpasstime.res"
+          },
+          {
+            "name": "hudpasstimeballstatus.res",
+            "type": "file",
+            "path": "resource/ui/hudpasstimeballstatus.res"
+          },
+          {
+            "name": "hudpasstimeoffscreenarrow.res",
+            "type": "file",
+            "path": "resource/ui/hudpasstimeoffscreenarrow.res"
+          },
+          {
+            "name": "hudpasstimepassnotify.res",
+            "type": "file",
+            "path": "resource/ui/hudpasstimepassnotify.res"
+          },
+          {
+            "name": "hudpasstimeteamscore.res",
+            "type": "file",
+            "path": "resource/ui/hudpasstimeteamscore.res"
+          },
+          {
+            "name": "hudplayerclass.res",
+            "type": "file",
+            "path": "resource/ui/hudplayerclass.res"
+          },
+          {
+            "name": "hudplayerhealth.res",
+            "type": "file",
+            "path": "resource/ui/hudplayerhealth.res"
+          },
+          {
+            "name": "hudpowerupeffectmeter.res",
+            "type": "file",
+            "path": "resource/ui/hudpowerupeffectmeter.res"
+          },
+          {
+            "name": "hudpvewinpanel.res",
+            "type": "file",
+            "path": "resource/ui/hudpvewinpanel.res"
+          },
+          {
+            "name": "hudrocketpack.res",
+            "type": "file",
+            "path": "resource/ui/hudrocketpack.res"
+          },
+          {
+            "name": "hudroundcounter.res",
+            "type": "file",
+            "path": "resource/ui/hudroundcounter.res"
+          },
+          {
+            "name": "hudspellselection.res",
+            "type": "file",
+            "path": "resource/ui/hudspellselection.res"
+          },
+          {
+            "name": "hudstalemate.res",
+            "type": "file",
+            "path": "resource/ui/hudstalemate.res"
+          },
+          {
+            "name": "hudstopwatch.res",
+            "type": "file",
+            "path": "resource/ui/hudstopwatch.res"
+          },
+          {
+            "name": "hudteamgoal.res",
+            "type": "file",
+            "path": "resource/ui/hudteamgoal.res"
+          },
+          {
+            "name": "hudteamgoaltournament.res",
+            "type": "file",
+            "path": "resource/ui/hudteamgoaltournament.res"
+          },
+          {
+            "name": "hudteamswitch.res",
+            "type": "file",
+            "path": "resource/ui/hudteamswitch.res"
+          },
+          {
+            "name": "hudtournament.res",
+            "type": "file",
+            "path": "resource/ui/hudtournament.res"
+          },
+          {
+            "name": "hudtournamentsetup.res",
+            "type": "file",
+            "path": "resource/ui/hudtournamentsetup.res"
+          },
+          {
+            "name": "hudtraining.res",
+            "type": "file",
+            "path": "resource/ui/hudtraining.res"
+          },
+          {
+            "name": "hudtrainingmsg.res",
+            "type": "file",
+            "path": "resource/ui/hudtrainingmsg.res"
+          },
+          {
+            "name": "hudupgradepanel.res",
+            "type": "file",
+            "path": "resource/ui/hudupgradepanel.res"
+          },
+          {
+            "name": "hudwarcount.res",
+            "type": "file",
+            "path": "resource/ui/hudwarcount.res"
+          },
+          {
+            "name": "hudweaponselection.res",
+            "type": "file",
+            "path": "resource/ui/hudweaponselection.res"
+          },
+          {
+            "name": "hud_obj_dispenser.res",
+            "type": "file",
+            "path": "resource/ui/hud_obj_dispenser.res"
+          },
+          {
+            "name": "hud_obj_sapper.res",
+            "type": "file",
+            "path": "resource/ui/hud_obj_sapper.res"
+          },
+          {
+            "name": "hud_obj_sentrygun.res",
+            "type": "file",
+            "path": "resource/ui/hud_obj_sentrygun.res"
+          },
+          {
+            "name": "hud_obj_sentrygun_disp.res",
+            "type": "file",
+            "path": "resource/ui/hud_obj_sentrygun_disp.res"
+          },
+          {
+            "name": "hud_obj_tele.res",
+            "type": "file",
+            "path": "resource/ui/hud_obj_tele.res"
+          },
+          {
+            "name": "hud_obj_tele_entrance.res",
+            "type": "file",
+            "path": "resource/ui/hud_obj_tele_entrance.res"
+          },
+          {
+            "name": "hud_obj_tele_exit.res",
+            "type": "file",
+            "path": "resource/ui/hud_obj_tele_exit.res"
+          },
+          {
+            "name": "importfiledialog.res",
+            "type": "file",
+            "path": "resource/ui/importfiledialog.res"
+          },
+          {
+            "name": "importfiletexteditdialog.res",
+            "type": "file",
+            "path": "resource/ui/importfiletexteditdialog.res"
+          },
+          {
+            "name": "importmaterialeditdialog.res",
+            "type": "file",
+            "path": "resource/ui/importmaterialeditdialog.res"
+          },
+          {
+            "name": "importpreviewitempanel.res",
+            "type": "file",
+            "path": "resource/ui/importpreviewitempanel.res"
+          },
+          {
+            "name": "ingamequeuestatus.res",
+            "type": "file",
+            "path": "resource/ui/ingamequeuestatus.res"
+          },
+          {
+            "name": "intromenu.res",
+            "type": "file",
+            "path": "resource/ui/intromenu.res"
+          },
+          {
+            "name": "intromenu_sc.res",
+            "type": "file",
+            "path": "resource/ui/intromenu_sc.res"
+          },
+          {
+            "name": "invitenotification.res",
+            "type": "file",
+            "path": "resource/ui/invitenotification.res"
+          },
+          {
+            "name": "itemoptionspanel.res",
+            "type": "file",
+            "path": "resource/ui/itemoptionspanel.res"
+          },
+          {
+            "name": "itemquickswitch.res",
+            "type": "file",
+            "path": "resource/ui/itemquickswitch.res"
+          },
+          {
+            "name": "itemrenameconfirmationdialog.res",
+            "type": "file",
+            "path": "resource/ui/itemrenameconfirmationdialog.res"
+          },
+          {
+            "name": "itemrenamedialog.res",
+            "type": "file",
+            "path": "resource/ui/itemrenamedialog.res"
+          },
+          {
+            "name": "itemrenameinvaliddialog.res",
+            "type": "file",
+            "path": "resource/ui/itemrenameinvaliddialog.res"
+          },
+          {
+            "name": "itemselectionpanel.res",
+            "type": "file",
+            "path": "resource/ui/itemselectionpanel.res"
+          },
+          {
+            "name": "itemslotpanel.res",
+            "type": "file",
+            "path": "resource/ui/itemslotpanel.res"
+          },
+          {
+            "name": "layeredmappanel.res",
+            "type": "file",
+            "path": "resource/ui/layeredmappanel.res"
+          },
+          {
+            "name": "layeredmappanelitem.res",
+            "type": "file",
+            "path": "resource/ui/layeredmappanelitem.res"
+          },
+          {
+            "name": "layeredmappaneltooltip.res",
+            "type": "file",
+            "path": "resource/ui/layeredmappaneltooltip.res"
+          },
+          {
+            "name": "leaderboardentry.res",
+            "type": "file",
+            "path": "resource/ui/leaderboardentry.res"
+          },
+          {
+            "name": "leaderboardentryrank.res",
+            "type": "file",
+            "path": "resource/ui/leaderboardentryrank.res"
+          },
+          {
+            "name": "leaderboardentryscore.res",
+            "type": "file",
+            "path": "resource/ui/leaderboardentryscore.res"
+          },
+          {
+            "name": "leaderboardspreadentry.res",
+            "type": "file",
+            "path": "resource/ui/leaderboardspreadentry.res"
+          },
+          {
+            "name": "loadoutpresetpanel.res",
+            "type": "file",
+            "path": "resource/ui/loadoutpresetpanel.res"
+          },
+          {
+            "name": "lobbycontainerframe.res",
+            "type": "file",
+            "path": "resource/ui/lobbycontainerframe.res"
+          },
+          {
+            "name": "lobbycontainerframe_casual.res",
+            "type": "file",
+            "path": "resource/ui/lobbycontainerframe_casual.res"
+          },
+          {
+            "name": "lobbycontainerframe_comp.res",
+            "type": "file",
+            "path": "resource/ui/lobbycontainerframe_comp.res"
+          },
+          {
+            "name": "lobbycontainerframe_mvm.res",
+            "type": "file",
+            "path": "resource/ui/lobbycontainerframe_mvm.res"
+          },
+          {
+            "name": "lobbypanel.res",
+            "type": "file",
+            "path": "resource/ui/lobbypanel.res"
+          },
+          {
+            "name": "lobbypanel_casual.res",
+            "type": "file",
+            "path": "resource/ui/lobbypanel_casual.res"
+          },
+          {
+            "name": "lobbypanel_comp.res",
+            "type": "file",
+            "path": "resource/ui/lobbypanel_comp.res"
+          },
+          {
+            "name": "lobbypanel_mvm.res",
+            "type": "file",
+            "path": "resource/ui/lobbypanel_mvm.res"
+          },
+          {
+            "name": "mainmenueventplaylistentry.res",
+            "type": "file",
+            "path": "resource/ui/mainmenueventplaylistentry.res"
+          },
+          {
+            "name": "mainmenuoverride.res",
+            "type": "file",
+            "path": "resource/ui/mainmenuoverride.res"
+          },
+          {
+            "name": "mainmenuplaylistentry.res",
+            "type": "file",
+            "path": "resource/ui/mainmenuplaylistentry.res"
+          },
+          {
+            "name": "mainmenu_saxxyawards.res",
+            "type": "file",
+            "path": "resource/ui/mainmenu_saxxyawards.res"
+          },
+          {
+            "name": "mapinfomenu.res",
+            "type": "file",
+            "path": "resource/ui/mapinfomenu.res"
+          },
+          {
+            "name": "mapinfomenu_sc.res",
+            "type": "file",
+            "path": "resource/ui/mapinfomenu_sc.res"
+          },
+          {
+            "name": "matchhistoryentrypanel.res",
+            "type": "file",
+            "path": "resource/ui/matchhistoryentrypanel.res"
+          },
+          {
+            "name": "matchmakingcasualcriteria.res",
+            "type": "file",
+            "path": "resource/ui/matchmakingcasualcriteria.res"
+          },
+          {
+            "name": "matchmakingcategorymappanel.res",
+            "type": "file",
+            "path": "resource/ui/matchmakingcategorymappanel.res"
+          },
+          {
+            "name": "matchmakingcategorypanel.res",
+            "type": "file",
+            "path": "resource/ui/matchmakingcategorypanel.res"
+          },
+          {
+            "name": "matchmakingdashboard.res",
+            "type": "file",
+            "path": "resource/ui/matchmakingdashboard.res"
+          },
+          {
+            "name": "matchmakingdashboardcasualcriteria.res",
+            "type": "file",
+            "path": "resource/ui/matchmakingdashboardcasualcriteria.res"
+          },
+          {
+            "name": "matchmakingdashboardcomp.res",
+            "type": "file",
+            "path": "resource/ui/matchmakingdashboardcomp.res"
+          },
+          {
+            "name": "matchmakingdashboardcompaccess.res",
+            "type": "file",
+            "path": "resource/ui/matchmakingdashboardcompaccess.res"
+          },
+          {
+            "name": "matchmakingdashboardeventmatch.res",
+            "type": "file",
+            "path": "resource/ui/matchmakingdashboardeventmatch.res"
+          },
+          {
+            "name": "matchmakingdashboardleftsidepanel.res",
+            "type": "file",
+            "path": "resource/ui/matchmakingdashboardleftsidepanel.res"
+          },
+          {
+            "name": "matchmakingdashboardmvmcriteria.res",
+            "type": "file",
+            "path": "resource/ui/matchmakingdashboardmvmcriteria.res"
+          },
+          {
+            "name": "matchmakingdashboardmvmmodeselect.res",
+            "type": "file",
+            "path": "resource/ui/matchmakingdashboardmvmmodeselect.res"
+          },
+          {
+            "name": "matchmakingdashboardplaylist.res",
+            "type": "file",
+            "path": "resource/ui/matchmakingdashboardplaylist.res"
+          },
+          {
+            "name": "matchmakingdashboardpopup.res",
+            "type": "file",
+            "path": "resource/ui/matchmakingdashboardpopup.res"
+          },
+          {
+            "name": "matchmakingdashboardpopup_mapvotepanel.res",
+            "type": "file",
+            "path": "resource/ui/matchmakingdashboardpopup_mapvotepanel.res"
+          },
+          {
+            "name": "matchmakingdashboardpopup_newmatch.res",
+            "type": "file",
+            "path": "resource/ui/matchmakingdashboardpopup_newmatch.res"
+          },
+          {
+            "name": "matchmakingdashboardpopup_nextmapvoting.res",
+            "type": "file",
+            "path": "resource/ui/matchmakingdashboardpopup_nextmapvoting.res"
+          },
+          {
+            "name": "matchmakingdashboardpopup_nextmapwinner.res",
+            "type": "file",
+            "path": "resource/ui/matchmakingdashboardpopup_nextmapwinner.res"
+          },
+          {
+            "name": "matchmakingdashboardsidepanel.res",
+            "type": "file",
+            "path": "resource/ui/matchmakingdashboardsidepanel.res"
+          },
+          {
+            "name": "matchmakingdatacenterpopulationpanel.res",
+            "type": "file",
+            "path": "resource/ui/matchmakingdatacenterpopulationpanel.res"
+          },
+          {
+            "name": "matchmakinggrouppanel.res",
+            "type": "file",
+            "path": "resource/ui/matchmakinggrouppanel.res"
+          },
+          {
+            "name": "matchmakingpanel.res",
+            "type": "file",
+            "path": "resource/ui/matchmakingpanel.res"
+          },
+          {
+            "name": "matchmakingpingpanel.res",
+            "type": "file",
+            "path": "resource/ui/matchmakingpingpanel.res"
+          },
+          {
+            "name": "matchmakingplaylist.res",
+            "type": "file",
+            "path": "resource/ui/matchmakingplaylist.res"
+          },
+          {
+            "name": "matchmakingtooltip.res",
+            "type": "file",
+            "path": "resource/ui/matchmakingtooltip.res"
+          },
+          {
+            "name": "mediccallerpanel.res",
+            "type": "file",
+            "path": "resource/ui/mediccallerpanel.res"
+          },
+          {
+            "name": "mmissuedialog.res",
+            "type": "file",
+            "path": "resource/ui/mmissuedialog.res"
+          },
+          {
+            "name": "mvmbombcarrierprogresspanel.res",
+            "type": "file",
+            "path": "resource/ui/mvmbombcarrierprogresspanel.res"
+          },
+          {
+            "name": "mvmcreditspendpanel.res",
+            "type": "file",
+            "path": "resource/ui/mvmcreditspendpanel.res"
+          },
+          {
+            "name": "mvmcreditsubpanel.res",
+            "type": "file",
+            "path": "resource/ui/mvmcreditsubpanel.res"
+          },
+          {
+            "name": "mvmcriteria.res",
+            "type": "file",
+            "path": "resource/ui/mvmcriteria.res"
+          },
+          {
+            "name": "mvmeconrequirementdialog.res",
+            "type": "file",
+            "path": "resource/ui/mvmeconrequirementdialog.res"
+          },
+          {
+            "name": "mvminworldcurrency.res",
+            "type": "file",
+            "path": "resource/ui/mvminworldcurrency.res"
+          },
+          {
+            "name": "mvmscoreboard.res",
+            "type": "file",
+            "path": "resource/ui/mvmscoreboard.res"
+          },
+          {
+            "name": "mvmscoreboardenemyinfo.res",
+            "type": "file",
+            "path": "resource/ui/mvmscoreboardenemyinfo.res"
+          },
+          {
+            "name": "mvmstatentry.res",
+            "type": "file",
+            "path": "resource/ui/mvmstatentry.res"
+          },
+          {
+            "name": "mvmvictorycontainer.res",
+            "type": "file",
+            "path": "resource/ui/mvmvictorycontainer.res"
+          },
+          {
+            "name": "mvmvictorymannupentry.res",
+            "type": "file",
+            "path": "resource/ui/mvmvictorymannupentry.res"
+          },
+          {
+            "name": "mvmvictorymannuploot.res",
+            "type": "file",
+            "path": "resource/ui/mvmvictorymannuploot.res"
+          },
+          {
+            "name": "mvmvictorymannuppanel.res",
+            "type": "file",
+            "path": "resource/ui/mvmvictorymannuppanel.res"
+          },
+          {
+            "name": "mvmvictorymannuptab.res",
+            "type": "file",
+            "path": "resource/ui/mvmvictorymannuptab.res"
+          },
+          {
+            "name": "mvmvictorypanel.res",
+            "type": "file",
+            "path": "resource/ui/mvmvictorypanel.res"
+          },
+          {
+            "name": "mvmvictorysplash.res",
+            "type": "file",
+            "path": "resource/ui/mvmvictorysplash.res"
+          },
+          {
+            "name": "mvmwavelosspanel.res",
+            "type": "file",
+            "path": "resource/ui/mvmwavelosspanel.res"
+          },
+          {
+            "name": "navigationpaneltest.res",
+            "type": "file",
+            "path": "resource/ui/navigationpaneltest.res"
+          },
+          {
+            "name": "newrecipefounddialog.res",
+            "type": "file",
+            "path": "resource/ui/newrecipefounddialog.res"
+          },
+          {
+            "name": "notifications",
+            "type": "folder",
+            "path": "resource/ui/notifications",
+            "children": [
+              {
+                "name": "base_notification.res",
+                "type": "file",
+                "path": "resource/ui/notifications/base_notification.res"
+              },
+              {
+                "name": "notification_manifest.txt",
+                "type": "file",
+                "path": "resource/ui/notifications/notification_manifest.txt"
+              },
+              {
+                "name": "notify_competitive_gc_down.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_competitive_gc_down.res"
+              },
+              {
+                "name": "notify_enemy_flag_captured_blue.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_enemy_flag_captured_blue.res"
+              },
+              {
+                "name": "notify_enemy_flag_captured_red.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_enemy_flag_captured_red.res"
+              },
+              {
+                "name": "notify_enemy_flag_dropped_blue.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_enemy_flag_dropped_blue.res"
+              },
+              {
+                "name": "notify_enemy_flag_dropped_red.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_enemy_flag_dropped_red.res"
+              },
+              {
+                "name": "notify_enemy_flag_returned_blue.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_enemy_flag_returned_blue.res"
+              },
+              {
+                "name": "notify_enemy_flag_returned_red.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_enemy_flag_returned_red.res"
+              },
+              {
+                "name": "notify_enemy_flag_taken_blue.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_enemy_flag_taken_blue.res"
+              },
+              {
+                "name": "notify_enemy_flag_taken_red.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_enemy_flag_taken_red.res"
+              },
+              {
+                "name": "notify_golden_wrench.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_golden_wrench.res"
+              },
+              {
+                "name": "notify_how_to_control_ghost.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_how_to_control_ghost.res"
+              },
+              {
+                "name": "notify_how_to_control_ghost_no_respawn.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_how_to_control_ghost_no_respawn.res"
+              },
+              {
+                "name": "notify_how_to_control_kart.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_how_to_control_kart.res"
+              },
+              {
+                "name": "notify_no_invuln_with_flag_blue.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_no_invuln_with_flag_blue.res"
+              },
+              {
+                "name": "notify_no_invuln_with_flag_red.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_no_invuln_with_flag_red.res"
+              },
+              {
+                "name": "notify_no_tele_with_flag_blue.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_no_tele_with_flag_blue.res"
+              },
+              {
+                "name": "notify_no_tele_with_flag_red.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_no_tele_with_flag_red.res"
+              },
+              {
+                "name": "notify_passtime_howto.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_passtime_howto.res"
+              },
+              {
+                "name": "notify_passtime_no_carry.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_passtime_no_carry.res"
+              },
+              {
+                "name": "notify_passtime_no_cloak.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_passtime_no_cloak.res"
+              },
+              {
+                "name": "notify_passtime_no_disguise.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_passtime_no_disguise.res"
+              },
+              {
+                "name": "notify_passtime_no_holster.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_passtime_no_holster.res"
+              },
+              {
+                "name": "notify_passtime_no_invuln.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_passtime_no_invuln.res"
+              },
+              {
+                "name": "notify_passtime_no_oob.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_passtime_no_oob.res"
+              },
+              {
+                "name": "notify_passtime_no_taunt.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_passtime_no_taunt.res"
+              },
+              {
+                "name": "notify_passtime_no_tele.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_passtime_no_tele.res"
+              },
+              {
+                "name": "notify_rd_robot_attacked_blue.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_rd_robot_attacked_blue.res"
+              },
+              {
+                "name": "notify_rd_robot_attacked_red.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_rd_robot_attacked_red.res"
+              },
+              {
+                "name": "notify_special.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_special.res"
+              },
+              {
+                "name": "notify_touching_enemy_ctf_cap_blue.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_touching_enemy_ctf_cap_blue.res"
+              },
+              {
+                "name": "notify_touching_enemy_ctf_cap_red.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_touching_enemy_ctf_cap_red.res"
+              },
+              {
+                "name": "notify_truce_end.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_truce_end.res"
+              },
+              {
+                "name": "notify_truce_start.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_truce_start.res"
+              },
+              {
+                "name": "notify_your_flag_captured_blue.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_your_flag_captured_blue.res"
+              },
+              {
+                "name": "notify_your_flag_captured_red.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_your_flag_captured_red.res"
+              },
+              {
+                "name": "notify_your_flag_dropped_blue.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_your_flag_dropped_blue.res"
+              },
+              {
+                "name": "notify_your_flag_dropped_red.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_your_flag_dropped_red.res"
+              },
+              {
+                "name": "notify_your_flag_returned_blue.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_your_flag_returned_blue.res"
+              },
+              {
+                "name": "notify_your_flag_returned_red.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_your_flag_returned_red.res"
+              },
+              {
+                "name": "notify_your_flag_taken_blue.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_your_flag_taken_blue.res"
+              },
+              {
+                "name": "notify_your_flag_taken_red.res",
+                "type": "file",
+                "path": "resource/ui/notifications/notify_your_flag_taken_red.res"
+              }
+            ]
+          },
+          {
+            "name": "objectivestatusescort.res",
+            "type": "file",
+            "path": "resource/ui/objectivestatusescort.res"
+          },
+          {
+            "name": "objectivestatusmultipleescort.res",
+            "type": "file",
+            "path": "resource/ui/objectivestatusmultipleescort.res"
+          },
+          {
+            "name": "playerticketstatus.res",
+            "type": "file",
+            "path": "resource/ui/playerticketstatus.res"
+          },
+          {
+            "name": "publishedfilebrowserdialog.res",
+            "type": "file",
+            "path": "resource/ui/publishedfilebrowserdialog.res"
+          },
+          {
+            "name": "publishfiledialog.res",
+            "type": "file",
+            "path": "resource/ui/publishfiledialog.res"
+          },
+          {
+            "name": "pvpcasualrankpanel.res",
+            "type": "file",
+            "path": "resource/ui/pvpcasualrankpanel.res"
+          },
+          {
+            "name": "pvpcomprankpanel.res",
+            "type": "file",
+            "path": "resource/ui/pvpcomprankpanel.res"
+          },
+          {
+            "name": "pvprankpanel.res",
+            "type": "file",
+            "path": "resource/ui/pvprankpanel.res"
+          },
+          {
+            "name": "quests",
+            "type": "folder",
+            "path": "resource/ui/quests",
+            "children": [
+              {
+                "name": "cyoa",
+                "type": "folder",
+                "path": "resource/ui/quests/cyoa",
+                "children": [
+                  {
+                    "name": "questitemtrackerpanel_cyoa.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/cyoa/questitemtrackerpanel_cyoa.res"
+                  },
+                  {
+                    "name": "questmapregionlink.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/cyoa/questmapregionlink.res"
+                  },
+                  {
+                    "name": "questobjectivepanel_cyoa.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/cyoa/questobjectivepanel_cyoa.res"
+                  },
+                  {
+                    "name": "regions",
+                    "type": "folder",
+                    "path": "resource/ui/quests/cyoa/regions",
+                    "children": [
+                      {
+                        "name": "region_base.res",
+                        "type": "file",
+                        "path": "resource/ui/quests/cyoa/regions/region_base.res"
+                      },
+                      {
+                        "name": "region_campaign_3_home.res",
+                        "type": "file",
+                        "path": "resource/ui/quests/cyoa/regions/region_campaign_3_home.res"
+                      },
+                      {
+                        "name": "region_defense.res",
+                        "type": "file",
+                        "path": "resource/ui/quests/cyoa/regions/region_defense.res"
+                      },
+                      {
+                        "name": "region_halloween.res",
+                        "type": "file",
+                        "path": "resource/ui/quests/cyoa/regions/region_halloween.res"
+                      },
+                      {
+                        "name": "region_halloween_bosses.res",
+                        "type": "file",
+                        "path": "resource/ui/quests/cyoa/regions/region_halloween_bosses.res"
+                      },
+                      {
+                        "name": "region_halloween_community_maps.res",
+                        "type": "file",
+                        "path": "resource/ui/quests/cyoa/regions/region_halloween_community_maps.res"
+                      },
+                      {
+                        "name": "region_halloween_official_maps.res",
+                        "type": "file",
+                        "path": "resource/ui/quests/cyoa/regions/region_halloween_official_maps.res"
+                      },
+                      {
+                        "name": "region_maps.res",
+                        "type": "file",
+                        "path": "resource/ui/quests/cyoa/regions/region_maps.res"
+                      },
+                      {
+                        "name": "region_offense.res",
+                        "type": "file",
+                        "path": "resource/ui/quests/cyoa/regions/region_offense.res"
+                      },
+                      {
+                        "name": "region_overworld.res",
+                        "type": "file",
+                        "path": "resource/ui/quests/cyoa/regions/region_overworld.res"
+                      },
+                      {
+                        "name": "region_pyroland.res",
+                        "type": "file",
+                        "path": "resource/ui/quests/cyoa/regions/region_pyroland.res"
+                      },
+                      {
+                        "name": "region_support.res",
+                        "type": "file",
+                        "path": "resource/ui/quests/cyoa/regions/region_support.res"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "lineitem_credits.res",
+                "type": "file",
+                "path": "resource/ui/quests/lineitem_credits.res"
+              },
+              {
+                "name": "lineitem_item.res",
+                "type": "file",
+                "path": "resource/ui/quests/lineitem_item.res"
+              },
+              {
+                "name": "lineitem_objective.res",
+                "type": "file",
+                "path": "resource/ui/quests/lineitem_objective.res"
+              },
+              {
+                "name": "lineitem_points.res",
+                "type": "file",
+                "path": "resource/ui/quests/lineitem_points.res"
+              },
+              {
+                "name": "merasmus",
+                "type": "folder",
+                "path": "resource/ui/quests/merasmus",
+                "children": [
+                  {
+                    "name": "questitempanel_merasmus_base.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/merasmus/questitempanel_merasmus_base.res"
+                  },
+                  {
+                    "name": "questitempanel_merasmus_general.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/merasmus/questitempanel_merasmus_general.res"
+                  },
+                  {
+                    "name": "questitempanel_merasmus_hhh.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/merasmus/questitempanel_merasmus_hhh.res"
+                  },
+                  {
+                    "name": "questitempanel_merasmus_merasmus.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/merasmus/questitempanel_merasmus_merasmus.res"
+                  },
+                  {
+                    "name": "questitempanel_merasmus_monoculus.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/merasmus/questitempanel_merasmus_monoculus.res"
+                  },
+                  {
+                    "name": "questitemtrackerpanel_ingame.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/merasmus/questitemtrackerpanel_ingame.res"
+                  },
+                  {
+                    "name": "questitemtrackerpanel_questlog.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/merasmus/questitemtrackerpanel_questlog.res"
+                  },
+                  {
+                    "name": "questobjectivepanel_ingame.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/merasmus/questobjectivepanel_ingame.res"
+                  },
+                  {
+                    "name": "questobjectivepanel_questlog.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/merasmus/questobjectivepanel_questlog.res"
+                  }
+                ]
+              },
+              {
+                "name": "pauling",
+                "type": "folder",
+                "path": "resource/ui/quests/pauling",
+                "children": [
+                  {
+                    "name": "operation 2",
+                    "type": "folder",
+                    "path": "resource/ui/quests/pauling/operation 2",
+                    "children": [
+                      {
+                        "name": "questitempanel_pauling_base.res",
+                        "type": "file",
+                        "path": "resource/ui/quests/pauling/operation 2/questitempanel_pauling_base.res"
+                      },
+                      {
+                        "name": "questitempanel_pauling_community_map_1.res",
+                        "type": "file",
+                        "path": "resource/ui/quests/pauling/operation 2/questitempanel_pauling_community_map_1.res"
+                      },
+                      {
+                        "name": "questitempanel_pauling_community_map_2.res",
+                        "type": "file",
+                        "path": "resource/ui/quests/pauling/operation 2/questitempanel_pauling_community_map_2.res"
+                      },
+                      {
+                        "name": "questitempanel_pauling_community_map_3.res",
+                        "type": "file",
+                        "path": "resource/ui/quests/pauling/operation 2/questitempanel_pauling_community_map_3.res"
+                      },
+                      {
+                        "name": "questitempanel_pauling_community_map_4.res",
+                        "type": "file",
+                        "path": "resource/ui/quests/pauling/operation 2/questitempanel_pauling_community_map_4.res"
+                      },
+                      {
+                        "name": "questitempanel_pauling_cp.res",
+                        "type": "file",
+                        "path": "resource/ui/quests/pauling/operation 2/questitempanel_pauling_cp.res"
+                      },
+                      {
+                        "name": "questitempanel_pauling_demo.res",
+                        "type": "file",
+                        "path": "resource/ui/quests/pauling/operation 2/questitempanel_pauling_demo.res"
+                      },
+                      {
+                        "name": "questitempanel_pauling_engineer.res",
+                        "type": "file",
+                        "path": "resource/ui/quests/pauling/operation 2/questitempanel_pauling_engineer.res"
+                      },
+                      {
+                        "name": "questitempanel_pauling_headhunter.res",
+                        "type": "file",
+                        "path": "resource/ui/quests/pauling/operation 2/questitempanel_pauling_headhunter.res"
+                      },
+                      {
+                        "name": "questitempanel_pauling_heavy.res",
+                        "type": "file",
+                        "path": "resource/ui/quests/pauling/operation 2/questitempanel_pauling_heavy.res"
+                      },
+                      {
+                        "name": "questitempanel_pauling_medic.res",
+                        "type": "file",
+                        "path": "resource/ui/quests/pauling/operation 2/questitempanel_pauling_medic.res"
+                      },
+                      {
+                        "name": "questitempanel_pauling_payload.res",
+                        "type": "file",
+                        "path": "resource/ui/quests/pauling/operation 2/questitempanel_pauling_payload.res"
+                      },
+                      {
+                        "name": "questitempanel_pauling_playanyclass.res",
+                        "type": "file",
+                        "path": "resource/ui/quests/pauling/operation 2/questitempanel_pauling_playanyclass.res"
+                      },
+                      {
+                        "name": "questitempanel_pauling_pyro.res",
+                        "type": "file",
+                        "path": "resource/ui/quests/pauling/operation 2/questitempanel_pauling_pyro.res"
+                      },
+                      {
+                        "name": "questitempanel_pauling_scout.res",
+                        "type": "file",
+                        "path": "resource/ui/quests/pauling/operation 2/questitempanel_pauling_scout.res"
+                      },
+                      {
+                        "name": "questitempanel_pauling_sniper.res",
+                        "type": "file",
+                        "path": "resource/ui/quests/pauling/operation 2/questitempanel_pauling_sniper.res"
+                      },
+                      {
+                        "name": "questitempanel_pauling_soldier.res",
+                        "type": "file",
+                        "path": "resource/ui/quests/pauling/operation 2/questitempanel_pauling_soldier.res"
+                      },
+                      {
+                        "name": "questitempanel_pauling_spy.res",
+                        "type": "file",
+                        "path": "resource/ui/quests/pauling/operation 2/questitempanel_pauling_spy.res"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "questitempanel_pauling_base.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/pauling/questitempanel_pauling_base.res"
+                  },
+                  {
+                    "name": "questitempanel_pauling_borneo.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/pauling/questitempanel_pauling_borneo.res"
+                  },
+                  {
+                    "name": "questitempanel_pauling_demo.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/pauling/questitempanel_pauling_demo.res"
+                  },
+                  {
+                    "name": "questitempanel_pauling_engineer.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/pauling/questitempanel_pauling_engineer.res"
+                  },
+                  {
+                    "name": "questitempanel_pauling_headhunter.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/pauling/questitempanel_pauling_headhunter.res"
+                  },
+                  {
+                    "name": "questitempanel_pauling_heavy.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/pauling/questitempanel_pauling_heavy.res"
+                  },
+                  {
+                    "name": "questitempanel_pauling_medic.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/pauling/questitempanel_pauling_medic.res"
+                  },
+                  {
+                    "name": "questitempanel_pauling_playanyclass.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/pauling/questitempanel_pauling_playanyclass.res"
+                  },
+                  {
+                    "name": "questitempanel_pauling_powerhouse.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/pauling/questitempanel_pauling_powerhouse.res"
+                  },
+                  {
+                    "name": "questitempanel_pauling_pyro.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/pauling/questitempanel_pauling_pyro.res"
+                  },
+                  {
+                    "name": "questitempanel_pauling_scout.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/pauling/questitempanel_pauling_scout.res"
+                  },
+                  {
+                    "name": "questitempanel_pauling_sniper.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/pauling/questitempanel_pauling_sniper.res"
+                  },
+                  {
+                    "name": "questitempanel_pauling_snowplow.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/pauling/questitempanel_pauling_snowplow.res"
+                  },
+                  {
+                    "name": "questitempanel_pauling_soldier.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/pauling/questitempanel_pauling_soldier.res"
+                  },
+                  {
+                    "name": "questitempanel_pauling_spy.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/pauling/questitempanel_pauling_spy.res"
+                  },
+                  {
+                    "name": "questitempanel_pauling_suijin.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/pauling/questitempanel_pauling_suijin.res"
+                  },
+                  {
+                    "name": "questitemtrackerpanel_ingame.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/pauling/questitemtrackerpanel_ingame.res"
+                  },
+                  {
+                    "name": "questitemtrackerpanel_questlog.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/pauling/questitemtrackerpanel_questlog.res"
+                  },
+                  {
+                    "name": "questobjectivepanel_ingame.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/pauling/questobjectivepanel_ingame.res"
+                  },
+                  {
+                    "name": "questobjectivepanel_questlog.res",
+                    "type": "file",
+                    "path": "resource/ui/quests/pauling/questobjectivepanel_questlog.res"
+                  }
+                ]
+              },
+              {
+                "name": "questitempanel_base.res",
+                "type": "file",
+                "path": "resource/ui/quests/questitempanel_base.res"
+              },
+              {
+                "name": "questitemtrackerpanel_base.res",
+                "type": "file",
+                "path": "resource/ui/quests/questitemtrackerpanel_base.res"
+              },
+              {
+                "name": "questitemtrackerpanel_ingame_base.res",
+                "type": "file",
+                "path": "resource/ui/quests/questitemtrackerpanel_ingame_base.res"
+              },
+              {
+                "name": "questitemtrackerpanel_questlog_base.res",
+                "type": "file",
+                "path": "resource/ui/quests/questitemtrackerpanel_questlog_base.res"
+              },
+              {
+                "name": "questobjectivepanel_ingame_base.res",
+                "type": "file",
+                "path": "resource/ui/quests/questobjectivepanel_ingame_base.res"
+              },
+              {
+                "name": "questobjectivepanel_questlog_base.res",
+                "type": "file",
+                "path": "resource/ui/quests/questobjectivepanel_questlog_base.res"
+              },
+              {
+                "name": "questobjectivescorer.res",
+                "type": "file",
+                "path": "resource/ui/quests/questobjectivescorer.res"
+              }
+            ]
+          },
+          {
+            "name": "quickplaybusydialog.res",
+            "type": "file",
+            "path": "resource/ui/quickplaybusydialog.res"
+          },
+          {
+            "name": "quickplaydialog.res",
+            "type": "file",
+            "path": "resource/ui/quickplaydialog.res"
+          },
+          {
+            "name": "revivedialog.res",
+            "type": "file",
+            "path": "resource/ui/revivedialog.res"
+          },
+          {
+            "name": "robotdestructionstatus.res",
+            "type": "file",
+            "path": "resource/ui/robotdestructionstatus.res"
+          },
+          {
+            "name": "roundinfo.res",
+            "type": "file",
+            "path": "resource/ui/roundinfo.res"
+          },
+          {
+            "name": "saxxyawards_submitform.res",
+            "type": "file",
+            "path": "resource/ui/saxxyawards_submitform.res"
+          },
+          {
+            "name": "scoreboard.res",
+            "type": "file",
+            "path": "resource/ui/scoreboard.res"
+          },
+          {
+            "name": "selectmosthelpfulfrienddialog.res",
+            "type": "file",
+            "path": "resource/ui/selectmosthelpfulfrienddialog.res"
+          },
+          {
+            "name": "selectplayerdialog.res",
+            "type": "file",
+            "path": "resource/ui/selectplayerdialog.res"
+          },
+          {
+            "name": "selectplayerdialog_coach.res",
+            "type": "file",
+            "path": "resource/ui/selectplayerdialog_coach.res"
+          },
+          {
+            "name": "selectplayerdialog_duel.res",
+            "type": "file",
+            "path": "resource/ui/selectplayerdialog_duel.res"
+          },
+          {
+            "name": "servernotconnectedtosteam.res",
+            "type": "file",
+            "path": "resource/ui/servernotconnectedtosteam.res"
+          },
+          {
+            "name": "spectator.res",
+            "type": "file",
+            "path": "resource/ui/spectator.res"
+          },
+          {
+            "name": "spectatorcoach.res",
+            "type": "file",
+            "path": "resource/ui/spectatorcoach.res"
+          },
+          {
+            "name": "spectatorguihealth.res",
+            "type": "file",
+            "path": "resource/ui/spectatorguihealth.res"
+          },
+          {
+            "name": "spectatortournament.res",
+            "type": "file",
+            "path": "resource/ui/spectatortournament.res"
+          },
+          {
+            "name": "spectatortournamentguihealth.res",
+            "type": "file",
+            "path": "resource/ui/spectatortournamentguihealth.res"
+          },
+          {
+            "name": "spectator_sc.res",
+            "type": "file",
+            "path": "resource/ui/spectator_sc.res"
+          },
+          {
+            "name": "stampdonationadd.res",
+            "type": "file",
+            "path": "resource/ui/stampdonationadd.res"
+          },
+          {
+            "name": "staticbadgepanel.res",
+            "type": "file",
+            "path": "resource/ui/staticbadgepanel.res"
+          },
+          {
+            "name": "statpanel_base.res",
+            "type": "file",
+            "path": "resource/ui/statpanel_base.res"
+          },
+          {
+            "name": "statsummary.res",
+            "type": "file",
+            "path": "resource/ui/statsummary.res"
+          },
+          {
+            "name": "statsummary_embedded.res",
+            "type": "file",
+            "path": "resource/ui/statsummary_embedded.res"
+          },
+          {
+            "name": "steamfriendpanel.res",
+            "type": "file",
+            "path": "resource/ui/steamfriendpanel.res"
+          },
+          {
+            "name": "steamworkshopdialog.res",
+            "type": "file",
+            "path": "resource/ui/steamworkshopdialog.res"
+          },
+          {
+            "name": "steamworkshopitem.res",
+            "type": "file",
+            "path": "resource/ui/steamworkshopitem.res"
+          },
+          {
+            "name": "streamlistpanel.res",
+            "type": "file",
+            "path": "resource/ui/streamlistpanel.res"
+          },
+          {
+            "name": "streampanel.res",
+            "type": "file",
+            "path": "resource/ui/streampanel.res"
+          },
+          {
+            "name": "supportnotificationdialog.res",
+            "type": "file",
+            "path": "resource/ui/supportnotificationdialog.res"
+          },
+          {
+            "name": "surveypanel_base.res",
+            "type": "file",
+            "path": "resource/ui/surveypanel_base.res"
+          },
+          {
+            "name": "surveypanel_casualinquiry.res",
+            "type": "file",
+            "path": "resource/ui/surveypanel_casualinquiry.res"
+          },
+          {
+            "name": "surveypanel_compinquiry.res",
+            "type": "file",
+            "path": "resource/ui/surveypanel_compinquiry.res"
+          },
+          {
+            "name": "surveypanel_mapquality.res",
+            "type": "file",
+            "path": "resource/ui/surveypanel_mapquality.res"
+          },
+          {
+            "name": "surveypanel_matchquality.res",
+            "type": "file",
+            "path": "resource/ui/surveypanel_matchquality.res"
+          },
+          {
+            "name": "surveypanel_randomcrit.res",
+            "type": "file",
+            "path": "resource/ui/surveypanel_randomcrit.res"
+          },
+          {
+            "name": "tankprogressbar.res",
+            "type": "file",
+            "path": "resource/ui/tankprogressbar.res"
+          },
+          {
+            "name": "tankstatuspanel.res",
+            "type": "file",
+            "path": "resource/ui/tankstatuspanel.res"
+          },
+          {
+            "name": "targetid.res",
+            "type": "file",
+            "path": "resource/ui/targetid.res"
+          },
+          {
+            "name": "tauntcallerpanel.res",
+            "type": "file",
+            "path": "resource/ui/tauntcallerpanel.res"
+          },
+          {
+            "name": "teammenu.res",
+            "type": "file",
+            "path": "resource/ui/teammenu.res"
+          },
+          {
+            "name": "teammenu_sc.res",
+            "type": "file",
+            "path": "resource/ui/teammenu_sc.res"
+          },
+          {
+            "name": "testitembotcontrols.res",
+            "type": "file",
+            "path": "resource/ui/testitembotcontrols.res"
+          },
+          {
+            "name": "testitemdialog.res",
+            "type": "file",
+            "path": "resource/ui/testitemdialog.res"
+          },
+          {
+            "name": "testitemroot.res",
+            "type": "file",
+            "path": "resource/ui/testitemroot.res"
+          },
+          {
+            "name": "textwindow.res",
+            "type": "file",
+            "path": "resource/ui/textwindow.res"
+          },
+          {
+            "name": "textwindowcustomserver.res",
+            "type": "file",
+            "path": "resource/ui/textwindowcustomserver.res"
+          },
+          {
+            "name": "textwindowcustomserver_sc.res",
+            "type": "file",
+            "path": "resource/ui/textwindowcustomserver_sc.res"
+          },
+          {
+            "name": "textwindow_sc.res",
+            "type": "file",
+            "path": "resource/ui/textwindow_sc.res"
+          },
+          {
+            "name": "tfadvancedoptionsdialog.res",
+            "type": "file",
+            "path": "resource/ui/tfadvancedoptionsdialog.res"
+          },
+          {
+            "name": "tfhudrobotdestruction_activestate.res",
+            "type": "file",
+            "path": "resource/ui/tfhudrobotdestruction_activestate.res"
+          },
+          {
+            "name": "tfhudrobotdestruction_deadstate.res",
+            "type": "file",
+            "path": "resource/ui/tfhudrobotdestruction_deadstate.res"
+          },
+          {
+            "name": "tfhudrobotdestruction_robotindicator.res",
+            "type": "file",
+            "path": "resource/ui/tfhudrobotdestruction_robotindicator.res"
+          },
+          {
+            "name": "tfhudrobotdestruction_shieldedstate.res",
+            "type": "file",
+            "path": "resource/ui/tfhudrobotdestruction_shieldedstate.res"
+          },
+          {
+            "name": "training",
+            "type": "folder",
+            "path": "resource/ui/training",
+            "children": [
+              {
+                "name": "basictraining",
+                "type": "folder",
+                "path": "resource/ui/training/basictraining",
+                "children": [
+                  {
+                    "name": "classdetails.res",
+                    "type": "file",
+                    "path": "resource/ui/training/basictraining/classdetails.res"
+                  },
+                  {
+                    "name": "classpanel.res",
+                    "type": "file",
+                    "path": "resource/ui/training/basictraining/classpanel.res"
+                  },
+                  {
+                    "name": "classselection.res",
+                    "type": "file",
+                    "path": "resource/ui/training/basictraining/classselection.res"
+                  }
+                ]
+              },
+              {
+                "name": "main.res",
+                "type": "file",
+                "path": "resource/ui/training/main.res"
+              },
+              {
+                "name": "modeselection",
+                "type": "folder",
+                "path": "resource/ui/training/modeselection",
+                "children": [
+                  {
+                    "name": "modepanel.res",
+                    "type": "file",
+                    "path": "resource/ui/training/modeselection/modepanel.res"
+                  },
+                  {
+                    "name": "modeselection.res",
+                    "type": "file",
+                    "path": "resource/ui/training/modeselection/modeselection.res"
+                  }
+                ]
+              },
+              {
+                "name": "offlinepractice",
+                "type": "folder",
+                "path": "resource/ui/training/offlinepractice",
+                "children": [
+                  {
+                    "name": "mapselection.res",
+                    "type": "file",
+                    "path": "resource/ui/training/offlinepractice/mapselection.res"
+                  },
+                  {
+                    "name": "practicemodeselection.res",
+                    "type": "file",
+                    "path": "resource/ui/training/offlinepractice/practicemodeselection.res"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "trainingcomplete.res",
+            "type": "file",
+            "path": "resource/ui/trainingcomplete.res"
+          },
+          {
+            "name": "trainingdialog.res",
+            "type": "file",
+            "path": "resource/ui/trainingdialog.res"
+          },
+          {
+            "name": "trainingdialog_old.res",
+            "type": "file",
+            "path": "resource/ui/trainingdialog_old.res"
+          },
+          {
+            "name": "trainingitempanel.res",
+            "type": "file",
+            "path": "resource/ui/trainingitempanel.res"
+          },
+          {
+            "name": "upgradeboxdialog.res",
+            "type": "file",
+            "path": "resource/ui/upgradeboxdialog.res"
+          },
+          {
+            "name": "upgradebuypanel.res",
+            "type": "file",
+            "path": "resource/ui/upgradebuypanel.res"
+          },
+          {
+            "name": "videopanel.res",
+            "type": "file",
+            "path": "resource/ui/videopanel.res"
+          },
+          {
+            "name": "viewrecipespanel.res",
+            "type": "file",
+            "path": "resource/ui/viewrecipespanel.res"
+          },
+          {
+            "name": "votehud.res",
+            "type": "file",
+            "path": "resource/ui/votehud.res"
+          },
+          {
+            "name": "vrcalibration.res",
+            "type": "file",
+            "path": "resource/ui/vrcalibration.res"
+          },
+          {
+            "name": "waitingforplayerspanel.res",
+            "type": "file",
+            "path": "resource/ui/waitingforplayerspanel.res"
+          },
+          {
+            "name": "wavecompletesummarypanel.res",
+            "type": "file",
+            "path": "resource/ui/wavecompletesummarypanel.res"
+          },
+          {
+            "name": "wavestatuspanel.res",
+            "type": "file",
+            "path": "resource/ui/wavestatuspanel.res"
+          },
+          {
+            "name": "winpanel.res",
+            "type": "file",
+            "path": "resource/ui/winpanel.res"
+          },
+          {
+            "name": "xboxdialogs.res",
+            "type": "file",
+            "path": "resource/ui/xboxdialogs.res"
+          },
+          {
+            "name": "xpsourcepanel.res",
+            "type": "file",
+            "path": "resource/ui/xpsourcepanel.res"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "scripts",
+    "type": "folder",
+    "path": "scripts",
+    "children": [
+      {
+        "name": "hudlayout.res",
+        "type": "file",
+        "path": "scripts/hudlayout.res"
+      }
+    ]
+  }
+]
