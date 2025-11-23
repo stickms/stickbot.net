@@ -82,7 +82,10 @@ function HudComponent({
   fontMap,
   loadedFonts,
   line,
-  onElementClick
+  onElementClick,
+  outlineColor,
+  hoveredLine,
+  onHover
 }: {
   name: string;
   data: KVMap;
@@ -91,6 +94,9 @@ function HudComponent({
   loadedFonts: string[];
   line?: number;
   onElementClick?: (line: number) => void;
+  outlineColor?: string;
+  hoveredLine?: number | null;
+  onHover?: (line: number | null) => void;
 }) {
   if (typeof data !== 'object') return null;
 
@@ -139,8 +145,8 @@ function HudComponent({
     color: parseColor(getStr('fgcolor')),
     backgroundColor: parseColor(getStr('bgcolor')),
     // Border for debugging/visibility if no bg
-    border: getStr('bgcolor') ? 'none' : isRoot ? '1px solid rgba(255,255,255,0.5)' : '1px dashed rgba(255,255,255,0.1)',
-    overflow: isRoot ? 'visible' : 'hidden',
+    border: getStr('bgcolor') ? 'none' : isRoot ? '1px solid rgba(255,255,255,0.5)' : `1px dashed ${outlineColor || 'rgba(255,255,255,0.1)'}`,
+    overflow: 'visible',
     fontFamily: fontFamily,
     fontSize: `${fontSize}px`,
     cursor: !isRoot && line && onElementClick ? 'pointer' : 'default',
@@ -176,7 +182,11 @@ function HudComponent({
       <div
         title={fieldName}
         onClick={handleClick}
-        className={`relative ${!isRoot && line ? 'group' : ''}`}
+        onMouseOver={(e) => {
+          e.stopPropagation();
+          if (line && onHover) onHover(line);
+        }}
+        className={`relative ${!isRoot && line ? '' : ''}`}
         style={{
           ...style,
           display: visible ? 'flex' : 'none',
@@ -190,9 +200,9 @@ function HudComponent({
             <ExclamationTriangleIcon className='absolute top-0 right-0 text-yellow-500' />
           </Tooltip>
         )}
-        {!isRoot && line && (
-          <div className='absolute inset-0 hidden group-hover:flex items-center justify-center bg-black/70 text-white text-xs font-mono px-2 py-1 pointer-events-none'>
-            {fieldName}
+        {!isRoot && line && hoveredLine === line && (
+          <div className='absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/70 text-white text-xs font-mono px-2 py-1 pointer-events-none'>
+            <span className='whitespace-nowrap'>{fieldName}</span>
           </div>
         )}
       </div>
@@ -208,7 +218,11 @@ function HudComponent({
         <div
           title={fieldName}
           onClick={handleClick}
-          className={`relative ${!isRoot && line ? 'group' : ''}`}
+          onMouseOver={(e) => {
+            e.stopPropagation();
+            if (line && onHover) onHover(line);
+          }}
+          className={`relative ${!isRoot && line ? '' : ''}`}
           style={{
             ...style,
             display: visible ? 'flex' : 'none',
@@ -235,9 +249,9 @@ function HudComponent({
           >
             {image}
           </span>
-          {!isRoot && line && (
-            <div className='absolute inset-0 hidden group-hover:flex items-center justify-center bg-black/70 text-white text-xs font-mono px-2 py-1 pointer-events-none'>
-              {fieldName}
+          {!isRoot && line && hoveredLine === line && (
+            <div className='absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/70 text-white text-xs font-mono px-2 py-1 pointer-events-none'>
+              <span className='whitespace-nowrap'>{fieldName}</span>
             </div>
           )}
         </div>
@@ -251,7 +265,11 @@ function HudComponent({
       style={style} 
       title={fieldName} 
       onClick={handleClick}
-      className={`relative ${!isRoot && line ? 'group' : ''}`}
+      onMouseOver={(e) => {
+        e.stopPropagation();
+        if (line && onHover) onHover(line);
+      }}
+      className={`relative ${!isRoot && line ? '' : ''}`}
     >
       {Object.entries(data).map(([childKey, childNode]) => {
         if (typeof childNode.value === 'object') {
@@ -264,14 +282,17 @@ function HudComponent({
               loadedFonts={loadedFonts}
               line={childNode.line}
               onElementClick={onElementClick}
+              outlineColor={outlineColor}
+              hoveredLine={hoveredLine}
+              onHover={onHover}
             />
           );
         }
         return null;
       })}
-      {!isRoot && line && (
-        <div className='absolute inset-0 hidden group-hover:flex items-center justify-center bg-black/70 text-white text-xs font-mono px-2 py-1 pointer-events-none z-50'>
-          {fieldName}
+      {!isRoot && line && hoveredLine === line && (
+        <div className='absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/70 text-white text-xs font-mono px-2 py-1 pointer-events-none z-50'>
+          <span className='whitespace-nowrap'>{fieldName}</span>
         </div>
       )}
     </div>
@@ -404,6 +425,13 @@ export default function HudEditor() {
   const [editorWidth, setEditorWidth] = useState(600);
   const [isResizing, setIsResizing] = useState<'sidebar' | 'editor' | 'preview-height' | null>(null);
   const [layoutMode, setLayoutMode] = useState<'horizontal' | 'vertical'>('horizontal');
+  const [outlineColor, setOutlineColor] = useState<string>('rgba(255,255,255,0.1)');
+  const [hoveredLine, setHoveredLine] = useState<number | null>(null);
+
+  // Update outline color based on theme
+  useEffect(() => {
+    setOutlineColor(isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.2)');
+  }, [isDark]);
 
   const activeFile = files[activeFileIndex];
 
@@ -801,6 +829,20 @@ export default function HudEditor() {
 
           <div className={`border-l ${borderColor} h-6 mx-2`}></div>
 
+          <Flex gap='2' align='center'>
+            <Text size='2'>Outline:</Text>
+            <div className='relative w-6 h-6 rounded overflow-hidden border border-gray-300'>
+              <input
+                type='color'
+                value={outlineColor.startsWith('#') ? outlineColor : '#ffffff'} // Simple fallback for color input
+                onChange={(e) => setOutlineColor(e.target.value)}
+                className='absolute -top-2 -left-2 w-10 h-10 p-0 border-0 cursor-pointer'
+              />
+            </div>
+          </Flex>
+
+          <div className={`border-l ${borderColor} h-6 mx-2`}></div>
+
           <Text size='2'>Aspect Ratio:</Text>
           <Select.Root value={aspectRatio} onValueChange={setAspectRatio}>
             <Select.Trigger />
@@ -865,6 +907,7 @@ export default function HudEditor() {
                     minHeight: `${previewDimensions.height}px`,
                     margin: '0 auto'
                   }}
+                  onMouseLeave={() => setHoveredLine(null)}
                 >
                   {parsed &&
                     Object.entries(parsed).map(([childKey, childNode]) =>
@@ -878,6 +921,9 @@ export default function HudEditor() {
                           loadedFonts={fonts.map((f) => f.family)}
                           line={childNode.line}
                           onElementClick={handleElementClick}
+                          outlineColor={outlineColor}
+                          hoveredLine={hoveredLine}
+                          onHover={setHoveredLine}
                         />
                       ) : null
                     )}
@@ -1083,6 +1129,7 @@ export default function HudEditor() {
                         minWidth: `${previewDimensions.width}px`,
                         minHeight: `${previewDimensions.height}px`
                       }}
+                      onMouseLeave={() => setHoveredLine(null)}
                     >
                       {parsed &&
                         Object.entries(parsed).map(([childKey, childNode]) =>
@@ -1096,6 +1143,9 @@ export default function HudEditor() {
                               loadedFonts={fonts.map((f) => f.family)}
                               line={childNode.line}
                               onElementClick={handleElementClick}
+                              outlineColor={outlineColor}
+                              hoveredLine={hoveredLine}
+                              onHover={setHoveredLine}
                             />
                           ) : null
                         )}
