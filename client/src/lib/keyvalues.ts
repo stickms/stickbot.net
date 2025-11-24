@@ -19,12 +19,12 @@ export type KVMap = {
 
 export function parseKeyValues(text: string): KeyValues {
   // ... (keep existing simple parser or update it? The user only uses the line number one for the editor)
-  // For simplicity and safety, let's leave the simple parser as is for now, 
-  // but we might need to update it if it's used elsewhere. 
+  // For simplicity and safety, let's leave the simple parser as is for now,
+  // but we might need to update it if it's used elsewhere.
   // Actually, the simple parser returns `KeyValues` which is just a simple object.
   // It doesn't support duplicates/conditionals well in that structure.
   // Let's focus on `parseKeyValuesWithLineNumbers` which is used by the editor.
-  
+
   const root: KeyValues = {};
   const stack: KeyValues[] = [root];
   let currentKey: string | null = null;
@@ -242,16 +242,16 @@ export function parseKeyValuesWithLineNumbers(text: string): KVMap {
       // But with the new structure, we can just push another definition.
       // However, typical KV behavior for sections with same name is merging.
       // Let's assume we append a new definition which contains the new object.
-      
+
       if (!current[currentKey]) {
         current[currentKey] = { definitions: [] };
       }
-      
+
       // Check if there's a previous definition that is an object to merge with?
       // Actually, let's just add a new definition.
       const newDef: KVDefinition = { value: newObj, line: currentKeyLine };
       current[currentKey].definitions.push(newDef);
-      
+
       stack.push(newObj);
       currentKey = null;
     } else if (char === '}') {
@@ -266,7 +266,7 @@ export function parseKeyValuesWithLineNumbers(text: string): KVMap {
 
       // Check for conditional on the KEY itself (rare but possible)
       const keyCondition = readCondition();
-      // If key has a condition, we should probably store it. 
+      // If key has a condition, we should probably store it.
       // But our structure is Map[Key] -> Definitions.
       // If the key itself is conditional, it might mean the whole block is conditional.
       // For now, let's attach the keyCondition to the definition we are about to create.
@@ -278,7 +278,7 @@ export function parseKeyValuesWithLineNumbers(text: string): KVMap {
         currentKeyLine = keyLine;
         // We'll handle the condition when we process the '{' block?
         // Actually, we need to pass this condition to the next block creation.
-        // But `currentKey` is just a string. 
+        // But `currentKey` is just a string.
         // Let's ignore key-level conditions for sections for now as they are rare in HUDs.
       } else {
         const value = readString();
@@ -288,7 +288,7 @@ export function parseKeyValuesWithLineNumbers(text: string): KVMap {
         if (!current[key]) {
           current[key] = { definitions: [] };
         }
-        
+
         current[key].definitions.push({
           value,
           condition: valueCondition || keyCondition, // Use either
@@ -327,14 +327,19 @@ export function mergeKVMap(base: KVMap, override: KVMap): KVMap {
   return result;
 }
 
-export function checkCondition(condition: string | undefined, platform: string): boolean {
+export function checkCondition(
+  condition: string | undefined,
+  platform: string
+): boolean {
   if (!condition) return true;
-  
+
   const cond = condition.replace(/[\[\]]/g, '');
   const isNegated = cond.startsWith('!');
   const cleanCond = isNegated ? cond.substring(1) : cond;
-  const targetPlatform = cleanCond.startsWith('$') ? cleanCond.substring(1) : cleanCond;
-  
+  const targetPlatform = cleanCond.startsWith('$')
+    ? cleanCond.substring(1)
+    : cleanCond;
+
   const matches = targetPlatform.toUpperCase() === platform;
   return isNegated ? !matches : matches;
 }
