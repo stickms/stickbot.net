@@ -22,6 +22,11 @@ import {
   checkCondition
 } from '../lib/keyvalues';
 import {
+  saveFile,
+  loadFile,
+  clearAllFiles
+} from '../lib/storage';
+import {
   PlusIcon,
   Cross2Icon,
   FileTextIcon,
@@ -501,30 +506,53 @@ function resolvePath(currentPath: string, importPath: string): string {
   return stack.join('/');
 }
 
-const STORAGE_KEY = 'hud-editor-storage';
-
-function saveToStorage(path: string, content: string) {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    const data = stored ? JSON.parse(stored) : {};
-    data[path] = content;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  } catch (e) {
-    console.error('Failed to save to storage', e);
-  }
+const WELCOME_TEXT = `"stickbot/welcome.res"
+{
+	"WelcomePanel"
+	{
+		"ControlName"		"EditablePanel"
+		"fieldName"		"WelcomePanel"
+		"xpos"			"c-150"
+		"ypos"			"c-75"
+		"wide"			"300"
+		"tall"			"150"
+		"visible"		"1"
+		"enabled"		"1"
+		"bgcolor_override"	"46 43 42 255"
+		"PaintBackgroundType"	"2"
+		
+		"WelcomeLabel"
+		{
+			"ControlName"	"Label"
+			"fieldName"		"WelcomeLabel"
+			"font"			"DefaultLarge"
+			"labelText"		"Welcome to HUD Editor"
+			"textAlignment"	"center"
+			"xpos"			"0"
+			"ypos"			"20"
+			"wide"			"300"
+			"tall"			"40"
+			"fgcolor_override" "255 255 255 255"
+		}
+		
+		"InstructionLabel"
+		{
+			"ControlName"	"Label"
+			"fieldName"		"InstructionLabel"
+			"font"			"Default"
+			"labelText"		"Select a file to start editing.\\nOr play with this box!"
+			"textAlignment"	"center"
+			"xpos"			"0"
+			"ypos"			"60"
+			"wide"			"300"
+			"tall"			"60"
+			"fgcolor_override" "200 200 200 255"
+		}
+	}
 }
+`;
 
-function loadFromStorage(path: string): string | null {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) return null;
-    const data = JSON.parse(stored);
-    return data[path] || null;
-  } catch (e) {
-    console.error('Failed to load from storage', e);
-    return null;
-  }
-}
+
 
 export default function HudEditor() {
   const { theme } = useTheme();
@@ -578,16 +606,46 @@ export default function HudEditor() {
 
   const activeFile = files[activeFileIndex];
 
+  // Ensure welcome file is open if no files are open
+  useEffect(() => {
+    if (files.length === 0) {
+      setFiles([
+        {
+          name: 'welcome.res',
+          path: 'welcome.res',
+          content: WELCOME_TEXT
+        }
+      ]);
+      setActiveFileIndex(0);
+    }
+  }, [files.length]);
+
   const [previewHeight, setPreviewHeight] = useState(400);
   const [windowHeight, setWindowHeight] = useState(
     typeof window !== 'undefined' ? window.innerHeight : 800
   );
 
   useEffect(() => {
-    const handleResize = () => setWindowHeight(window.innerHeight);
+    const handleResize = () => {
+      setWindowHeight(window.innerHeight);
+      
+      // Enforce layout based on screen width
+      if (window.innerWidth < 1024) {
+        setLayoutMode('vertical');
+      } else {
+        setLayoutMode('horizontal');
+      }
+    };
+
+    // Initial check
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+
 
   // Load manifest
   useEffect(() => {
@@ -599,39 +657,71 @@ export default function HudEditor() {
 
   // Parse ClientScheme.res to extract font mappings
   useEffect(() => {
-    const clientScheme = files.find(
-      (f: HudFile) => f.name.toLowerCase() === 'clientscheme.res'
-    );
-    if (clientScheme) {
-      try {
-        const scheme = parseKeyValues(clientScheme.content);
-        const schemeFonts = (scheme['Scheme'] as KeyValues)?.[
-          'Fonts'
-        ] as KeyValues;
+    const loadScheme = async () => {
+      // Try to find it in open files first
+      let content = files.find(
+        (f: HudFile) => f.name.toLowerCase() === 'clientscheme.res'
+      )?.content;
 
-        if (schemeFonts) {
-          const newMap: Record<string, FontDefinition> = {};
-          Object.entries(schemeFonts).forEach(([fontName, fontDef]) => {
-            // This is simplified. Real scheme parsing is complex (conditional blocks).
-            // We look for "name" in the first block (usually "1")
-            const firstBlock = (fontDef as KeyValues)?.['1'] as KeyValues;
-            const family = firstBlock?.['name'] as string;
-            const tall = firstBlock?.['tall'] as string;
-
-            if (family) {
-              newMap[fontName] = {
-                family,
-                size: parseInt(tall) || 14
-              };
-            }
-          });
-          setFontMap((prev) => ({ ...prev, ...newMap }));
+      // If not open, try to load from storage or fetch
+      if (!content) {
+        // Common paths for ClientScheme
+        const paths = ['resource/ClientScheme.res', 'resource/clientscheme.res'];
+        
+        for (const path of paths) {
+           const stored = await loadFile(path);
+           if (stored) {
+             content = stored;
+             break;
+           }
         }
-      } catch (e) {
-        console.error('Failed to parse ClientScheme', e);
+
+        if (!content) {
+           // Try fetching default
+           try {
+             const res = await fetch('/default_hud/resource/ClientScheme.res');
+             if (res.ok) {
+               content = await res.text();
+             }
+           } catch (e) {
+             console.error('Failed to fetch default ClientScheme', e);
+           }
+        }
       }
-    }
-  }, [files]);
+
+      if (content) {
+        try {
+          const scheme = parseKeyValues(content);
+          const schemeFonts = (scheme['Scheme'] as KeyValues)?.[
+            'Fonts'
+          ] as KeyValues;
+
+          if (schemeFonts) {
+            const newMap: Record<string, FontDefinition> = {};
+            Object.entries(schemeFonts).forEach(([fontName, fontDef]) => {
+              // This is simplified. Real scheme parsing is complex (conditional blocks).
+              // We look for "name" in the first block (usually "1")
+              const firstBlock = (fontDef as KeyValues)?.['1'] as KeyValues;
+              const family = firstBlock?.['name'] as string;
+              const tall = firstBlock?.['tall'] as string;
+
+              if (family) {
+                newMap[fontName] = {
+                  family,
+                  size: parseInt(tall) || 14
+                };
+              }
+            });
+            setFontMap((prev) => ({ ...prev, ...newMap }));
+          }
+        } catch (e) {
+          console.error('Failed to parse ClientScheme', e);
+        }
+      }
+    };
+
+    loadScheme();
+  }, [files]); // Re-run if files change (user might open/edit ClientScheme)
 
   useEffect(() => {
     if (!activeFile) return;
@@ -686,7 +776,7 @@ export default function HudEditor() {
 
     // Save to local storage
     if (file.path) {
-      saveToStorage(file.path, newCode);
+      saveFile(file.path, newCode).catch(console.error);
       // Also update cache so other files using this as base see the change immediately
       setFileCache((prev) => ({ ...prev, [file.path]: newCode }));
     }
@@ -769,7 +859,7 @@ export default function HudEditor() {
 
   const removeFile = (index: number, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (files.length <= 1) return; // Don't remove last file
+    // if (files.length <= 1) return; // Allow removing last file (will trigger welcome)
 
     const newFiles = files.filter((_, i) => i !== index);
     setFiles(newFiles);
@@ -778,33 +868,12 @@ export default function HudEditor() {
     }
   };
 
-  const downloadFonts = async () => {
-    const zip = new JSZip();
 
-    // Add fonts
-    fonts.forEach((font: FontFile) => {
-      zip.file(font.name, font.blob);
-    });
 
-    // Add ClientScheme if present
-    const scheme = files.find(
-      (f: HudFile) => f.name.toLowerCase() === 'clientscheme.res'
-    );
-    if (scheme) {
-      zip.file('ClientScheme.res', scheme.content);
-    }
 
-    const content = await zip.generateAsync({ type: 'blob' });
-    const url = URL.createObjectURL(content);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'custom_fonts.zip';
-    a.click();
-    URL.revokeObjectURL(url);
-  };
 
-  const handleReset = () => {
-    localStorage.removeItem(STORAGE_KEY);
+  const handleReset = async () => {
+    await clearAllFiles();
     window.location.reload();
   };
 
@@ -820,7 +889,7 @@ export default function HudEditor() {
           }
         } else {
           // It's a file
-          let content = loadFromStorage(node.path);
+          let content = await loadFile(node.path);
 
           if (!content) {
             try {
@@ -869,7 +938,7 @@ export default function HudEditor() {
               zipEntry.async('string').then((content) => {
                 // Save to storage
                 // We use the relative path from the zip as the key
-                saveToStorage(relativePath, content);
+                return saveFile(relativePath, content);
               })
             );
           }
@@ -952,7 +1021,7 @@ export default function HudEditor() {
 
     try {
       // Check local storage first
-      const stored = loadFromStorage(node.path);
+      const stored = await loadFile(node.path);
       let text = stored;
 
       if (!text) {
@@ -999,7 +1068,7 @@ export default function HudEditor() {
 
     if (!content) {
       // Check storage
-      const stored = loadFromStorage(path);
+      const stored = await loadFile(path);
       if (stored) {
         content = stored;
         setFileCache((prev) => ({ ...prev, [path]: content! }));
@@ -1270,25 +1339,13 @@ export default function HudEditor() {
       pb='2'
     >
       {/* Top Controls Bar */}
-      <Flex justify='end' align='center' gap='4' className='flex-shrink-0 mb-2'>
+      <Flex justify='between' align='center' gap='4' className='flex-shrink-0 mb-2'>
+        <Text>
+          Stick's TF2 Hud Editor
+        </Text>
         <Flex gap='2' align='center'>
           {/* Desktop Toolbar */}
           <Flex gap='2' align='center' className='hidden lg:flex'>
-            <Text size='2'>Layout:</Text>
-            <Button
-              size='1'
-              variant='soft'
-              onClick={() =>
-                setLayoutMode(
-                  layoutMode === 'horizontal' ? 'vertical' : 'horizontal'
-                )
-              }
-            >
-              {layoutMode === 'horizontal' ? 'Horizontal' : 'Vertical'}
-            </Button>
-
-            <div className={`border-l ${borderColor} h-6 mx-2`}></div>
-
             <Flex gap='2' align='center'>
               <Text size='2'>Outline:</Text>
               <div className='relative w-6 h-6 rounded overflow-hidden border border-gray-300'>
@@ -1324,6 +1381,8 @@ export default function HudEditor() {
                 </span>
               </Button>
             </label>
+
+            <div className={`border-l ${borderColor} h-6 mx-2`}></div>
 
             <Text size='2'>Platform:</Text>
             <Select.Root value={platform} onValueChange={setPlatform}>
@@ -1401,18 +1460,6 @@ export default function HudEditor() {
                       <Select.Item value='16:9'>16:9</Select.Item>
                       <Select.Item value='16:10'>16:10</Select.Item>
                       <Select.Item value='custom'>Custom</Select.Item>
-                    </Select.Content>
-                  </Select.Root>
-
-                  <Text size='2'>Layout</Text>
-                  <Select.Root
-                    value={layoutMode}
-                    onValueChange={(v: any) => setLayoutMode(v)}
-                  >
-                    <Select.Trigger />
-                    <Select.Content>
-                      <Select.Item value='horizontal'>Horizontal</Select.Item>
-                      <Select.Item value='vertical'>Vertical</Select.Item>
                     </Select.Content>
                   </Select.Root>
 
@@ -1762,6 +1809,7 @@ export default function HudEditor() {
                   <Editor
                     height='100%'
                     defaultLanguage='keyvalues'
+                    path={activeFile.path}
                     value={activeFile.content}
                     theme={isDark ? 'keyvalues-dark' : 'keyvalues-light'}
                     beforeMount={handleEditorWillMount}
@@ -1771,12 +1819,11 @@ export default function HudEditor() {
                     onChange={(value) => handleCodeChange(value || '')}
                     options={{
                       minimap: { enabled: false },
-                      lineNumbers: 'on',
+                      fontSize: 14,
                       scrollBeyondLastLine: false,
-                      automaticLayout: true,
                       wordWrap: 'on',
-                      padding: { top: 16, bottom: 16 },
-                      fixedOverflowWidgets: true
+                      automaticLayout: true,
+                      lineNumbers: 'on'
                     }}
                   />
                 )}
@@ -1880,20 +1927,10 @@ export default function HudEditor() {
         <Dialog.Content>
           <Dialog.Title>Font Manager</Dialog.Title>
           <Dialog.Description>
-            Upload .ttf/.otf files and ClientScheme.res to map fonts.
+            Load ClientScheme.res to map fonts.
           </Dialog.Description>
 
           <Flex direction='column' gap='3' className='mt-4'>
-            <Text weight='bold'>Loaded Fonts:</Text>
-            {fonts.length === 0 && <Text color='gray'>No fonts loaded.</Text>}
-            {fonts.map((font: FontFile, i: number) => (
-              <Flex key={i} justify='between' align='center'>
-                <Text>
-                  {font.name} ({font.family})
-                </Text>
-              </Flex>
-            ))}
-
             <Text weight='bold' className='mt-2'>
               Mappings (from ClientScheme):
             </Text>
@@ -1911,10 +1948,6 @@ export default function HudEditor() {
                 ))}
               </Flex>
             </ScrollArea>
-
-            <Button onClick={downloadFonts} disabled={fonts.length === 0}>
-              <DownloadIcon /> Download Fonts Zip
-            </Button>
           </Flex>
 
           <Flex gap='3' mt='4' justify='end'>
