@@ -10,7 +10,7 @@ import {
   Select
 } from '@radix-ui/themes';
 import { useState, useEffect, useRef } from 'react';
-import { parseKeyValues, parseKeyValuesWithLineNumbers, KeyValues, KVMap } from '../lib/keyvalues';
+import { parseKeyValues, parseKeyValuesWithLineNumbers, KeyValues, KVMap, extractBaseIncludes, mergeKVMap, checkCondition } from '../lib/keyvalues';
 import {
   PlusIcon,
   Cross2Icon,
@@ -27,18 +27,9 @@ import JSZip from 'jszip';
 import Editor from '@monaco-editor/react';
 import { useTheme } from 'next-themes';
 
-// Basic mapping of TF2 colors to CSS colors
-const COLOR_MAP: Record<string, string> = {
-  '0 0 0 255': 'black',
-  '255 255 255 255': 'white',
-  '255 0 0 255': 'red',
-  '0 255 0 255': 'green',
-  '0 0 255 255': 'blue'
-};
 
 function parseColor(colorStr: string): string {
   if (!colorStr) return 'transparent';
-  if (COLOR_MAP[colorStr]) return COLOR_MAP[colorStr];
 
   const parts = colorStr.split(' ').map(Number);
   if (parts.length >= 3) {
@@ -48,7 +39,7 @@ function parseColor(colorStr: string): string {
   return colorStr;
 }
 
-function parsePosition(posStr: string, axis: 'x' | 'y'): React.CSSProperties {
+function parsePosition(posStr: string, axis: 'x' | 'y', scale: number = 1): React.CSSProperties {
   if (!posStr) return axis === 'x' ? { left: 0 } : { top: 0 };
 
   const str = String(posStr).toLowerCase();
@@ -56,18 +47,18 @@ function parsePosition(posStr: string, axis: 'x' | 'y'): React.CSSProperties {
   if (str.startsWith('c')) {
     const offset = parseInt(str.substring(1)) || 0;
     return axis === 'x'
-      ? { left: '50%', marginLeft: `${offset}px` }
-      : { top: '50%', marginTop: `${offset}px` };
+      ? { left: '50%', marginLeft: `${offset * scale}px` }
+      : { top: '50%', marginTop: `${offset * scale}px` };
   }
   if (str.startsWith('r')) {
     const offset = parseInt(str.substring(1)) || 0;
     return axis === 'x'
-      ? { right: `${offset}px`, left: 'auto' }
-      : { bottom: `${offset}px`, top: 'auto' };
+      ? { right: `${offset * scale}px`, left: 'auto' }
+      : { bottom: `${offset * scale}px`, top: 'auto' };
   }
   return axis === 'x'
-    ? { left: `${parseInt(str)}px` }
-    : { top: `${parseInt(str)}px` };
+    ? { left: `${parseInt(str) * scale}px` }
+    : { top: `${parseInt(str) * scale}px` };
 }
 
 type FontDefinition = {
@@ -85,7 +76,11 @@ function HudComponent({
   onElementClick,
   outlineColor,
   hoveredLine,
-  onHover
+  onHover,
+  scaleX = 1,
+  scaleY = 1,
+  platform = 'WIN32',
+  sourceFile
 }: {
   name: string;
   data: KVMap;
@@ -93,17 +88,73 @@ function HudComponent({
   fontMap: Record<string, FontDefinition>;
   loadedFonts: string[];
   line?: number;
-  onElementClick?: (line: number) => void;
+  onElementClick?: (line: number, sourceFile?: string) => void;
   outlineColor?: string;
   hoveredLine?: number | null;
   onHover?: (line: number | null) => void;
+  scaleX?: number;
+  scaleY?: number;
+  platform?: string;
+  sourceFile?: string;
 }) {
+  const textRef = useRef<HTMLDivElement>(null);
+
+  // Dynamic text sizing
+  useEffect(() => {
+    if (textRef.current) {
+      const el = textRef.current;
+      const parent = el.parentElement;
+      if (parent) {
+        const parentWidth = parent.clientWidth;
+        const parentHeight = parent.clientHeight;
+        const textWidth = el.scrollWidth;
+        const textHeight = el.scrollHeight;
+
+        let scale = 1;
+        if (textWidth > parentWidth || textHeight > parentHeight) {
+          const scaleW = parentWidth / textWidth;
+          const scaleH = parentHeight / textHeight;
+          scale = Math.min(scaleW, scaleH);
+        }
+        
+        el.style.transform = `scale(${Math.min(1, scale)})`;
+        el.style.transformOrigin = 'center'; // Or based on alignment
+      }
+    }
+  }); // Run on every render to adjust to size changes
+
+  // data is now KVMap, but we need to check if it's valid
   if (typeof data !== 'object') return null;
 
   // Helper to safely get string value from KVNode
   const getStr = (key: string): string => {
     const node = data[key];
-    return node && typeof node.value === 'string' ? node.value : '';
+    if (!node || !node.definitions) return '';
+
+    // Find the last matching definition
+    let match = '';
+    for (const def of node.definitions) {
+      if (typeof def.value !== 'string') continue;
+
+      if (!def.condition) {
+        match = def.value;
+      } else {
+        const cond = def.condition.replace(/[\[\]]/g, ''); // remove []
+        const isNegated = cond.startsWith('!');
+        const cleanCond = isNegated ? cond.substring(1) : cond;
+        
+        // Simple check: strictly match platform name (e.g. $WIN32)
+        // In reality, VGUI has complex logic, but we'll stick to basic platform checks
+        const targetPlatform = cleanCond.startsWith('$') ? cleanCond.substring(1) : cleanCond;
+        
+        const matches = targetPlatform.toUpperCase() === platform;
+        
+        if (isNegated ? !matches : matches) {
+          match = def.value;
+        }
+      }
+    }
+    return match;
   };
 
   const controlName = getStr('ControlName');
@@ -131,16 +182,16 @@ function HudComponent({
   const fontFamily = isFontMissing ? 'monospace' : mappedFamily;
 
   // Styles
-  const posStyleX = parsePosition(xposStr, 'x');
-  const posStyleY = parsePosition(yposStr, 'y');
+  const posStyleX = parsePosition(xposStr, 'x', scaleX);
+  const posStyleY = parsePosition(yposStr, 'y', scaleY);
 
   const style: React.CSSProperties = {
     position: isRoot ? 'relative' : 'absolute',
     ...posStyleX,
     ...posStyleY,
     zIndex: parseInt(zposStr),
-    width: wideStr ? parseInt(wideStr) : isRoot ? '100%' : 0,
-    height: tallStr ? parseInt(tallStr) : isRoot ? '100%' : 0,
+    width: wideStr ? parseInt(wideStr) * scaleX : isRoot ? '100%' : 0,
+    height: tallStr ? parseInt(tallStr) * scaleY : isRoot ? '100%' : 0,
     display: visible ? 'block' : 'none',
     color: parseColor(getStr('fgcolor')),
     backgroundColor: parseColor(getStr('bgcolor')),
@@ -148,17 +199,12 @@ function HudComponent({
     border: getStr('bgcolor') ? 'none' : isRoot ? '1px solid rgba(255,255,255,0.5)' : `1px dashed ${outlineColor || 'rgba(255,255,255,0.1)'}`,
     overflow: 'visible',
     fontFamily: fontFamily,
-    fontSize: `${fontSize}px`,
+    fontSize: `${fontSize * Math.min(scaleX, scaleY)}px`,
     cursor: !isRoot && line && onElementClick ? 'pointer' : 'default',
     transition: 'box-shadow 0.2s ease'
   };
 
-  const handleClick = (e: React.MouseEvent) => {
-    if (!isRoot && line && onElementClick) {
-      e.stopPropagation();
-      onElementClick(line);
-    }
-  };
+
 
   const labelText = getStr('labelText') || '';
   const textAlignment = getStr('textAlignment') || 'west';
@@ -181,11 +227,8 @@ function HudComponent({
     return (
       <div
         title={fieldName}
-        onClick={handleClick}
-        onMouseOver={(e) => {
-          e.stopPropagation();
-          if (line && onHover) onHover(line);
-        }}
+        data-hud-line={line}
+        data-hud-source={sourceFile}
         className={`relative ${!isRoot && line ? '' : ''}`}
         style={{
           ...style,
@@ -194,7 +237,9 @@ function HudComponent({
           alignItems
         }}
       >
-        {labelText.replace(/%[a-zA-Z0-9_]+%/g, 'VAR')}
+        <span ref={textRef} className='whitespace-nowrap'>
+          {labelText.replace(/%[a-zA-Z0-9_]+%/g, 'VAR')}
+        </span>
         {isFontMissing && (
           <Tooltip content={`Missing font: ${mappedFamily} (${fontName})`}>
             <ExclamationTriangleIcon className='absolute top-0 right-0 text-yellow-500' />
@@ -217,11 +262,8 @@ function HudComponent({
       return (
         <div
           title={fieldName}
-          onClick={handleClick}
-          onMouseOver={(e) => {
-            e.stopPropagation();
-            if (line && onHover) onHover(line);
-          }}
+          data-hud-line={line}
+          data-hud-source={sourceFile}
           className={`relative ${!isRoot && line ? '' : ''}`}
           style={{
             ...style,
@@ -264,31 +306,48 @@ function HudComponent({
     <div 
       style={style} 
       title={fieldName} 
-      onClick={handleClick}
-      onMouseOver={(e) => {
-        e.stopPropagation();
-        if (line && onHover) onHover(line);
-      }}
+      data-hud-line={line}
+      data-hud-source={sourceFile}
       className={`relative ${!isRoot && line ? '' : ''}`}
     >
       {Object.entries(data).map(([childKey, childNode]) => {
-        if (typeof childNode.value === 'object') {
-          return (
-            <HudComponent
-              key={childKey}
-              name={childKey}
-              data={childNode.value}
-              fontMap={fontMap}
-              loadedFonts={loadedFonts}
-              line={childNode.line}
-              onElementClick={onElementClick}
-              outlineColor={outlineColor}
-              hoveredLine={hoveredLine}
-              onHover={onHover}
-            />
-          );
+        // Merge definitions for this child key
+        let mergedData: KVMap = {};
+        let lastSourceFile: string | undefined;
+        let lastLine: number | undefined;
+        let shouldShow = false;
+
+        for (const def of childNode.definitions) {
+           if (typeof def.value === 'object') {
+             if (checkCondition(def.condition, platform)) {
+                mergedData = mergeKVMap(mergedData, def.value);
+                lastSourceFile = def.sourceFile;
+                lastLine = def.line;
+                shouldShow = true;
+             }
+           }
         }
-        return null;
+
+        if (!shouldShow) return null;
+
+        return (
+          <HudComponent
+            key={childKey}
+            name={childKey}
+            data={mergedData}
+            fontMap={fontMap}
+            loadedFonts={loadedFonts}
+            line={lastLine}
+            onElementClick={onElementClick}
+            outlineColor={outlineColor}
+            hoveredLine={hoveredLine}
+            onHover={onHover}
+            scaleX={scaleX}
+            scaleY={scaleY}
+            platform={platform}
+            sourceFile={lastSourceFile}
+          />
+        );
       })}
       {!isRoot && line && hoveredLine === line && (
         <div className='absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/70 text-white text-xs font-mono px-2 py-1 pointer-events-none z-50'>
@@ -390,11 +449,35 @@ function FileTreeNode({
   );
 }
 
+function resolvePath(currentPath: string, importPath: string): string {
+  // Normalize slashes
+  const normalizedImport = importPath.replace(/\\/g, '/');
+  const normalizedCurrent = currentPath.replace(/\\/g, '/');
+
+  // If it looks like a root path (starts with resource/ or scripts/), use it as is
+  if (normalizedImport.toLowerCase().startsWith('resource/') || normalizedImport.toLowerCase().startsWith('scripts/')) {
+    return normalizedImport;
+  }
+
+  const currentDir = normalizedCurrent.substring(0, normalizedCurrent.lastIndexOf('/'));
+  const parts = [...currentDir.split('/').filter(p => p), ...normalizedImport.split('/').filter(p => p)];
+  
+  const stack: string[] = [];
+  for (const part of parts) {
+    if (part === '..') {
+      stack.pop();
+    } else if (part !== '.') {
+      stack.push(part);
+    }
+  }
+  
+  return stack.join('/');
+}
+
 export default function HudEditor() {
   const { theme } = useTheme();
   const [files, setFiles] = useState<HudFile[]>([]);
   const [activeFileIndex, setActiveFileIndex] = useState(0);
-  const [parsed, setParsed] = useState<KVMap | null>(null);
   const [error, setError] = useState<string | null>(null);
   const editorRef = useRef<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -427,6 +510,9 @@ export default function HudEditor() {
   const [layoutMode, setLayoutMode] = useState<'horizontal' | 'vertical'>('horizontal');
   const [outlineColor, setOutlineColor] = useState<string>('rgba(255,255,255,0.1)');
   const [hoveredLine, setHoveredLine] = useState<number | null>(null);
+  const [platform, setPlatform] = useState<string>('WIN32');
+  const [fileCache, setFileCache] = useState<Record<string, string>>({});
+  const [parsedPreview, setParsedPreview] = useState<KVMap | null>(null);
 
   // Update outline color based on theme
   useEffect(() => {
@@ -491,15 +577,35 @@ export default function HudEditor() {
   useEffect(() => {
     if (!activeFile) return;
     try {
-      const res = parseKeyValuesWithLineNumbers(activeFile.content);
-      setParsed(res);
+      // Just check for syntax errors
+      parseKeyValuesWithLineNumbers(activeFile.content);
       setError(null);
     } catch (e: any) {
       setError(e.message);
     }
   }, [activeFile]);
 
-  const handleElementClick = (line: number) => {
+  const handleElementClick = (line: number, sourceFile?: string) => {
+    if (sourceFile && sourceFile !== files[activeFileIndex]?.path) {
+        // Switch to the file
+        const fileIndex = files.findIndex(f => f.path === sourceFile);
+        if (fileIndex !== -1) {
+            setActiveFileIndex(fileIndex);
+            // Wait for editor to switch? The effect will run.
+            // We might need to scroll after switch.
+            // For now, let's just switch. The user can click again or we can try to scroll.
+            // Ideally we pass a 'scrollToLine' state.
+        } else {
+            // File not open, try to open it?
+            // We have the content in cache, so we can add it to files.
+            const content = fileCache[sourceFile];
+            if (content) {
+                setFiles(prev => [...prev, { name: sourceFile, path: sourceFile, content }]);
+                setActiveFileIndex(files.length);
+            }
+        }
+    }
+    
     if (editorRef.current) {
       editorRef.current.revealLineInCenter(line);
       editorRef.current.setPosition({ lineNumber: line, column: 1 });
@@ -691,6 +797,7 @@ export default function HudEditor() {
       const text = await res.text();
 
       setFiles((prev) => [...prev, { name: node.name, path: node.path, content: text }]);
+      setFileCache((prev) => ({ ...prev, [node.path]: text }));
       setActiveFileIndex(files.length); // It will be the last one
     } catch (e) {
       console.error('Failed to load file', e);
@@ -702,6 +809,95 @@ export default function HudEditor() {
       });
     }
   };
+
+  // Helper to merge KVMaps - MOVED TO LIB
+  // const mergeKVMap = ...
+
+  // Recursive function to load base files and parse
+  const loadAndParse = async (path: string, visited: Set<string> = new Set()): Promise<KVMap> => {
+    if (visited.has(path)) return {}; // Cycle detection
+    visited.add(path);
+
+    let content = fileCache[path];
+    
+    // If not in cache (and not the active file which might be newer), try to fetch
+    // Note: active file content is in files[activeFileIndex].content
+    const activeFile = files.find(f => f.path === path);
+    if (activeFile) {
+        content = activeFile.content;
+    }
+
+    if (!content) {
+      try {
+        const res = await fetch(`/default_hud/${path}`);
+        if (!res.ok) throw new Error('Not found');
+        content = await res.text();
+        setFileCache(prev => ({ ...prev, [path]: content }));
+      } catch (e) {
+        console.warn(`Failed to load base file: ${path}`, e);
+        return {};
+      }
+    }
+
+    const includes = extractBaseIncludes(content);
+    let mergedBase: KVMap = {};
+
+    // Process includes in order (assuming top-down)
+    for (const include of includes) {
+        const resolvedPath = resolvePath(path, include);
+        const baseMap = await loadAndParse(resolvedPath, visited);
+        mergedBase = mergeKVMap(mergedBase, baseMap);
+    }
+
+    const currentMap = parseKeyValuesWithLineNumbers(content);
+    
+    // Attach source file to definitions
+    const attachSource = (map: KVMap) => {
+        for (const node of Object.values(map)) {
+            if (node.definitions) {
+                for (const def of node.definitions) {
+                    def.sourceFile = path;
+                    if (typeof def.value === 'object') {
+                        attachSource(def.value);
+                    }
+                }
+            }
+        }
+    };
+    attachSource(currentMap);
+
+    return mergeKVMap(mergedBase, currentMap);
+  };
+
+  // Effect to update parsed preview when active file changes
+  useEffect(() => {
+    if (activeFileIndex === -1 || !files[activeFileIndex]) {
+        setParsedPreview(null);
+        return;
+    }
+
+    const activeFile = files[activeFileIndex];
+    
+    // Debounce slightly to avoid rapid re-fetching during typing if we were fetching
+    // But since we cache, it might be fine.
+    // However, we need to handle the async nature.
+    
+    let isMounted = true;
+
+    const update = async () => {
+        const result = await loadAndParse(activeFile.path, new Set());
+        if (isMounted) {
+            setParsedPreview(result);
+        }
+    };
+
+    update();
+
+    return () => { isMounted = false; };
+  }, [activeFileIndex, files, fileCache]); // Depend on fileCache to trigger re-parse if a base file loads
+  // Note: We depend on 'files' so if user edits the active file, it re-runs.
+  // Ideally we should depend on files[activeFileIndex].content but that's hard to express.
+  // 'files' changes on every edit.
 
   // Calculate preview dimensions based on aspect ratio and available space
   const getPreviewDimensions = () => {
@@ -748,12 +944,6 @@ export default function HudEditor() {
       // Vertical mode - use the user-resizable height
       height = previewHeight;
       width = Math.round((height * aspectW) / aspectH);
-      
-      // If width exceeds available width, constrain by width
-      if (width > availableWidth) {
-        width = availableWidth;
-        height = Math.round((width * aspectH) / aspectW);
-      }
     }
     
     return { width, height };
@@ -781,7 +971,10 @@ export default function HudEditor() {
         }
         
         const sidebarOffset = sidebarVisible ? sidebarWidth + 20 : 0;
-        const newWidth = Math.max(400, e.clientX - sidebarOffset - 16);
+        const minPreviewWidth = 300; // Minimum width to keep for preview
+        const maxEditorWidth = window.innerWidth - sidebarOffset - minPreviewWidth - 40; // 40 for paddings/margins
+        
+        const newWidth = Math.max(400, Math.min(maxEditorWidth, e.clientX - sidebarOffset - 16));
         setEditorWidth(newWidth);
       } else if (isResizing === 'preview-height') {
         const newHeight = Math.max(200, e.clientY - 120); // Offset for top bar + controls
@@ -801,7 +994,75 @@ export default function HudEditor() {
         document.removeEventListener('mouseup', handleMouseUp);
       };
     }
-  }, [isResizing, sidebarVisible, sidebarWidth, layoutMode]);
+  }, [isResizing, sidebarWidth, sidebarVisible, layoutMode]);
+
+  const handlePreviewMouseMove = (e: React.MouseEvent) => {
+    // Get all elements under cursor
+    const elements = document.elementsFromPoint(e.clientX, e.clientY);
+    
+    // Filter for HUD elements with line numbers
+    const hudElements = elements.filter(el => el.hasAttribute('data-hud-line'));
+    
+    if (hudElements.length === 0) {
+      if (hoveredLine !== null) setHoveredLine(null);
+      return;
+    }
+
+    // Sort by area (smallest first) to prioritize nested elements
+    // We can approximate area by clientWidth * clientHeight
+    const sorted = hudElements.sort((a, b) => {
+      const rectA = a.getBoundingClientRect();
+      const rectB = b.getBoundingClientRect();
+      const areaA = rectA.width * rectA.height;
+      const areaB = rectB.width * rectB.height;
+      return areaA - areaB;
+    });
+
+    const target = sorted[0];
+    const line = parseInt(target.getAttribute('data-hud-line') || '0');
+    
+    if (line && line !== hoveredLine) {
+      setHoveredLine(line);
+    }
+  };
+
+  const handlePreviewClick = (e: React.MouseEvent) => {
+    // Get all elements under cursor
+    const elements = document.elementsFromPoint(e.clientX, e.clientY);
+    
+    // Filter for HUD elements with line numbers
+    const hudElements = elements.filter(el => el.hasAttribute('data-hud-line'));
+    
+    if (hudElements.length === 0) return;
+
+    // Sort by area (smallest first)
+    const sorted = hudElements.sort((a, b) => {
+      const rectA = a.getBoundingClientRect();
+      const rectB = b.getBoundingClientRect();
+      const areaA = rectA.width * rectA.height;
+      const areaB = rectB.width * rectB.height;
+      return areaA - areaB;
+    });
+
+    const target = sorted[0];
+    const line = parseInt(target.getAttribute('data-hud-line') || '0');
+    // We need to get the source file from the element too?
+    // We can't easily get the source file from the DOM element unless we add it as attribute.
+    // Let's add data-hud-source attribute.
+    const source = target.getAttribute('data-hud-source') || undefined;
+    
+    if (line) {
+      handleElementClick(line, source);
+    }
+  };
+
+  const handlePreviewMouseLeave = () => {
+    setHoveredLine(null);
+  };
+
+  // Calculate scales
+  const scaleX = previewDimensions.width / 640;
+  const scaleY = previewDimensions.height / 480;
 
   return (
     <Flex className='min-h-screen w-full pt-16' direction='column' gap='2' px='4' pb='2'>
@@ -814,7 +1075,7 @@ export default function HudEditor() {
           >
             <HamburgerMenuIcon />
           </IconButton>
-          <Text size='2' weight='bold'>TF2 HUD Editor</Text>
+          <Text size='2'>TF2 HUD Editor</Text>
         </Flex>
 
         <Flex gap='2' align='center'>
@@ -839,6 +1100,21 @@ export default function HudEditor() {
                 className='absolute -top-2 -left-2 w-10 h-10 p-0 border-0 cursor-pointer'
               />
             </div>
+          </Flex>
+
+          <div className={`border-l ${borderColor} h-6 mx-2`}></div>
+          
+          <Flex gap='2' align='center'>
+            <Text size='2'>Platform:</Text>
+            <Select.Root value={platform} onValueChange={setPlatform}>
+              <Select.Trigger />
+              <Select.Content>
+                <Select.Item value='WIN32'>Windows (WIN32)</Select.Item>
+                <Select.Item value='X360'>Xbox 360 (X360)</Select.Item>
+                <Select.Item value='OSX'>Mac (OSX)</Select.Item>
+                <Select.Item value='LINUX'>Linux</Select.Item>
+              </Select.Content>
+            </Select.Root>
           </Flex>
 
           <div className={`border-l ${borderColor} h-6 mx-2`}></div>
@@ -889,9 +1165,9 @@ export default function HudEditor() {
             style={{ flexShrink: 0 }}
           >
             <Text size='4'>Preview</Text>
-            <Card className={`relative border ${borderColor} ${containerBg}`}>
+            <Card className={`relative border ${borderColor} ${containerBg} p-0 overflow-hidden`}>
               <ScrollArea
-                type='auto'
+                type='hover'
                 scrollbars='both'
                 style={{
                   width: '100%',
@@ -899,34 +1175,61 @@ export default function HudEditor() {
                 }}
               >
                 <div
-                  className='relative'
+                  className='relative shadow-lg'
                   style={{
                     width: `${previewDimensions.width}px`,
                     height: `${previewDimensions.height}px`,
                     minWidth: `${previewDimensions.width}px`,
                     minHeight: `${previewDimensions.height}px`,
+                    // Background for the HUD area itself to distinguish it
+                    backgroundColor: 'rgba(0,0,0,0.2)',
                     margin: '0 auto'
                   }}
-                  onMouseLeave={() => setHoveredLine(null)}
+                  onMouseMove={handlePreviewMouseMove}
+                  onMouseLeave={handlePreviewMouseLeave}
+                  onClick={handlePreviewClick}
                 >
-                  {parsed &&
-                    Object.entries(parsed).map(([childKey, childNode]) =>
-                      typeof childNode.value === 'object' ? (
+                  {parsedPreview &&
+                    Object.entries(parsedPreview).map(([childKey, childNode]) => {
+                      // Merge definitions for this child key
+                      let mergedData: KVMap = {};
+                      let lastSourceFile: string | undefined;
+                      let lastLine: number | undefined;
+                      let shouldShow = false;
+
+                      for (const def of childNode.definitions) {
+                        if (typeof def.value === 'object') {
+                          if (checkCondition(def.condition, platform)) {
+                              mergedData = mergeKVMap(mergedData, def.value);
+                              lastSourceFile = def.sourceFile;
+                              lastLine = def.line;
+                              shouldShow = true;
+                          }
+                        }
+                      }
+
+                      if (!shouldShow) return null;
+
+                      return (
                         <HudComponent
                           key={childKey}
                           name={childKey}
-                          data={childNode.value}
+                          data={mergedData}
                           isRoot={true}
                           fontMap={fontMap}
                           loadedFonts={fonts.map((f) => f.family)}
-                          line={childNode.line}
+                          line={lastLine}
                           onElementClick={handleElementClick}
                           outlineColor={outlineColor}
                           hoveredLine={hoveredLine}
                           onHover={setHoveredLine}
+                          scaleX={scaleX}
+                          scaleY={scaleY}
+                          platform={platform}
+                          sourceFile={lastSourceFile}
                         />
-                      ) : null
-                    )}
+                      );
+                    })}
                 </div>
               </ScrollArea>
             </Card>
@@ -1129,26 +1432,51 @@ export default function HudEditor() {
                         minWidth: `${previewDimensions.width}px`,
                         minHeight: `${previewDimensions.height}px`
                       }}
-                      onMouseLeave={() => setHoveredLine(null)}
+                      onMouseMove={handlePreviewMouseMove}
+                      onMouseLeave={handlePreviewMouseLeave}
+                      onClick={handlePreviewClick}
                     >
-                      {parsed &&
-                        Object.entries(parsed).map(([childKey, childNode]) =>
-                          typeof childNode.value === 'object' ? (
+                      {parsedPreview &&
+                        Object.entries(parsedPreview).map(([childKey, childNode]) => {
+                          // Merge definitions for this child key
+                          let mergedData: KVMap = {};
+                          let lastSourceFile: string | undefined;
+                          let lastLine: number | undefined;
+                          let shouldShow = false;
+
+                          for (const def of childNode.definitions) {
+                            if (typeof def.value === 'object') {
+                              if (checkCondition(def.condition, platform)) {
+                                  mergedData = mergeKVMap(mergedData, def.value);
+                                  lastSourceFile = def.sourceFile;
+                                  lastLine = def.line;
+                                  shouldShow = true;
+                              }
+                            }
+                          }
+
+                          if (!shouldShow) return null;
+
+                          return (
                             <HudComponent
                               key={childKey}
                               name={childKey}
-                              data={childNode.value}
+                              data={mergedData}
                               isRoot={true}
                               fontMap={fontMap}
                               loadedFonts={fonts.map((f) => f.family)}
-                              line={childNode.line}
+                              line={lastLine}
                               onElementClick={handleElementClick}
                               outlineColor={outlineColor}
                               hoveredLine={hoveredLine}
                               onHover={setHoveredLine}
+                              scaleX={scaleX}
+                              scaleY={scaleY}
+                              platform={platform}
+                              sourceFile={lastSourceFile}
                             />
-                          ) : null
-                        )}
+                          );
+                        })}
                     </div>
                   </ScrollArea>
                 </Card>

@@ -2,9 +2,15 @@ export type KeyValues = {
   [key: string]: string | KeyValues;
 };
 
-export type KVNode = {
+export type KVDefinition = {
   value: string | KVMap;
+  condition?: string;
   line: number;
+  sourceFile?: string;
+};
+
+export type KVNode = {
+  definitions: KVDefinition[];
 };
 
 export type KVMap = {
@@ -12,6 +18,13 @@ export type KVMap = {
 };
 
 export function parseKeyValues(text: string): KeyValues {
+  // ... (keep existing simple parser or update it? The user only uses the line number one for the editor)
+  // For simplicity and safety, let's leave the simple parser as is for now, 
+  // but we might need to update it if it's used elsewhere. 
+  // Actually, the simple parser returns `KeyValues` which is just a simple object.
+  // It doesn't support duplicates/conditionals well in that structure.
+  // Let's focus on `parseKeyValuesWithLineNumbers` which is used by the editor.
+  
   const root: KeyValues = {};
   const stack: KeyValues[] = [root];
   let currentKey: string | null = null;
@@ -22,7 +35,6 @@ export function parseKeyValues(text: string): KeyValues {
     while (i < len) {
       const char = text[i];
       if (char === '/' && text[i + 1] === '/') {
-        // Comment, skip to end of line
         i += 2;
         while (i < len && text[i] !== '\n') {
           i++;
@@ -41,11 +53,11 @@ export function parseKeyValues(text: string): KeyValues {
 
     const char = text[i];
     if (char === '"') {
-      i++; // Skip opening quote
+      i++;
       let str = '';
       while (i < len) {
         if (text[i] === '"') {
-          i++; // Skip closing quote
+          i++;
           return str;
         }
         if (text[i] === '\\') {
@@ -58,7 +70,6 @@ export function parseKeyValues(text: string): KeyValues {
       }
       return str;
     } else {
-      // Unquoted string
       let str = '';
       while (i < len) {
         const c = text[i];
@@ -86,12 +97,7 @@ export function parseKeyValues(text: string): KeyValues {
       const newObj: KeyValues = {};
       const current = stack[stack.length - 1];
 
-      // Handle duplicate keys by merging or overwriting?
-      // Standard KV overwrites or appends. For now, let's overwrite/mix.
-      // If it's a list of keys, we might need an array, but KV is usually object-based.
-      // Let's assume object structure.
       if (typeof current[currentKey] === 'object') {
-        // Merge if already exists and is object
         stack.push(current[currentKey] as KeyValues);
       } else {
         current[currentKey] = newObj;
@@ -102,43 +108,28 @@ export function parseKeyValues(text: string): KeyValues {
       i++;
       if (stack.length > 1) {
         stack.pop();
-      } else {
-        // Extra closing brace, ignore or error?
-        // console.warn("Extra closing brace");
       }
     } else {
       const key = readString();
-      if (!key) {
-        // Could be trailing whitespace or end of file
-        continue;
-      }
+      if (!key) continue;
 
-      // Check for conditionals like [$WIN32] - ignore for now
-      // If the next token starts with [, it's a conditional.
       skipWhitespace();
       if (i < len && text[i] === '[') {
-        // Skip conditional
         while (i < len && text[i] !== ']') i++;
-        if (i < len) i++; // skip ]
+        if (i < len) i++;
       }
 
       skipWhitespace();
 
       if (i < len && text[i] === '{') {
         currentKey = key;
-        // Next loop will handle '{'
       } else {
-        // It's a value
         const value = readString();
-
-        // Check for conditionals after value too
         skipWhitespace();
         if (i < len && text[i] === '[') {
-          // Skip conditional
           while (i < len && text[i] !== ']') i++;
-          if (i < len) i++; // skip ]
+          if (i < len) i++;
         }
-
         const current = stack[stack.length - 1];
         current[key] = value;
       }
@@ -161,7 +152,6 @@ export function parseKeyValuesWithLineNumbers(text: string): KVMap {
     while (i < len) {
       const char = text[i];
       if (char === '/' && text[i + 1] === '/') {
-        // Comment, skip to end of line
         i += 2;
         while (i < len && text[i] !== '\n') {
           i++;
@@ -183,11 +173,11 @@ export function parseKeyValuesWithLineNumbers(text: string): KVMap {
 
     const char = text[i];
     if (char === '"') {
-      i++; // Skip opening quote
+      i++;
       let str = '';
       while (i < len) {
         if (text[i] === '"') {
-          i++; // Skip closing quote
+          i++;
           return str;
         }
         if (text[i] === '\\') {
@@ -204,7 +194,6 @@ export function parseKeyValuesWithLineNumbers(text: string): KVMap {
       }
       return str;
     } else {
-      // Unquoted string
       let str = '';
       while (i < len) {
         const c = text[i];
@@ -216,6 +205,22 @@ export function parseKeyValuesWithLineNumbers(text: string): KVMap {
       }
       return str;
     }
+  }
+
+  function readCondition(): string | undefined {
+    skipWhitespace();
+    if (i < len && text[i] === '[') {
+      i++; // skip [
+      let cond = '';
+      while (i < len && text[i] !== ']') {
+        if (text[i] === '\n') lineNumber++;
+        cond += text[i];
+        i++;
+      }
+      if (i < len) i++; // skip ]
+      return cond;
+    }
+    return undefined;
   }
 
   while (i < len) {
@@ -232,13 +237,22 @@ export function parseKeyValuesWithLineNumbers(text: string): KVMap {
       const newObj: KVMap = {};
       const current = stack[stack.length - 1];
 
-      if (current[currentKey] && typeof current[currentKey].value === 'object') {
-        // Merge if already exists and is object
-        stack.push(current[currentKey].value as KVMap);
-      } else {
-        current[currentKey] = { value: newObj, line: currentKeyLine };
-        stack.push(newObj);
+      // If key exists, we might need to merge or append.
+      // For objects (sub-sections), we usually merge if they are the same section.
+      // But with the new structure, we can just push another definition.
+      // However, typical KV behavior for sections with same name is merging.
+      // Let's assume we append a new definition which contains the new object.
+      
+      if (!current[currentKey]) {
+        current[currentKey] = { definitions: [] };
       }
+      
+      // Check if there's a previous definition that is an object to merge with?
+      // Actually, let's just add a new definition.
+      const newDef: KVDefinition = { value: newObj, line: currentKeyLine };
+      current[currentKey].definitions.push(newDef);
+      
+      stack.push(newObj);
       currentKey = null;
     } else if (char === '}') {
       i++;
@@ -248,47 +262,81 @@ export function parseKeyValuesWithLineNumbers(text: string): KVMap {
     } else {
       const keyLine = lineNumber;
       const key = readString();
-      if (!key) {
-        continue;
-      }
+      if (!key) continue;
 
-      // Check for conditionals like [$WIN32] - ignore for now
-      skipWhitespace();
-      if (i < len && text[i] === '[') {
-        while (i < len && text[i] !== ']') {
-          if (text[i] === '\n') lineNumber++;
-          i++;
-        }
-        if (i < len) i++; // skip ]
-      }
+      // Check for conditional on the KEY itself (rare but possible)
+      const keyCondition = readCondition();
+      // If key has a condition, we should probably store it. 
+      // But our structure is Map[Key] -> Definitions.
+      // If the key itself is conditional, it might mean the whole block is conditional.
+      // For now, let's attach the keyCondition to the definition we are about to create.
 
       skipWhitespace();
 
       if (i < len && text[i] === '{') {
         currentKey = key;
         currentKeyLine = keyLine;
-        // Next loop will handle '{'
+        // We'll handle the condition when we process the '{' block?
+        // Actually, we need to pass this condition to the next block creation.
+        // But `currentKey` is just a string. 
+        // Let's ignore key-level conditions for sections for now as they are rare in HUDs.
       } else {
-        // It's a value
         const value = readString();
-
-        // Check for conditionals after value too
-        skipWhitespace();
-        if (i < len && text[i] === '[') {
-          while (i < len && text[i] !== ']') {
-            if (text[i] === '\n') lineNumber++;
-            i++;
-          }
-          if (i < len) i++; // skip ]
-        }
+        const valueCondition = readCondition();
 
         const current = stack[stack.length - 1];
-        current[key] = { value, line: keyLine };
+        if (!current[key]) {
+          current[key] = { definitions: [] };
+        }
+        
+        current[key].definitions.push({
+          value,
+          condition: valueCondition || keyCondition, // Use either
+          line: keyLine
+        });
       }
     }
   }
 
   return root;
+}
+
+export function extractBaseIncludes(text: string): string[] {
+  const includes: string[] = [];
+  const regex = /^\s*#base\s+"([^"]+)"/gm;
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    includes.push(match[1]);
+  }
+  return includes;
+}
+
+export function mergeKVMap(base: KVMap, override: KVMap): KVMap {
+  const result: KVMap = { ...base };
+  for (const [key, node] of Object.entries(override)) {
+    if (!result[key]) {
+      result[key] = node;
+    } else {
+      // Append definitions from override to base
+      // We create a new node to avoid mutating the base
+      result[key] = {
+        definitions: [...result[key].definitions, ...node.definitions]
+      };
+    }
+  }
+  return result;
+}
+
+export function checkCondition(condition: string | undefined, platform: string): boolean {
+  if (!condition) return true;
+  
+  const cond = condition.replace(/[\[\]]/g, '');
+  const isNegated = cond.startsWith('!');
+  const cleanCond = isNegated ? cond.substring(1) : cond;
+  const targetPlatform = cleanCond.startsWith('$') ? cleanCond.substring(1) : cleanCond;
+  
+  const matches = targetPlatform.toUpperCase() === platform;
+  return isNegated ? !matches : matches;
 }
 
 export function stringifyKeyValues(data: KeyValues, depth = 0): string {
