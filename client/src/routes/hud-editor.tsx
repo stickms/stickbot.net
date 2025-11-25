@@ -6,12 +6,15 @@ import {
   IconButton,
   Button,
   Dialog,
-  Tooltip,
   Select,
   AlertDialog,
-  DropdownMenu
+  DropdownMenu,
+  ContextMenu,
+  TextField,
+  Tooltip
 } from '@radix-ui/themes';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import type { ComponentProps } from 'react';
 import {
   parseKeyValues,
   parseKeyValuesWithLineNumbers,
@@ -19,12 +22,15 @@ import {
   KVMap,
   extractBaseIncludes,
   mergeKVMap,
-  checkCondition
+  checkCondition,
+  hasConditionalBlocks
 } from '../lib/keyvalues';
 import {
   saveFile,
   loadFile,
-  clearAllFiles
+  clearAllFiles,
+  deleteFile,
+  getAllKeys
 } from '../lib/storage';
 import {
   PlusIcon,
@@ -32,354 +38,24 @@ import {
   FileTextIcon,
   DownloadIcon,
   FontBoldIcon,
-  ExclamationTriangleIcon,
   ChevronRightIcon,
   ChevronDownIcon,
   ReloadIcon,
   HamburgerMenuIcon,
-  UploadIcon
+  UploadIcon,
+  FilePlusIcon,
+  ExclamationTriangleIcon,
+  QuestionMarkCircledIcon
 } from '@radix-ui/react-icons';
 import JSZip from 'jszip';
 import Editor from '@monaco-editor/react';
 import { useTheme } from 'next-themes';
 
-function parseColor(colorStr: string): string {
-  if (!colorStr) return 'transparent';
+import HudComponent, { FontDefinition } from '../components/hud-component';
 
-  const parts = colorStr.split(' ').map(Number);
-  if (parts.length >= 3) {
-    const a = parts.length > 3 ? parts[3] / 255 : 1;
-    return `rgba(${parts[0]}, ${parts[1]}, ${parts[2]}, ${a})`;
-  }
-  return colorStr;
-}
-
-function parsePosition(
-  posStr: string,
-  axis: 'x' | 'y',
-  scale: number = 1
-): React.CSSProperties {
-  if (!posStr) return axis === 'x' ? { left: 0 } : { top: 0 };
-
-  const str = String(posStr).toLowerCase();
-
-  if (str.startsWith('c')) {
-    const offset = parseInt(str.substring(1)) || 0;
-    return axis === 'x'
-      ? { left: '50%', marginLeft: `${offset * scale}px` }
-      : { top: '50%', marginTop: `${offset * scale}px` };
-  }
-  if (str.startsWith('r')) {
-    const offset = parseInt(str.substring(1)) || 0;
-    return axis === 'x'
-      ? { right: `${offset * scale}px`, left: 'auto' }
-      : { bottom: `${offset * scale}px`, top: 'auto' };
-  }
-  return axis === 'x'
-    ? { left: `${parseInt(str) * scale}px` }
-    : { top: `${parseInt(str) * scale}px` };
-}
-
-type FontDefinition = {
-  family: string;
-  size: number;
-};
-
-function HudComponent({
-  name,
-  data,
-  isRoot = false,
-  fontMap,
-  loadedFonts,
-  line,
-  onElementClick,
-  outlineColor,
-  hoveredLine,
-  onHover,
-  scaleX = 1,
-  scaleY = 1,
-  platform = 'WIN32',
-  sourceFile
-}: {
-  name: string;
-  data: KVMap;
-  isRoot?: boolean;
-  fontMap: Record<string, FontDefinition>;
-  loadedFonts: string[];
-  line?: number;
-  onElementClick?: (line: number, sourceFile?: string) => void;
-  outlineColor?: string;
-  hoveredLine?: number | null;
-  onHover?: (line: number | null) => void;
-  scaleX?: number;
-  scaleY?: number;
-  platform?: string;
-  sourceFile?: string;
-}) {
-  const textRef = useRef<HTMLDivElement>(null);
-
-  // Dynamic text sizing
-  useEffect(() => {
-    if (textRef.current) {
-      const el = textRef.current;
-      const parent = el.parentElement;
-      if (parent) {
-        const parentWidth = parent.clientWidth;
-        const parentHeight = parent.clientHeight;
-        const textWidth = el.scrollWidth;
-        const textHeight = el.scrollHeight;
-
-        let scale = 1;
-        if (textWidth > parentWidth || textHeight > parentHeight) {
-          const scaleW = parentWidth / textWidth;
-          const scaleH = parentHeight / textHeight;
-          scale = Math.min(scaleW, scaleH);
-        }
-
-        el.style.transform = `scale(${Math.min(1, scale)})`;
-        el.style.transformOrigin = 'center'; // Or based on alignment
-      }
-    }
-  }); // Run on every render to adjust to size changes
-
-  // data is now KVMap, but we need to check if it's valid
-  if (typeof data !== 'object') return null;
-
-  // Helper to safely get string value from KVNode
-  const getStr = (key: string): string => {
-    const node = data[key];
-    if (!node || !node.definitions) return '';
-
-    // Find the last matching definition
-    let match = '';
-    for (const def of node.definitions) {
-      if (typeof def.value !== 'string') continue;
-
-      if (!def.condition) {
-        match = def.value;
-      } else {
-        const cond = def.condition.replace(/[\[\]]/g, ''); // remove []
-        const isNegated = cond.startsWith('!');
-        const cleanCond = isNegated ? cond.substring(1) : cond;
-
-        // Simple check: strictly match platform name (e.g. $WIN32)
-        // In reality, VGUI has complex logic, but we'll stick to basic platform checks
-        const targetPlatform = cleanCond.startsWith('$')
-          ? cleanCond.substring(1)
-          : cleanCond;
-
-        const matches = targetPlatform.toUpperCase() === platform;
-
-        if (isNegated ? !matches : matches) {
-          match = def.value;
-        }
-      }
-    }
-    return match;
-  };
-
-  const controlName = getStr('ControlName');
-  const fieldName = getStr('fieldName') || name;
-
-  const xposStr = getStr('xpos') || '0';
-  const yposStr = getStr('ypos') || '0';
-  const zposStr = getStr('zpos') || '0';
-  const wideStr = getStr('wide');
-  const tallStr = getStr('tall');
-
-  const visible = getStr('visible') !== '0';
-  const fontName = getStr('font');
-
-  const fontDef = fontName ? fontMap[fontName] : null;
-  const mappedFamily = fontDef?.family || 'inherit';
-  const fontSize = fontDef?.size || 14; // Default to 14px if unknown
-
-  // Check if font is loaded (if it's not a generic one)
-  const isFontMissing =
-    fontName &&
-    mappedFamily !== 'inherit' &&
-    !loadedFonts.includes(mappedFamily) &&
-    !['Arial', 'Verdana', 'Tahoma'].includes(mappedFamily);
-  const fontFamily = isFontMissing ? 'monospace' : mappedFamily;
-
-  // Styles
-  const posStyleX = parsePosition(xposStr, 'x', scaleX);
-  const posStyleY = parsePosition(yposStr, 'y', scaleY);
-
-  const style: React.CSSProperties = {
-    position: isRoot ? 'relative' : 'absolute',
-    ...posStyleX,
-    ...posStyleY,
-    zIndex: parseInt(zposStr),
-    width: wideStr ? parseInt(wideStr) * scaleX : isRoot ? '100%' : 0,
-    height: tallStr ? parseInt(tallStr) * scaleY : isRoot ? '100%' : 0,
-    display: visible ? 'block' : 'none',
-    color: parseColor(getStr('fgcolor')),
-    backgroundColor: parseColor(getStr('bgcolor')),
-    // Border for debugging/visibility if no bg
-    border: getStr('bgcolor')
-      ? 'none'
-      : isRoot
-        ? '1px solid rgba(255,255,255,0.5)'
-        : `1px dashed ${outlineColor || 'rgba(255,255,255,0.1)'}`,
-    overflow: 'visible',
-    fontFamily: fontFamily,
-    fontSize: `${fontSize * Math.min(scaleX, scaleY)}px`,
-    cursor: !isRoot && line && onElementClick ? 'pointer' : 'default',
-    transition: 'box-shadow 0.2s ease'
-  };
-
-  const labelText = getStr('labelText') || '';
-  const textAlignment = getStr('textAlignment') || 'west';
-
-  // Text Alignment mapping
-  let justifyContent = 'flex-start';
-  let alignItems = 'flex-start';
-
-  if (textAlignment.includes('center')) {
-    justifyContent = 'center';
-    alignItems = 'center';
-  } else if (
-    textAlignment.includes('east') ||
-    textAlignment.includes('right')
-  ) {
-    justifyContent = 'flex-end';
-  }
-
-  if (controlName === 'CExLabel' || controlName === 'Label') {
-    return (
-      <div
-        title={fieldName}
-        data-hud-line={line}
-        data-hud-source={sourceFile}
-        className={`relative ${!isRoot && line ? '' : ''}`}
-        style={{
-          ...style,
-          display: visible ? 'flex' : 'none',
-          justifyContent,
-          alignItems
-        }}
-      >
-        <span ref={textRef} className='whitespace-nowrap'>
-          {labelText.replace(/%[a-zA-Z0-9_]+%/g, 'VAR')}
-        </span>
-        {isFontMissing && (
-          <Tooltip content={`Missing font: ${mappedFamily} (${fontName})`}>
-            <ExclamationTriangleIcon className='absolute top-0 right-0 text-yellow-500' />
-          </Tooltip>
-        )}
-        {!isRoot && line && hoveredLine === line && (
-          <div className='absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/70 text-white text-xs font-mono px-2 py-1 pointer-events-none'>
-            <span className='whitespace-nowrap'>{fieldName}</span>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  if (controlName === 'ImagePanel' || controlName === 'CExImageButton') {
-    const image = getStr('image') || '';
-    // CExImageButton might have text too, but usually it's an image or bg.
-    // For now treat as image container if it has image, or just container.
-    if (image) {
-      return (
-        <div
-          title={fieldName}
-          data-hud-line={line}
-          data-hud-source={sourceFile}
-          className={`relative ${!isRoot && line ? '' : ''}`}
-          style={{
-            ...style,
-            display: visible ? 'flex' : 'none',
-            alignItems: 'center',
-            justifyContent: 'center',
-            border: '1px solid #444',
-            // Source Engine missing texture pattern (purple/black checkerboard)
-            backgroundImage:
-              'repeating-conic-gradient(#ff00ff 0% 25%, #000000 0% 50%)',
-            backgroundSize: '20px 20px',
-            opacity: 0.8
-          }}
-        >
-          <span
-            style={{
-              fontSize: '10px',
-              color: 'white',
-              textAlign: 'center',
-              wordBreak: 'break-all',
-              padding: '2px',
-              backgroundColor: 'rgba(0,0,0,0.7)',
-              borderRadius: '4px'
-            }}
-          >
-            {image}
-          </span>
-          {!isRoot && line && hoveredLine === line && (
-            <div className='absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/70 text-white text-xs font-mono px-2 py-1 pointer-events-none'>
-              <span className='whitespace-nowrap'>{fieldName}</span>
-            </div>
-          )}
-        </div>
-      );
-    }
-  }
-
-  // Container or unknown
-  return (
-    <div
-      style={style}
-      title={fieldName}
-      data-hud-line={line}
-      data-hud-source={sourceFile}
-      className={`relative ${!isRoot && line ? '' : ''}`}
-    >
-      {Object.entries(data).map(([childKey, childNode]) => {
-        // Merge definitions for this child key
-        let mergedData: KVMap = {};
-        let lastSourceFile: string | undefined;
-        let lastLine: number | undefined;
-        let shouldShow = false;
-
-        for (const def of childNode.definitions) {
-          if (typeof def.value === 'object') {
-            if (checkCondition(def.condition, platform)) {
-              mergedData = mergeKVMap(mergedData, def.value);
-              lastSourceFile = def.sourceFile;
-              lastLine = def.line;
-              shouldShow = true;
-            }
-          }
-        }
-
-        if (!shouldShow) return null;
-
-        return (
-          <HudComponent
-            key={childKey}
-            name={childKey}
-            data={mergedData}
-            fontMap={fontMap}
-            loadedFonts={loadedFonts}
-            line={lastLine}
-            onElementClick={onElementClick}
-            outlineColor={outlineColor}
-            hoveredLine={hoveredLine}
-            onHover={onHover}
-            scaleX={scaleX}
-            scaleY={scaleY}
-            platform={platform}
-            sourceFile={lastSourceFile}
-          />
-        );
-      })}
-      {!isRoot && line && hoveredLine === line && (
-        <div className='absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/70 text-white text-xs font-mono px-2 py-1 pointer-events-none z-50'>
-          <span className='whitespace-nowrap'>{fieldName}</span>
-        </div>
-      )}
-    </div>
-  );
-}
+type MonacoInstance = Parameters<
+  NonNullable<ComponentProps<typeof Editor>['beforeMount']>
+>[0];
 
 type HudFile = {
   name: string;
@@ -401,18 +77,54 @@ type FileNode = {
   children?: FileNode[];
 };
 
+type SkippedElement = {
+  name: string;
+  line?: number;
+  reason: 'zero-size' | 'missing-position';
+};
+
+type SchemeBorderMap = Record<string, KeyValues>;
+
+const sortFileNodes = (nodes: FileNode[]): FileNode[] => {
+  return nodes
+    .map((node) => ({
+      ...node,
+      children: node.children ? sortFileNodes(node.children) : undefined
+    }))
+    .sort((a, b) => {
+      if (a.type === b.type) {
+        return a.name.localeCompare(b.name);
+      }
+      return a.type === 'folder' ? -1 : 1;
+    });
+};
+
 function FileTreeNode({
   node,
   level,
   onSelect,
   activePath,
-  loadingPaths
+  loadingPaths,
+  onRename,
+  onDelete,
+  onCreateFolder,
+  onMove,
+  renamingPath,
+  onRenameSubmit,
+  onRenameCancel
 }: {
   node: FileNode;
   level: number;
   onSelect: (node: FileNode) => void;
   activePath: string | null;
   loadingPaths: Set<string>;
+  onRename: (node: FileNode) => void;
+  onDelete: (node: FileNode) => void;
+  onCreateFolder: (node: FileNode) => void;
+  onMove: (sourceNode: FileNode, targetNode: FileNode) => void;
+  renamingPath: string | null;
+  onRenameSubmit: (node: FileNode, newName: string) => void;
+  onRenameCancel: () => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const { theme } = useTheme();
@@ -420,10 +132,24 @@ function FileTreeNode({
   const hoverItemBg = isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-200';
   const activeItemBg = isDark ? 'bg-gray-800' : 'bg-gray-200';
 
+  const [editName, setEditName] = useState(node.name);
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const isActive = node.path === activePath;
+  const isRenaming = renamingPath === node.path;
+
+  useEffect(() => {
+    if (isRenaming && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+      setEditName(node.name);
+    }
+  }, [isRenaming, node.name]);
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (isRenaming) return;
+
     if (node.type === 'folder') {
       setIsOpen(!isOpen);
     } else {
@@ -431,44 +157,132 @@ function FileTreeNode({
     }
   };
 
+  const handleDragStart = (e: React.DragEvent) => {
+    e.stopPropagation();
+    e.dataTransfer.setData('application/json', JSON.stringify(node));
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (node.type === 'folder') {
+      e.dataTransfer.dropEffect = 'move';
+      e.currentTarget.classList.add('bg-blue-500/20');
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.currentTarget.classList.remove('bg-blue-500/20');
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.currentTarget.classList.remove('bg-blue-500/20');
+
+    if (node.type !== 'folder') return;
+
+    try {
+      const data = e.dataTransfer.getData('application/json');
+      const sourceNode = JSON.parse(data) as FileNode;
+
+      // Prevent dropping on itself or children (simple check)
+      if (sourceNode.path === node.path) return;
+      if (node.path.startsWith(sourceNode.path + '/')) return;
+
+      onMove(sourceNode, node);
+    } catch (err) {
+      console.error('Failed to parse drop data', err);
+    }
+  };
+
   return (
-    <div style={{ paddingLeft: level * 12 }}>
-      <Flex
-        align='center'
-        gap='2'
-        className={`p-1 rounded cursor-pointer ${hoverItemBg} ${isActive ? activeItemBg : ''}`}
-        onClick={handleClick}
-      >
-        {node.type === 'folder' && (
-          <span className='text-gray-500'>
-            {isOpen ? <ChevronDownIcon /> : <ChevronRightIcon />}
-          </span>
-        )}
-        {node.type === 'file' && (
-          <FileTextIcon className='text-gray-500 ml-4' />
-        )}
-        {loadingPaths.has(node.path) && (
-          <ReloadIcon className='text-blue-500 ml-1 animate-spin' />
-        )}
-        <Text size='1' className='truncate select-none'>
-          {node.name}
-        </Text>
-      </Flex>
-      {node.type === 'folder' && isOpen && node.children && (
-        <div>
-          {node.children.map((child) => (
-            <FileTreeNode
-              key={child.path}
-              node={child}
-              level={level + 1}
-              onSelect={onSelect}
-              activePath={activePath}
-              loadingPaths={loadingPaths}
-            />
-          ))}
+    <ContextMenu.Root>
+      <ContextMenu.Trigger>
+        <div
+          style={{ paddingLeft: level * 12 }}
+          draggable
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          <Flex
+            align='center'
+            gap='2'
+            className={`p-1 rounded cursor-pointer ${hoverItemBg} ${isActive ? activeItemBg : ''}`}
+            onClick={handleClick}
+          >
+            {node.type === 'folder' && (
+              <span className='text-gray-500'>
+                {isOpen ? <ChevronDownIcon /> : <ChevronRightIcon />}
+              </span>
+            )}
+            {node.type === 'file' && <FileTextIcon className='text-gray-500' />}
+            {loadingPaths.has(node.path) && (
+              <ReloadIcon className='text-blue-500 ml-1 animate-spin' />
+            )}
+            <Text size='1' className='truncate select-none flex-1'>
+              {isRenaming ? (
+                <input
+                  ref={inputRef}
+                  type='text'
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  onBlur={() => onRenameSubmit(node, editName)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') onRenameSubmit(node, editName);
+                    if (e.key === 'Escape') onRenameCancel();
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  className={`w-full bg-transparent outline-none border-b border-blue-500 ${isDark ? 'text-white' : 'text-black'}`}
+                />
+              ) : (
+                node.name
+              )}
+            </Text>
+          </Flex>
+          {node.type === 'folder' && isOpen && node.children && (
+            <div>
+              {node.children.map((child) => (
+                <FileTreeNode
+                  key={child.path}
+                  node={child}
+                  level={level + 1}
+                  onSelect={onSelect}
+                  activePath={activePath}
+                  loadingPaths={loadingPaths}
+                  onRename={onRename}
+                  onDelete={onDelete}
+                  onCreateFolder={onCreateFolder}
+                  onMove={onMove}
+                  renamingPath={renamingPath}
+                  onRenameSubmit={onRenameSubmit}
+                  onRenameCancel={onRenameCancel}
+                />
+              ))}
+            </div>
+          )}
         </div>
-      )}
-    </div>
+      </ContextMenu.Trigger>
+      <ContextMenu.Content>
+        <ContextMenu.Item onSelect={() => onRename(node)}>
+          Rename
+        </ContextMenu.Item>
+        {node.type === 'folder' && (
+          <ContextMenu.Item onSelect={() => onCreateFolder(node)}>
+            New Folder
+          </ContextMenu.Item>
+        )}
+        <ContextMenu.Separator />
+        <ContextMenu.Item color='red' onSelect={() => onDelete(node)}>
+          Delete
+        </ContextMenu.Item>
+      </ContextMenu.Content>
+    </ContextMenu.Root>
   );
 }
 
@@ -526,7 +340,7 @@ const WELCOME_TEXT = `"stickbot/welcome.res"
 			"ControlName"	"Label"
 			"fieldName"		"WelcomeLabel"
 			"font"			"DefaultLarge"
-			"labelText"		"Welcome to HUD Editor"
+			"labelText"		"Welcome to Stick's TF2 HUD Editor"
 			"textAlignment"	"center"
 			"xpos"			"0"
 			"ypos"			"20"
@@ -540,7 +354,7 @@ const WELCOME_TEXT = `"stickbot/welcome.res"
 			"ControlName"	"Label"
 			"fieldName"		"InstructionLabel"
 			"font"			"Default"
-			"labelText"		"Select a file to start editing.\\nOr play with this box!"
+			"labelText"		"Select a file to start editing."
 			"textAlignment"	"center"
 			"xpos"			"0"
 			"ypos"			"60"
@@ -552,14 +366,14 @@ const WELCOME_TEXT = `"stickbot/welcome.res"
 }
 `;
 
-
-
 export default function HudEditor() {
   const { theme } = useTheme();
   const [files, setFiles] = useState<HudFile[]>([]);
   const [activeFileIndex, setActiveFileIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const editorRef = useRef<any>(null);
+  const editorRef = useRef<
+    MonacoInstance['editor']['IStandaloneCodeEditor'] | null
+  >(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isDark = theme === 'dark';
   const containerBg = isDark ? 'bg-gray-900' : 'bg-gray-100';
@@ -578,6 +392,10 @@ export default function HudEditor() {
   const [fonts, setFonts] = useState<FontFile[]>([]);
   const [fontMap, setFontMap] = useState<Record<string, FontDefinition>>({}); // Scheme Name -> Definition
   const [showFontDialog, setShowFontDialog] = useState(false);
+  const [showAddFileDialog, setShowAddFileDialog] = useState(false);
+  const [addFileMode, setAddFileMode] = useState<'search' | 'create'>('search');
+  const [fileSearchQuery, setFileSearchQuery] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
 
   // UI state
   const [aspectRatio, setAspectRatio] = useState('16:9');
@@ -598,6 +416,367 @@ export default function HudEditor() {
   const [platform, setPlatform] = useState<string>('WIN32');
   const [fileCache, setFileCache] = useState<Record<string, string>>({});
   const [parsedPreview, setParsedPreview] = useState<KVMap | null>(null);
+  const [showConditionalHint, setShowConditionalHint] = useState(false);
+  const [schemeColors, setSchemeColors] = useState<Record<string, string>>({});
+  const [schemeBaseSettings, setSchemeBaseSettings] = useState<
+    Record<string, string>
+  >({});
+  const [schemeBorders, setSchemeBorders] = useState<SchemeBorderMap>({});
+  const [skippedElements, setSkippedElements] = useState<SkippedElement[]>([]);
+
+  // File Management State
+  const [renamingPath, setRenamingPath] = useState<string | null>(null);
+  const [newFolderParent, setNewFolderParent] = useState<FileNode | null>(null);
+  const [newFolderName, setNewFolderName] = useState('');
+  const [showNewFolderDialog, setShowNewFolderDialog] = useState(false);
+
+  const skippedElementsRef = useRef<SkippedElement[]>([]);
+  // Helper to save tree
+  const saveTree = async (tree: FileNode[]) => {
+    const normalized = sortFileNodes(tree);
+    setFileTree(normalized);
+    await saveFile('__MANIFEST__', JSON.stringify(normalized));
+  };
+
+  const handleRenameSubmit = async (node: FileNode, newName: string) => {
+    setRenamingPath(null);
+    if (!newName || newName === node.name) return;
+
+    const oldPath = node.path;
+    const parentPath = oldPath.substring(0, oldPath.lastIndexOf('/'));
+    const newPath = parentPath ? `${parentPath}/${newName}` : newName;
+
+    if (oldPath === newPath) return;
+
+    // Recursive update function
+    const updateNode = (nodes: FileNode[]): FileNode[] => {
+      return nodes.map((node) => {
+        if (node.path === oldPath) {
+          // Found the node to rename
+          const updateChildrenPaths = (
+            children: FileNode[],
+            parentP: string
+          ): FileNode[] => {
+            return children.map((child) => {
+              const childNewPath = `${parentP}/${child.name}`;
+              return {
+                ...child,
+                path: childNewPath,
+                children: child.children
+                  ? updateChildrenPaths(child.children, childNewPath)
+                  : undefined
+              };
+            });
+          };
+
+          return {
+            ...node,
+            name: newName,
+            path: newPath,
+            children: node.children
+              ? updateChildrenPaths(node.children, newPath)
+              : undefined
+          };
+        }
+        if (node.children) {
+          return { ...node, children: updateNode(node.children) };
+        }
+        return node;
+      });
+    };
+
+    const newTree = updateNode(fileTree);
+    await saveTree(newTree);
+
+    // Move content in storage
+    if (node.type === 'file') {
+      const content = await loadFile(oldPath);
+      if (content) {
+        await saveFile(newPath, content);
+        await deleteFile(oldPath);
+      }
+      // Update open files
+      setFiles((prev) =>
+        prev.map((f) =>
+          f.path === oldPath ? { ...f, path: newPath, name: newName } : f
+        )
+      );
+      if (activePath === oldPath) setActivePath(newPath);
+    } else {
+      // Folder rename - move all children content
+      const allKeys = await getAllKeys();
+      const keysToMove = allKeys.filter((k) => k.startsWith(oldPath + '/'));
+      for (const key of keysToMove) {
+        const content = await loadFile(key);
+        if (content) {
+          const newKey = newPath + key.substring(oldPath.length);
+          await saveFile(newKey, content);
+          await deleteFile(key);
+        }
+      }
+      // Update open files paths
+      setFiles((prev) =>
+        prev.map((f) => {
+          if (f.path.startsWith(oldPath + '/')) {
+            return { ...f, path: newPath + f.path.substring(oldPath.length) };
+          }
+          return f;
+        })
+      );
+    }
+  };
+
+  const handleDelete = async (node: FileNode) => {
+    if (!confirm(`Are you sure you want to delete ${node.name}?`)) return;
+
+    const removeNode = (nodes: FileNode[]): FileNode[] => {
+      return nodes
+        .filter((n) => n.path !== node.path)
+        .map((n) => {
+          if (n.children) return { ...n, children: removeNode(n.children) };
+          return n;
+        });
+    };
+
+    const newTree = removeNode(fileTree);
+    await saveTree(newTree);
+
+    // Delete content
+    if (node.type === 'file') {
+      await deleteFile(node.path);
+      // Close if open
+      const idx = files.findIndex((f) => f.path === node.path);
+      if (idx !== -1) {
+        const newFiles = files.filter((_, i) => i !== idx);
+        setFiles(newFiles);
+        if (activeFileIndex >= newFiles.length)
+          setActiveFileIndex(Math.max(0, newFiles.length - 1));
+      }
+    } else {
+      // Folder delete
+      const allKeys = await getAllKeys();
+      const keysToDelete = allKeys.filter((k) => k.startsWith(node.path + '/'));
+      for (const key of keysToDelete) {
+        await deleteFile(key);
+      }
+      // Close open files in folder
+      const newFiles = files.filter((f) => !f.path.startsWith(node.path + '/'));
+      setFiles(newFiles);
+      if (activeFileIndex >= newFiles.length)
+        setActiveFileIndex(Math.max(0, newFiles.length - 1));
+    }
+  };
+
+  const handleCreateFolder = async () => {
+    if (!newFolderName) return;
+
+    let parentPath = '';
+    if (newFolderParent) {
+      parentPath = newFolderParent.path;
+    } else if (activePath) {
+      // Infer from active path
+      const lastSlash = activePath.lastIndexOf('/');
+      if (lastSlash !== -1) {
+        parentPath = activePath.substring(0, lastSlash);
+      }
+    }
+
+    const newPath = parentPath
+      ? `${parentPath}/${newFolderName}`
+      : newFolderName;
+
+    const newNode: FileNode = {
+      name: newFolderName,
+      type: 'folder',
+      path: newPath,
+      children: []
+    };
+
+    const insertNode = (nodes: FileNode[]): FileNode[] => {
+      if (!parentPath) {
+        return [...nodes, newNode].sort((a, b) => {
+          if (a.type === b.type) return a.name.localeCompare(b.name);
+          return a.type === 'folder' ? -1 : 1;
+        });
+      }
+      return nodes.map((node) => {
+        if (node.path === parentPath) {
+          return {
+            ...node,
+            children: [...(node.children || []), newNode].sort((a, b) => {
+              if (a.type === b.type) return a.name.localeCompare(b.name);
+              return a.type === 'folder' ? -1 : 1;
+            })
+          };
+        }
+        if (node.children) {
+          return { ...node, children: insertNode(node.children) };
+        }
+        return node;
+      });
+    };
+
+    const newTree = insertNode(fileTree);
+    await saveTree(newTree);
+    setShowNewFolderDialog(false);
+    setNewFolderName('');
+  };
+
+  const handleCreateFile = async () => {
+    // Create a default name
+    let finalName = 'new_file.res';
+    let counter = 1;
+
+    // Simple collision check (only checks root for now, ideally check target dir)
+    // Since we create at root by default:
+    while (fileTree.some((n) => n.path === finalName)) {
+      finalName = `new_file_${counter}.res`;
+      counter++;
+    }
+
+    const newPath = finalName;
+
+    const newNode: FileNode = {
+      name: finalName,
+      type: 'file',
+      path: newPath
+    };
+
+    const newTree = [...fileTree, newNode].sort((a, b) => {
+      if (a.type === b.type) return a.name.localeCompare(b.name);
+      return a.type === 'folder' ? -1 : 1;
+    });
+
+    await saveFile(newPath, ''); // Empty content
+    await saveTree(newTree);
+
+    // Open it
+    setFiles((prev) => [
+      ...prev,
+      { name: finalName, path: newPath, content: '' }
+    ]);
+    setActiveFileIndex(files.length);
+    setShowAddFileDialog(false);
+
+    // Trigger rename
+    setRenamingPath(newPath);
+  };
+
+  const handleMove = async (
+    sourceNode: FileNode,
+    targetNode: FileNode | null
+  ) => {
+    // Move sourceNode to be a child of targetNode (folder) or root (null)
+    if (targetNode && targetNode.type !== 'folder') return;
+
+    const targetPath = targetNode ? targetNode.path : '';
+    const newPath = targetPath
+      ? `${targetPath}/${sourceNode.name}`
+      : sourceNode.name;
+
+    // Prevent moving to same location
+    if (sourceNode.path === newPath) return;
+
+    // 1. Remove from old location
+    const removeNode = (nodes: FileNode[]): FileNode[] => {
+      return nodes
+        .filter((n) => n.path !== sourceNode.path)
+        .map((n) => {
+          if (n.children) return { ...n, children: removeNode(n.children) };
+          return n;
+        });
+    };
+    const tempTree = removeNode(fileTree);
+
+    // 2. Update paths recursively for sourceNode
+    const updatePaths = (node: FileNode, parentPath: string): FileNode => {
+      const myNewPath = parentPath ? `${parentPath}/${node.name}` : node.name;
+      return {
+        ...node,
+        path: myNewPath,
+        children: node.children
+          ? node.children.map((c) => updatePaths(c, myNewPath))
+          : undefined
+      };
+    };
+    const updatedSource = updatePaths(sourceNode, targetPath);
+
+    // 3. Add to new location
+    const insertNode = (nodes: FileNode[]): FileNode[] => {
+      if (!targetNode) {
+        // Insert at root
+        return [...nodes, updatedSource].sort((a, b) => {
+          if (a.type === b.type) return a.name.localeCompare(b.name);
+          return a.type === 'folder' ? -1 : 1;
+        });
+      }
+      return nodes.map((node) => {
+        if (node.path === targetNode.path) {
+          return {
+            ...node,
+            children: [...(node.children || []), updatedSource].sort((a, b) => {
+              if (a.type === b.type) return a.name.localeCompare(b.name);
+              return a.type === 'folder' ? -1 : 1;
+            })
+          };
+        }
+        if (node.children) {
+          return { ...node, children: insertNode(node.children) };
+        }
+        return node;
+      });
+    };
+    const newTree = insertNode(tempTree);
+    await saveTree(newTree);
+
+    // 4. Move content
+    if (sourceNode.type === 'file') {
+      const content = await loadFile(sourceNode.path);
+      if (content) {
+        await saveFile(updatedSource.path, content);
+        await deleteFile(sourceNode.path);
+      }
+    } else {
+      const allKeys = await getAllKeys();
+      const keysToMove = allKeys.filter((k) =>
+        k.startsWith(sourceNode.path + '/')
+      );
+      for (const key of keysToMove) {
+        const content = await loadFile(key);
+        if (content) {
+          const newKey =
+            updatedSource.path + key.substring(sourceNode.path.length);
+          await saveFile(newKey, content);
+          await deleteFile(key);
+        }
+      }
+    }
+
+    // 5. Update open files paths
+    setFiles((prev) =>
+      prev.map((f) => {
+        if (f.path === sourceNode.path) {
+          return { ...f, path: updatedSource.path };
+        }
+        if (f.path.startsWith(sourceNode.path + '/')) {
+          return {
+            ...f,
+            path: updatedSource.path + f.path.substring(sourceNode.path.length)
+          };
+        }
+        return f;
+      })
+    );
+
+    // Update active path if needed
+    if (activePath === sourceNode.path) {
+      setActivePath(updatedSource.path);
+    } else if (activePath && activePath.startsWith(sourceNode.path + '/')) {
+      setActivePath(
+        updatedSource.path + activePath.substring(sourceNode.path.length)
+      );
+    }
+  };
 
   // Update outline color based on theme
   useEffect(() => {
@@ -628,7 +807,7 @@ export default function HudEditor() {
   useEffect(() => {
     const handleResize = () => {
       setWindowHeight(window.innerHeight);
-      
+
       // Enforce layout based on screen width
       if (window.innerWidth < 1024) {
         setLayoutMode('vertical');
@@ -645,83 +824,148 @@ export default function HudEditor() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-
-
   // Load manifest
   useEffect(() => {
-    fetch('/default_hud/manifest.json')
-      .then((res) => res.json())
-      .then((data) => setFileTree(data))
-      .catch((err) => console.error('Failed to load manifest', err));
-  }, []);
-
-  // Parse ClientScheme.res to extract font mappings
-  useEffect(() => {
-    const loadScheme = async () => {
-      // Try to find it in open files first
-      let content = files.find(
-        (f: HudFile) => f.name.toLowerCase() === 'clientscheme.res'
-      )?.content;
-
-      // If not open, try to load from storage or fetch
-      if (!content) {
-        // Common paths for ClientScheme
-        const paths = ['resource/ClientScheme.res', 'resource/clientscheme.res'];
-        
-        for (const path of paths) {
-           const stored = await loadFile(path);
-           if (stored) {
-             content = stored;
-             break;
-           }
+    const loadManifest = async () => {
+      try {
+        // Check for custom manifest in storage first
+        const customManifest = await loadFile('__MANIFEST__');
+        if (customManifest) {
+          setFileTree(sortFileNodes(JSON.parse(customManifest)));
+          return;
         }
 
-        if (!content) {
-           // Try fetching default
-           try {
-             const res = await fetch('/default_hud/resource/ClientScheme.res');
-             if (res.ok) {
-               content = await res.text();
-             }
-           } catch (e) {
-             console.error('Failed to fetch default ClientScheme', e);
-           }
-        }
-      }
-
-      if (content) {
-        try {
-          const scheme = parseKeyValues(content);
-          const schemeFonts = (scheme['Scheme'] as KeyValues)?.[
-            'Fonts'
-          ] as KeyValues;
-
-          if (schemeFonts) {
-            const newMap: Record<string, FontDefinition> = {};
-            Object.entries(schemeFonts).forEach(([fontName, fontDef]) => {
-              // This is simplified. Real scheme parsing is complex (conditional blocks).
-              // We look for "name" in the first block (usually "1")
-              const firstBlock = (fontDef as KeyValues)?.['1'] as KeyValues;
-              const family = firstBlock?.['name'] as string;
-              const tall = firstBlock?.['tall'] as string;
-
-              if (family) {
-                newMap[fontName] = {
-                  family,
-                  size: parseInt(tall) || 14
-                };
-              }
-            });
-            setFontMap((prev) => ({ ...prev, ...newMap }));
-          }
-        } catch (e) {
-          console.error('Failed to parse ClientScheme', e);
-        }
+        // Fallback to default
+        const res = await fetch('/default_hud/manifest.json');
+        const data = await res.json();
+        setFileTree(sortFileNodes(data));
+      } catch (err) {
+        console.error('Failed to load manifest', err);
       }
     };
+    loadManifest();
+  }, []);
 
+  // Parse ClientScheme.res and cache fonts/colors/borders for rendering
+  const applySchemeContent = useCallback((content: string) => {
+    try {
+      const scheme = parseKeyValues(content);
+      const schemeSection = scheme['Scheme'] as KeyValues;
+      const schemeFonts = (schemeSection?.['Fonts'] as KeyValues) || null;
+
+      if (schemeFonts) {
+        const newMap: Record<string, FontDefinition> = {};
+        Object.entries(schemeFonts).forEach(([fontName, fontDef]) => {
+          // This is simplified. Real scheme parsing is complex (conditional blocks).
+          // We look for "name" in the first block (usually "1")
+          const firstBlock = (fontDef as KeyValues)?.['1'] as KeyValues;
+          const family = firstBlock?.['name'] as string;
+          const tall = firstBlock?.['tall'] as string;
+
+          if (family) {
+            newMap[fontName] = {
+              family,
+              size: parseInt(tall) || 14
+            };
+          }
+        });
+        setFontMap((prev) => ({ ...prev, ...newMap }));
+      }
+
+      const colorsSection = schemeSection
+        ? (schemeSection['Colors'] as KeyValues)
+        : null;
+      if (colorsSection) {
+        const colorMap: Record<string, string> = {};
+        Object.entries(colorsSection).forEach(([colorName, colorValue]) => {
+          if (typeof colorValue === 'string') {
+            colorMap[colorName.toLowerCase()] = colorValue;
+          }
+        });
+        setSchemeColors(colorMap);
+      }
+
+      const baseSettingsSection = schemeSection
+        ? (schemeSection['BaseSettings'] as KeyValues)
+        : null;
+      if (baseSettingsSection) {
+        const flattened: Record<string, string> = {};
+        Object.entries(baseSettingsSection).forEach(([key, value]) => {
+          if (typeof value === 'string') {
+            flattened[key] = value;
+          }
+        });
+        setSchemeBaseSettings(flattened);
+      }
+
+      const bordersSection = schemeSection
+        ? (schemeSection['Borders'] as KeyValues)
+        : null;
+      if (bordersSection) {
+        const borderMap: SchemeBorderMap = {};
+        Object.entries(bordersSection).forEach(([borderName, borderDef]) => {
+          if (typeof borderDef === 'object' && borderDef !== null) {
+            borderMap[borderName] = borderDef as KeyValues;
+          }
+        });
+        setSchemeBorders(borderMap);
+      }
+    } catch (e) {
+      console.error('Failed to parse ClientScheme', e);
+    }
+  }, []);
+
+  const loadScheme = useCallback(async () => {
+    // Try to find it in open files first
+    let content = files.find(
+      (f: HudFile) => f.name.toLowerCase() === 'clientscheme.res'
+    )?.content;
+
+    // If not open, try to load from storage
+    if (!content) {
+      const paths = [
+        'resource/ClientScheme.res',
+        'resource/clientscheme.res',
+        'ClientScheme.res',
+        'clientscheme.res'
+      ];
+
+      for (const path of paths) {
+        const stored = await loadFile(path);
+        if (stored) {
+          content = stored;
+          break;
+        }
+      }
+    }
+
+    // If still no content, fall back to default HUD copy
+    if (!content) {
+      const defaultPaths = [
+        '/default_hud/resource/ClientScheme.res',
+        '/default_hud/resource/clientscheme.res'
+      ];
+      for (const path of defaultPaths) {
+        try {
+          const res = await fetch(path);
+          if (res.ok) {
+            content = await res.text();
+            break;
+          }
+        } catch (e) {
+          console.error('Failed to fetch default ClientScheme', e);
+        }
+      }
+    }
+
+    if (content) {
+      applySchemeContent(content);
+    }
+  }, [files, applySchemeContent]);
+
+  useEffect(() => {
     loadScheme();
-  }, [files]); // Re-run if files change (user might open/edit ClientScheme)
+  }, [loadScheme]);
 
   useEffect(() => {
     if (!activeFile) return;
@@ -729,8 +973,10 @@ export default function HudEditor() {
       // Just check for syntax errors
       parseKeyValuesWithLineNumbers(activeFile.content);
       setError(null);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'Failed to parse file.';
+      setError(message);
     }
   }, [activeFile]);
 
@@ -854,6 +1100,20 @@ export default function HudEditor() {
     setIsDragging(false);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       processFiles(e.dataTransfer.files);
+    } else {
+      // Handle internal move to root
+      try {
+        const data = e.dataTransfer.getData('application/json');
+        if (data) {
+          const sourceNode = JSON.parse(data) as FileNode;
+          // Check if already at root
+          if (!sourceNode.path.includes('/')) return;
+
+          handleMove(sourceNode, null);
+        }
+      } catch {
+        // Ignore
+      }
     }
   };
 
@@ -867,10 +1127,6 @@ export default function HudEditor() {
       setActiveFileIndex(activeFileIndex - 1);
     }
   };
-
-
-
-
 
   const handleReset = async () => {
     await clearAllFiles();
@@ -924,25 +1180,86 @@ export default function HudEditor() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    setIsImporting(true);
+
     const reader = new FileReader();
     reader.onload = async (evt) => {
       try {
         const arrayBuffer = evt.target?.result as ArrayBuffer;
         const zip = await JSZip.loadAsync(arrayBuffer);
 
+        // Validation: Check for 'resource' folder at root
+        const hasResource = Object.keys(zip.files).some(
+          (path) =>
+            path.startsWith('resource/') || path.startsWith('resource\\')
+        );
+
+        if (!hasResource) {
+          alert(
+            'Invalid HUD structure. Please ensure the ZIP file contains a "resource" folder at the root.'
+          );
+          setIsImporting(false);
+          return;
+        }
+
+        // Clear existing files
+        await clearAllFiles();
+
         const promises: Promise<void>[] = [];
+        const filePaths: string[] = [];
 
         zip.forEach((relativePath, zipEntry) => {
           if (!zipEntry.dir) {
+            filePaths.push(relativePath);
             promises.push(
               zipEntry.async('string').then((content) => {
                 // Save to storage
-                // We use the relative path from the zip as the key
                 return saveFile(relativePath, content);
               })
             );
           }
         });
+
+        // Build new file tree
+        const buildFileTreeFromPaths = (paths: string[]): FileNode[] => {
+          const root: FileNode[] = [];
+          paths.sort();
+
+          paths.forEach((path) => {
+            const parts = path.split('/');
+            let currentLevel = root;
+            let currentPath = '';
+
+            parts.forEach((part, index) => {
+              if (!part) return;
+              currentPath = currentPath ? `${currentPath}/${part}` : part;
+              const isFile = index === parts.length - 1;
+
+              let node = currentLevel.find((n) => n.name === part);
+
+              if (!node) {
+                node = {
+                  name: part,
+                  type: isFile ? 'file' : 'folder',
+                  path: currentPath,
+                  children: isFile ? undefined : []
+                };
+                currentLevel.push(node);
+              }
+
+              if (!isFile && node.children) {
+                currentLevel = node.children;
+              }
+            });
+          });
+
+          return sortFileNodes(root);
+        };
+
+        const newTree = buildFileTreeFromPaths(filePaths);
+
+        // Save the new manifest
+        await saveFile('__MANIFEST__', JSON.stringify(newTree));
 
         await Promise.all(promises);
 
@@ -951,17 +1268,18 @@ export default function HudEditor() {
       } catch (err) {
         console.error('Failed to import HUD', err);
         alert('Failed to import HUD. Please ensure it is a valid ZIP file.');
+        setIsImporting(false);
       }
     };
     reader.readAsArrayBuffer(file);
   };
 
-  const handleEditorWillMount = (monaco: any) => {
+  const handleEditorWillMount = (monacoInstance: MonacoInstance) => {
     // Register custom language
-    monaco.languages.register({ id: 'keyvalues' });
+    monacoInstance.languages.register({ id: 'keyvalues' });
 
     // Define tokens
-    monaco.languages.setMonarchTokensProvider('keyvalues', {
+    monacoInstance.languages.setMonarchTokensProvider('keyvalues', {
       tokenizer: {
         root: [
           [/\/\/.*$/, 'comment'],
@@ -979,7 +1297,7 @@ export default function HudEditor() {
     });
 
     // Define theme configuration (optional, vs-dark usually handles standard tokens well)
-    monaco.editor.defineTheme('keyvalues-dark', {
+    monacoInstance.editor.defineTheme('keyvalues-dark', {
       base: 'vs-dark',
       inherit: true,
       rules: [
@@ -991,7 +1309,7 @@ export default function HudEditor() {
       colors: {}
     });
 
-    monaco.editor.defineTheme('keyvalues-light', {
+    monacoInstance.editor.defineTheme('keyvalues-light', {
       base: 'vs',
       inherit: true,
       rules: [
@@ -1050,70 +1368,72 @@ export default function HudEditor() {
   // const mergeKVMap = ...
 
   // Recursive function to load base files and parse
-  const loadAndParse = async (
-    path: string,
-    visited: Set<string> = new Set()
-  ): Promise<KVMap> => {
-    if (visited.has(path)) return {}; // Cycle detection
-    visited.add(path);
+  const loadAndParse = useCallback(
+    async function loadAndParseInner(
+      path: string,
+      visited: Set<string> = new Set()
+    ): Promise<KVMap> {
+      if (visited.has(path)) return {}; // Cycle detection
+      visited.add(path);
 
-    let content = fileCache[path];
+      let content = fileCache[path];
 
-    // If not in cache (and not the active file which might be newer), try to fetch
-    // Note: active file content is in files[activeFileIndex].content
-    const activeFile = files.find((f) => f.path === path);
-    if (activeFile) {
-      content = activeFile.content;
-    }
-
-    if (!content) {
-      // Check storage
-      const stored = await loadFile(path);
-      if (stored) {
-        content = stored;
-        setFileCache((prev) => ({ ...prev, [path]: content! }));
-      } else {
-        try {
-          const res = await fetch(`/default_hud/${path}`);
-          if (!res.ok) throw new Error('Not found');
-          content = await res.text();
-          setFileCache((prev) => ({ ...prev, [path]: content! }));
-        } catch (e) {
-          console.warn(`Failed to load base file: ${path}`, e);
-          return {};
-        }
+      // If not in cache (and not the active file which might be newer), try to fetch
+      const activeFile = files.find((f) => f.path === path);
+      if (activeFile) {
+        content = activeFile.content;
       }
-    }
 
-    const includes = extractBaseIncludes(content);
-    let mergedBase: KVMap = {};
-
-    // Process includes in order (assuming top-down)
-    for (const include of includes) {
-      const resolvedPath = resolvePath(path, include);
-      const baseMap = await loadAndParse(resolvedPath, visited);
-      mergedBase = mergeKVMap(mergedBase, baseMap);
-    }
-
-    const currentMap = parseKeyValuesWithLineNumbers(content);
-
-    // Attach source file to definitions
-    const attachSource = (map: KVMap) => {
-      for (const node of Object.values(map)) {
-        if (node.definitions) {
-          for (const def of node.definitions) {
-            def.sourceFile = path;
-            if (typeof def.value === 'object') {
-              attachSource(def.value);
-            }
+      if (!content) {
+        // Check storage
+        const stored = await loadFile(path);
+        if (stored) {
+          content = stored;
+          setFileCache((prev) => ({ ...prev, [path]: content! }));
+        } else {
+          try {
+            const res = await fetch(`/default_hud/${path}`);
+            if (!res.ok) throw new Error('Not found');
+            content = await res.text();
+            setFileCache((prev) => ({ ...prev, [path]: content! }));
+          } catch (e) {
+            console.warn(`Failed to load base file: ${path}`, e);
+            return {};
           }
         }
       }
-    };
-    attachSource(currentMap);
 
-    return mergeKVMap(mergedBase, currentMap);
-  };
+      const includes = extractBaseIncludes(content);
+      let mergedBase: KVMap = {};
+
+      // Process includes in order (assuming top-down)
+      for (const include of includes) {
+        const resolvedPath = resolvePath(path, include);
+        const baseMap = await loadAndParseInner(resolvedPath, visited);
+        mergedBase = mergeKVMap(mergedBase, baseMap);
+      }
+
+      const currentMap = parseKeyValuesWithLineNumbers(content);
+
+      // Attach source file to definitions
+      const attachSource = (map: KVMap) => {
+        for (const node of Object.values(map)) {
+          if (node.definitions) {
+            for (const def of node.definitions) {
+              def.sourceFile = path;
+              if (typeof def.value === 'object') {
+                attachSource(def.value);
+              }
+            }
+          }
+        }
+      };
+      attachSource(currentMap);
+
+      return mergeKVMap(mergedBase, currentMap);
+    },
+    [fileCache, files]
+  );
 
   // Effect to update parsed preview when active file changes
   useEffect(() => {
@@ -1142,10 +1462,34 @@ export default function HudEditor() {
     return () => {
       isMounted = false;
     };
-  }, [activeFileIndex, files, fileCache]); // Depend on fileCache to trigger re-parse if a base file loads
+  }, [activeFileIndex, files, fileCache, loadAndParse]); // Depend on fileCache to trigger re-parse if a base file loads
   // Note: We depend on 'files' so if user edits the active file, it re-runs.
   // Ideally we should depend on files[activeFileIndex].content but that's hard to express.
   // 'files' changes on every edit.
+
+  useEffect(() => {
+    if (!parsedPreview) {
+      setShowConditionalHint(false);
+      setSkippedElements([]);
+      skippedElementsRef.current = [];
+      return;
+    }
+    setShowConditionalHint(hasConditionalBlocks(parsedPreview));
+    setSkippedElements(skippedElementsRef.current.slice());
+  }, [parsedPreview, platform]);
+
+  const handleElementSkip = useCallback((info: SkippedElement) => {
+    if (
+      !skippedElementsRef.current.some(
+        (item) =>
+          item.name === info.name &&
+          item.line === info.line &&
+          item.reason === info.reason
+      )
+    ) {
+      skippedElementsRef.current.push(info);
+    }
+  }, []);
 
   // Calculate preview dimensions based on aspect ratio and available space
   const getPreviewDimensions = () => {
@@ -1206,6 +1550,53 @@ export default function HudEditor() {
   };
 
   const previewDimensions = getPreviewDimensions();
+
+  skippedElementsRef.current = [];
+
+  const renderPreviewHeading = () => (
+    <Flex align='center' gap='2'>
+      <Text size='4'>Preview</Text>
+      {showConditionalHint && (
+        <Tooltip content='This file uses conditional blocks (e.g. "if_mvm"). They only apply in-game under certain conditions and are not shown as separate preview elements.'>
+          <ExclamationTriangleIcon className='text-amber-500 cursor-help' />
+        </Tooltip>
+      )}
+      {skippedElements.length > 0 && (
+        <Tooltip
+          content={
+            <div className='max-w-xs'>
+              <Text size='2' weight='bold' className='mb-1 block'>
+                Skipped controls
+              </Text>
+              <div className='max-h-40 overflow-auto border border-dashed border-gray-500 rounded px-2 py-1'>
+                <Flex direction='column' gap='1'>
+                  {skippedElements.map((item, index) => {
+                    const reasonLabel =
+                      item.reason === 'zero-size'
+                        ? 'width/height = 0'
+                        : 'missing xpos/ypos';
+                    return (
+                      <Text
+                        key={`${item.name}-${item.line ?? index}-${item.reason}`}
+                        size='2'
+                        className='whitespace-nowrap'
+                      >
+                        {`• ${item.name}${
+                          item.line ? ` (line ${item.line})` : ''
+                        } – ${reasonLabel}`}
+                      </Text>
+                    );
+                  })}
+                </Flex>
+              </div>
+            </div>
+          }
+        >
+          <QuestionMarkCircledIcon className='text-blue-400 cursor-help' />
+        </Tooltip>
+      )}
+    </Flex>
+  );
 
   // Resize handlers
   const handleMouseDown =
@@ -1339,10 +1730,13 @@ export default function HudEditor() {
       pb='2'
     >
       {/* Top Controls Bar */}
-      <Flex justify='between' align='center' gap='4' className='flex-shrink-0 mb-2'>
-        <Text>
-          Stick's TF2 Hud Editor
-        </Text>
+      <Flex
+        justify='between'
+        align='center'
+        gap='4'
+        className='flex-shrink-0 mb-2'
+      >
+        <Text>Stick's TF2 Hud Editor</Text>
         <Flex gap='2' align='center'>
           {/* Desktop Toolbar */}
           <Flex gap='2' align='center' className='hidden lg:flex'>
@@ -1374,10 +1768,19 @@ export default function HudEditor() {
                 style={{ display: 'none' }}
                 onChange={handleImport}
               />
-              <Button variant='surface' style={{ cursor: 'pointer' }} asChild>
+              <Button
+                variant='surface'
+                style={{ cursor: isImporting ? 'wait' : 'pointer' }}
+                asChild
+                disabled={isImporting}
+              >
                 <span>
-                  <UploadIcon />
-                  Import HUD
+                  {isImporting ? (
+                    <ReloadIcon className='animate-spin' />
+                  ) : (
+                    <UploadIcon />
+                  )}
+                  {isImporting ? 'Importing...' : 'Import HUD'}
                 </span>
               </Button>
             </label>
@@ -1490,12 +1893,20 @@ export default function HudEditor() {
                     />
                     <Button
                       variant='surface'
-                      style={{ cursor: 'pointer', width: '100%' }}
+                      style={{
+                        cursor: isImporting ? 'wait' : 'pointer',
+                        width: '100%'
+                      }}
                       asChild
+                      disabled={isImporting}
                     >
                       <span>
-                        <UploadIcon />
-                        Import HUD
+                        {isImporting ? (
+                          <ReloadIcon className='animate-spin' />
+                        ) : (
+                          <UploadIcon />
+                        )}
+                        {isImporting ? 'Importing...' : 'Import HUD'}
                       </span>
                     </Button>
                   </label>
@@ -1560,7 +1971,6 @@ export default function HudEditor() {
       </Flex>
 
       {/* Main Content */}
-      {/* Main Content */}
       <Flex
         className='flex-1 min-h-0'
         gap='2'
@@ -1574,7 +1984,7 @@ export default function HudEditor() {
             gap='2'
             style={{ flexShrink: 0 }}
           >
-            <Text size='4'>Preview</Text>
+            {renderPreviewHeading()}
             <Card
               className={`relative border ${borderColor} ${containerBg} p-0 overflow-hidden`}
             >
@@ -1601,6 +2011,10 @@ export default function HudEditor() {
                   onMouseLeave={handlePreviewMouseLeave}
                   onClick={handlePreviewClick}
                 >
+                  <div
+                    className='pointer-events-none absolute inset-0 rounded border-2 border-white/30'
+                    style={{ boxSizing: 'border-box' }}
+                  />
                   {parsedPreview &&
                     Object.entries(parsedPreview).map(
                       ([childKey, childNode]) => {
@@ -1628,7 +2042,6 @@ export default function HudEditor() {
                             key={childKey}
                             name={childKey}
                             data={mergedData}
-                            isRoot={true}
                             fontMap={fontMap}
                             loadedFonts={fonts.map((f) => f.family)}
                             line={lastLine}
@@ -1640,6 +2053,10 @@ export default function HudEditor() {
                             scaleY={scaleY}
                             platform={platform}
                             sourceFile={lastSourceFile}
+                            onSkipElement={handleElementSkip}
+                            schemeColors={schemeColors}
+                            schemeBaseSettings={schemeBaseSettings}
+                            schemeBorders={schemeBorders}
                           />
                         );
                       }
@@ -1705,7 +2122,17 @@ export default function HudEditor() {
                 <IconButton
                   size='1'
                   variant='ghost'
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={() => {
+                    setNewFolderParent(null);
+                    setShowNewFolderDialog(true);
+                  }}
+                >
+                  <FilePlusIcon />
+                </IconButton>
+                <IconButton
+                  size='1'
+                  variant='ghost'
+                  onClick={() => setShowAddFileDialog(true)}
                 >
                   <PlusIcon />
                 </IconButton>
@@ -1722,6 +2149,16 @@ export default function HudEditor() {
                     onSelect={handleNodeSelect}
                     activePath={activePath}
                     loadingPaths={loadingPaths}
+                    onRename={(n) => setRenamingPath(n.path)}
+                    onDelete={handleDelete}
+                    onCreateFolder={(n) => {
+                      setNewFolderParent(n);
+                      setShowNewFolderDialog(true);
+                    }}
+                    onMove={handleMove}
+                    renamingPath={renamingPath}
+                    onRenameSubmit={handleRenameSubmit}
+                    onRenameCancel={() => setRenamingPath(null)}
                   />
                 ))}
               </Flex>
@@ -1846,7 +2283,7 @@ export default function HudEditor() {
               </div>
 
               <Flex direction='column' className='flex-1 h-full' gap='2'>
-                <Text size='4'>Preview</Text>
+                {renderPreviewHeading()}
                 <Card
                   className={`flex-1 relative border ${borderColor} ${containerBg}`}
                 >
@@ -1867,6 +2304,10 @@ export default function HudEditor() {
                       onMouseLeave={handlePreviewMouseLeave}
                       onClick={handlePreviewClick}
                     >
+                      <div
+                        className='pointer-events-none absolute inset-0 rounded border-2 border-white/30'
+                        style={{ boxSizing: 'border-box' }}
+                      />
                       {parsedPreview &&
                         Object.entries(parsedPreview).map(
                           ([childKey, childNode]) => {
@@ -1897,7 +2338,6 @@ export default function HudEditor() {
                                 key={childKey}
                                 name={childKey}
                                 data={mergedData}
-                                isRoot={true}
                                 fontMap={fontMap}
                                 loadedFonts={fonts.map((f) => f.family)}
                                 line={lastLine}
@@ -1909,6 +2349,10 @@ export default function HudEditor() {
                                 scaleY={scaleY}
                                 platform={platform}
                                 sourceFile={lastSourceFile}
+                                onSkipElement={handleElementSkip}
+                                schemeColors={schemeColors}
+                                schemeBaseSettings={schemeBaseSettings}
+                                schemeBorders={schemeBorders}
                               />
                             );
                           }
@@ -1956,6 +2400,220 @@ export default function HudEditor() {
                 Close
               </Button>
             </Dialog.Close>
+          </Flex>
+        </Dialog.Content>
+      </Dialog.Root>
+
+      {/* Add File Dialog */}
+      <Dialog.Root
+        open={showAddFileDialog}
+        onOpenChange={(open) => {
+          setShowAddFileDialog(open);
+          if (!open) {
+            setFileSearchQuery('');
+          }
+        }}
+      >
+        <Dialog.Content
+          style={{
+            maxWidth: 600,
+            height: '80vh',
+            display: 'flex',
+            flexDirection: 'column'
+          }}
+        >
+          <Dialog.Title>Add File</Dialog.Title>
+
+          {addFileMode === 'search' ? (
+            <>
+              <Flex direction='column' gap='3' className='flex-1 min-h-0 mt-4'>
+                <input
+                  type='text'
+                  placeholder='Search files...'
+                  className={`w-full px-3 py-2 rounded border ${borderColor} ${containerBg}`}
+                  value={fileSearchQuery}
+                  onChange={(e) => setFileSearchQuery(e.target.value)}
+                  autoFocus
+                />
+
+                <ScrollArea className='flex-1 border rounded p-2'>
+                  {fileSearchQuery ? (
+                    <Flex direction='column' gap='1'>
+                      {(() => {
+                        const matches: FileNode[] = [];
+                        const search = (nodes: FileNode[]) => {
+                          for (const node of nodes) {
+                            if (node.type === 'file') {
+                              if (
+                                node.name
+                                  .toLowerCase()
+                                  .includes(fileSearchQuery.toLowerCase())
+                              ) {
+                                matches.push(node);
+                              }
+                            } else if (node.children) {
+                              search(node.children);
+                            }
+                          }
+                        };
+                        search(fileTree);
+
+                        if (matches.length === 0) {
+                          return <Text color='gray'>No matches found.</Text>;
+                        }
+
+                        return matches.map((node) => (
+                          <div
+                            key={node.path}
+                            className={`p-1 rounded cursor-pointer ${hoverItemBg}`}
+                            onClick={() => {
+                              handleNodeSelect(node);
+                              setShowAddFileDialog(false);
+                            }}
+                          >
+                            <Flex align='center' gap='2'>
+                              <FileTextIcon className='text-gray-500' />
+                              <Text size='1'>{node.path}</Text>
+                            </Flex>
+                          </div>
+                        ));
+                      })()}
+                    </Flex>
+                  ) : (
+                    <Flex direction='column' gap='1'>
+                      {fileTree.map((node) => (
+                        <FileTreeNode
+                          key={node.path}
+                          node={node}
+                          level={0}
+                          onSelect={(n) => {
+                            handleNodeSelect(n);
+                            setShowAddFileDialog(false);
+                          }}
+                          activePath={null}
+                          loadingPaths={loadingPaths}
+                          onRename={() => {}}
+                          onDelete={() => {}}
+                          onCreateFolder={() => {}}
+                          onMove={() => {}}
+                          renamingPath={null}
+                          onRenameSubmit={() => {}}
+                          onRenameCancel={() => {}}
+                        />
+                      ))}
+                    </Flex>
+                  )}
+                </ScrollArea>
+              </Flex>
+
+              <Flex gap='3' mt='4' justify='between' align='center'>
+                <Flex gap='3'>
+                  <Button
+                    variant='surface'
+                    onClick={() => setAddFileMode('create')}
+                  >
+                    Create Empty
+                  </Button>
+                  <label>
+                    <input
+                      type='file'
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        if (e.target.files?.[0]) {
+                          const file = e.target.files[0];
+                          const reader = new FileReader();
+                          reader.onload = async (ev) => {
+                            const content = ev.target?.result as string;
+                            const path = file.name; // Root
+
+                            // Add to tree
+                            const newNode: FileNode = {
+                              name: file.name,
+                              type: 'file',
+                              path: path
+                            };
+                            const newTree = [...fileTree, newNode];
+                            await saveTree(newTree);
+                            await saveFile(path, content);
+
+                            setFiles((prev) => [
+                              ...prev,
+                              { name: file.name, path, content }
+                            ]);
+                            setActiveFileIndex(files.length);
+                            setShowAddFileDialog(false);
+                          };
+                          reader.readAsText(file);
+                        }
+                      }}
+                    />
+                    <Button
+                      variant='surface'
+                      asChild
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <span>Import Local</span>
+                    </Button>
+                  </label>
+                </Flex>
+                <Dialog.Close>
+                  <Button variant='soft' color='gray'>
+                    Cancel
+                  </Button>
+                </Dialog.Close>
+              </Flex>
+            </>
+          ) : (
+            <Flex direction='column' gap='3' className='mt-4'>
+              <Text size='2'>
+                Create a new empty file. You can rename it after creation.
+              </Text>
+
+              <Flex justify='end' gap='3' mt='4'>
+                <Button
+                  variant='soft'
+                  color='gray'
+                  onClick={() => setAddFileMode('search')}
+                >
+                  Back
+                </Button>
+                <Button onClick={handleCreateFile}>Create File</Button>
+              </Flex>
+            </Flex>
+          )}
+        </Dialog.Content>
+      </Dialog.Root>
+
+      {/* New Folder Dialog */}
+      <Dialog.Root
+        open={showNewFolderDialog}
+        onOpenChange={setShowNewFolderDialog}
+      >
+        <Dialog.Content maxWidth='400px'>
+          <Dialog.Title>New Folder</Dialog.Title>
+          <Flex direction='column' gap='3' mt='4'>
+            <Text size='2'>
+              Creating folder in:{' '}
+              {newFolderParent
+                ? newFolderParent.path
+                : activePath
+                  ? activePath.substring(0, activePath.lastIndexOf('/')) ||
+                    'Root'
+                  : 'Root'}
+            </Text>
+            <TextField.Root
+              value={newFolderName}
+              onChange={(e) => setNewFolderName(e.target.value)}
+              placeholder='Folder name'
+            />
+            <Flex justify='end' gap='3'>
+              <Dialog.Close>
+                <Button variant='soft' color='gray'>
+                  Cancel
+                </Button>
+              </Dialog.Close>
+              <Button onClick={handleCreateFolder}>Create</Button>
+            </Flex>
           </Flex>
         </Dialog.Content>
       </Dialog.Root>

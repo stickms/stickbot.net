@@ -17,6 +17,27 @@ export type KVMap = {
   [key: string]: KVNode;
 };
 
+const CONDITIONAL_BLOCK_REGEX = /^(if|elseif|else)(?:_|$)/i;
+
+export function isConditionalBlockKey(key: string): boolean {
+  return CONDITIONAL_BLOCK_REGEX.test(key.trim());
+}
+
+export function hasConditionalBlocks(map: KVMap): boolean {
+  for (const [key, node] of Object.entries(map)) {
+    if (isConditionalBlockKey(key)) {
+      return true;
+    }
+
+    for (const def of node.definitions) {
+      if (typeof def.value === 'object' && hasConditionalBlocks(def.value)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 export function parseKeyValues(text: string): KeyValues {
   // ... (keep existing simple parser or update it? The user only uses the line number one for the editor)
   // For simplicity and safety, let's leave the simple parser as is for now,
@@ -144,6 +165,7 @@ export function parseKeyValuesWithLineNumbers(text: string): KVMap {
   const stack: KVMap[] = [root];
   let currentKey: string | null = null;
   let currentKeyLine: number = 0;
+  let currentKeyCondition: string | undefined;
   let i = 0;
   const len = text.length;
   let lineNumber = 1;
@@ -249,11 +271,16 @@ export function parseKeyValuesWithLineNumbers(text: string): KVMap {
 
       // Check if there's a previous definition that is an object to merge with?
       // Actually, let's just add a new definition.
-      const newDef: KVDefinition = { value: newObj, line: currentKeyLine };
+      const newDef: KVDefinition = {
+        value: newObj,
+        line: currentKeyLine,
+        condition: currentKeyCondition
+      };
       current[currentKey].definitions.push(newDef);
 
       stack.push(newObj);
       currentKey = null;
+      currentKeyCondition = undefined;
     } else if (char === '}') {
       i++;
       if (stack.length > 1) {
@@ -276,10 +303,7 @@ export function parseKeyValuesWithLineNumbers(text: string): KVMap {
       if (i < len && text[i] === '{') {
         currentKey = key;
         currentKeyLine = keyLine;
-        // We'll handle the condition when we process the '{' block?
-        // Actually, we need to pass this condition to the next block creation.
-        // But `currentKey` is just a string.
-        // Let's ignore key-level conditions for sections for now as they are rare in HUDs.
+        currentKeyCondition = keyCondition;
       } else {
         const value = readString();
         const valueCondition = readCondition();

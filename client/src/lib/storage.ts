@@ -2,7 +2,6 @@ const DB_NAME = 'HudEditorDB';
 const STORE_NAME = 'files';
 const DB_VERSION = 1;
 
-
 let dbPromise: Promise<IDBDatabase> | null = null;
 
 function getDB(): Promise<IDBDatabase> {
@@ -50,7 +49,7 @@ export async function loadFile(path: string): Promise<string | null> {
     const request = store.get(path);
 
     request.onsuccess = () => {
-      resolve(request.result as string || null);
+      resolve((request.result as string) || null);
     };
     request.onerror = () => reject(request.error);
   });
@@ -64,6 +63,32 @@ export async function clearAllFiles(): Promise<void> {
     const request = store.clear();
 
     request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+}
+
+export async function deleteFile(path: string): Promise<void> {
+  const db = await getDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORE_NAME, 'readwrite');
+    const store = transaction.objectStore(STORE_NAME);
+    const request = store.delete(path);
+
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+}
+
+export async function getAllKeys(): Promise<string[]> {
+  const db = await getDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORE_NAME, 'readonly');
+    const store = transaction.objectStore(STORE_NAME);
+    const request = store.getAllKeys();
+
+    request.onsuccess = () => {
+      resolve((request.result as string[]) || []);
+    };
     request.onerror = () => reject(request.error);
   });
 }
