@@ -1,6 +1,4 @@
 import React from 'react';
-import { Tooltip } from '@radix-ui/themes';
-import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
 import {
   KVMap,
   KeyValues,
@@ -38,6 +36,20 @@ function parseColor(colorStr: string): string {
     return `rgba(${parts[0]}, ${parts[1]}, ${parts[2]}, ${a})`;
   }
   return colorStr;
+}
+
+function isTransparentColor(color?: string | null) {
+  if (!color) return false;
+  if (color.toLowerCase() === 'transparent') return true;
+  const rgbaMatch = color.match(/^rgba\s*\(([^)]+)\)/i);
+  if (!rgbaMatch) return false;
+  const parts = rgbaMatch[1]
+    .split(',')
+    .map((part) => parseFloat(part.trim()))
+    .filter((value) => !Number.isNaN(value));
+  if (parts.length < 4) return false;
+  const alpha = parts[3];
+  return alpha <= 0;
 }
 
 function getControlBaseSize(controlName: string) {
@@ -131,6 +143,7 @@ export default function HudComponent({
   parentWidth = SCREEN_BASE_WIDTH,
   parentHeight = SCREEN_BASE_HEIGHT,
   onSkipElement,
+  onMissingFont,
   schemeColors,
   schemeBaseSettings,
   schemeBorders
@@ -154,6 +167,13 @@ export default function HudComponent({
     name: string;
     line?: number;
     reason: 'zero-size' | 'missing-position';
+  }) => void;
+  onMissingFont?: (info: {
+    name: string;
+    line?: number;
+    fontName: string;
+    mappedFamily: string;
+    sourceFile?: string;
   }) => void;
   schemeColors: Record<string, string>;
   schemeBaseSettings: Record<string, string>;
@@ -337,6 +357,8 @@ export default function HudComponent({
   const schemeBorderStyle = getSchemeBorderStyle();
 
   const hasTexture = Boolean(imageValue);
+  const hasVisibleBackground =
+    Boolean(resolvedBgColor) && !isTransparentColor(resolvedBgColor);
 
   const hasRenderableChildren = Object.entries(data).some(
     ([key, node]) =>
@@ -358,20 +380,30 @@ export default function HudComponent({
     baseSize: baseSize.width
   });
 
-  const heightUnits =
+  let heightUnits =
     resolvedHeightUnits ??
     parentHeight ??
     baseSize.height ??
     SCREEN_BASE_HEIGHT;
-  const widthUnits =
+  let widthUnits =
     resolvedWidthUnits ?? parentWidth ?? baseSize.width ?? SCREEN_BASE_WIDTH;
 
+  let skipSelfRender = false;
   if (heightUnits <= 0 || widthUnits <= 0) {
-    onSkipElement?.({ name: fieldName, line, reason: 'zero-size' });
-    return null;
+    if (hasRenderableChildren) {
+      skipSelfRender = true;
+      const fallbackHeight =
+        baseSize.height || parentHeight || SCREEN_BASE_HEIGHT || 1;
+      const fallbackWidth =
+        baseSize.width || parentWidth || SCREEN_BASE_WIDTH || 1;
+      heightUnits = fallbackHeight;
+      widthUnits = fallbackWidth;
+    } else {
+      onSkipElement?.({ name: fieldName, line, reason: 'zero-size' });
+      return null;
+    }
   }
 
-  let skipSelfRender = false;
   if (!hasXpos || !hasYpos) {
     if (hasRenderableChildren) {
       skipSelfRender = true;
@@ -402,17 +434,13 @@ export default function HudComponent({
     schemeBorderStyle ||
     (resolvedOutlineColor ? `1px solid ${resolvedOutlineColor}` : undefined);
   let finalBorder = computedBorder;
-  const needsDashedFallback =
-    !skipSelfRender &&
-    !hasTexture &&
-    !resolvedBgColor &&
-    !resolvedFgColor &&
-    !computedBorder &&
-    !hasLabelContent;
+  const lacksVisualFill =
+    !skipSelfRender && !hasTexture && !hasLabelContent && !hasVisibleBackground;
+  const dashedOutlineColor = outlineColor ?? 'rgba(255,255,255,0.4)';
+  const dashedOutlineStyle = `1px dashed ${dashedOutlineColor}`;
 
-  if (needsDashedFallback) {
-    finalBorder =
-      finalBorder || `1px dashed ${outlineColor ?? 'rgba(255,255,255,0.4)'}`;
+  if (lacksVisualFill) {
+    finalBorder = finalBorder || dashedOutlineStyle;
   }
 
   const horizAlignment =
@@ -449,6 +477,8 @@ export default function HudComponent({
     color: resolvedFgColor,
     backgroundColor: resolvedBgColor,
     border: finalBorder,
+    outline: lacksVisualFill ? dashedOutlineStyle : undefined,
+    outlineOffset: 0,
     overflow: 'visible',
     fontFamily: fontFamily,
     fontSize: `${fontSize * Math.min(scaleX, scaleY)}px`,
@@ -480,6 +510,16 @@ export default function HudComponent({
     : 'whitespace-nowrap';
 
   if (labelText && !skipSelfRender) {
+    if (isFontMissing && fontName) {
+      onMissingFont?.({
+        name: fieldName,
+        line,
+        fontName,
+        mappedFamily,
+        sourceFile
+      });
+    }
+
     return (
       <div
         title={fieldName}
@@ -496,11 +536,6 @@ export default function HudComponent({
         <span className={spanClassName} style={{ lineHeight: 1.1 }}>
           {formattedLabelText}
         </span>
-        {isFontMissing && (
-          <Tooltip content={`Missing font: ${mappedFamily} (${fontName})`}>
-            <ExclamationTriangleIcon className='absolute top-0 right-0 text-yellow-500' />
-          </Tooltip>
-        )}
         {line && hoveredLine === line && (
           <div className='absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/70 text-white text-xs font-mono px-2 py-1 pointer-events-none'>
             <span className='whitespace-nowrap'>{fieldName}</span>

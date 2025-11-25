@@ -10,7 +10,6 @@ import {
   AlertDialog,
   DropdownMenu,
   ContextMenu,
-  TextField,
   Tooltip
 } from '@radix-ui/themes';
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -83,7 +82,109 @@ type SkippedElement = {
   reason: 'zero-size' | 'missing-position';
 };
 
+type MissingFont = {
+  name: string;
+  line?: number;
+  fontName: string;
+  mappedFamily: string;
+  sourceFile?: string;
+};
+
 type SchemeBorderMap = Record<string, KeyValues>;
+
+const CLIENT_SCHEME_FILE = 'clientscheme.res';
+const WELCOME_FILE = 'welcome.res';
+
+const normalizePathKey = (value: string) =>
+  value.replace(/\\/g, '/').toLowerCase();
+
+const pathMatchesClientScheme = (path: string) => {
+  const normalized = normalizePathKey(path);
+  return (
+    normalized === CLIENT_SCHEME_FILE ||
+    normalized.endsWith(`/${CLIENT_SCHEME_FILE}`)
+  );
+};
+
+const matchesClientScheme = (name: string, path: string) =>
+  name.toLowerCase() === CLIENT_SCHEME_FILE || pathMatchesClientScheme(path);
+
+const isClientSchemeHudFile = (file: HudFile) =>
+  matchesClientScheme(file.name, file.path);
+
+const matchesWelcomeFile = (value: string) =>
+  normalizePathKey(value) === WELCOME_FILE;
+
+const isWelcomeFile = (file: HudFile) =>
+  matchesWelcomeFile(file.name) || matchesWelcomeFile(file.path);
+
+const isClientSchemeNode = (node: FileNode) =>
+  matchesClientScheme(node.name, node.path);
+
+const findClientSchemeNode = (nodes: FileNode[]): FileNode | null => {
+  for (const node of nodes) {
+    if (node.type === 'file' && isClientSchemeNode(node)) {
+      return node;
+    }
+    if (node.children) {
+      const found = findClientSchemeNode(node.children);
+      if (found) return found;
+    }
+  }
+  return null;
+};
+
+const findNodeByPath = (
+  nodes: FileNode[],
+  targetPath: string
+): FileNode | null => {
+  for (const node of nodes) {
+    if (node.path === targetPath) {
+      return node;
+    }
+    if (node.children) {
+      const found = findNodeByPath(node.children, targetPath);
+      if (found) return found;
+    }
+  }
+  return null;
+};
+
+const pathExistsInTree = (nodes: FileNode[], targetPath: string): boolean => {
+  for (const node of nodes) {
+    if (node.path === targetPath) return true;
+    if (node.children && pathExistsInTree(node.children, targetPath)) {
+      return true;
+    }
+  }
+  return false;
+};
+
+const insertFileNode = (
+  nodes: FileNode[],
+  parentPath: string | null,
+  newNode: FileNode
+): FileNode[] => {
+  if (!parentPath) {
+    return [...nodes, newNode];
+  }
+
+  return nodes.map((node) => {
+    if (node.path === parentPath && node.type === 'folder') {
+      return {
+        ...node,
+        children: node.children ? [...node.children, newNode] : [newNode]
+      };
+    }
+    if (node.children) {
+      return {
+        ...node,
+        children: insertFileNode(node.children, parentPath, newNode)
+      };
+    }
+    return node;
+  });
+};
 
 const sortFileNodes = (nodes: FileNode[]): FileNode[] => {
   return nodes
@@ -108,10 +209,14 @@ function FileTreeNode({
   onRename,
   onDelete,
   onCreateFolder,
+  onCreateFile,
   onMove,
   renamingPath,
   onRenameSubmit,
-  onRenameCancel
+  onRenameCancel,
+  expandedPaths,
+  onToggleExpand,
+  scrollToPath
 }: {
   node: FileNode;
   level: number;
@@ -120,13 +225,16 @@ function FileTreeNode({
   loadingPaths: Set<string>;
   onRename: (node: FileNode) => void;
   onDelete: (node: FileNode) => void;
-  onCreateFolder: (node: FileNode) => void;
+  onCreateFolder: (parentPath: string | null) => void;
+  onCreateFile: (parentPath: string | null) => void;
   onMove: (sourceNode: FileNode, targetNode: FileNode) => void;
   renamingPath: string | null;
   onRenameSubmit: (node: FileNode, newName: string) => void;
   onRenameCancel: () => void;
+  expandedPaths: Set<string>;
+  onToggleExpand: (path: string) => void;
+  scrollToPath: string | null;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const hoverItemBg = isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-200';
@@ -134,9 +242,17 @@ function FileTreeNode({
 
   const [editName, setEditName] = useState(node.name);
   const inputRef = useRef<HTMLInputElement>(null);
+  const nodeRef = useRef<HTMLDivElement>(null);
 
   const isActive = node.path === activePath;
   const isRenaming = renamingPath === node.path;
+  const isOpen = expandedPaths.has(node.path);
+
+  useEffect(() => {
+    if (scrollToPath === node.path && nodeRef.current) {
+      nodeRef.current.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+  }, [scrollToPath, node.path]);
 
   useEffect(() => {
     if (isRenaming && inputRef.current) {
@@ -146,12 +262,39 @@ function FileTreeNode({
     }
   }, [isRenaming, node.name]);
 
+  useEffect(() => {
+    if (!isRenaming) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!inputRef.current) return;
+      if (inputRef.current.contains(event.target as Node)) {
+        return;
+      }
+      onRenameSubmit(node, editName);
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+    };
+  }, [isRenaming, editName, node, onRenameSubmit]);
+
+  const getParentPath = () => {
+    if (node.type === 'folder') {
+      return node.path;
+    }
+    const lastSlash = node.path.lastIndexOf('/');
+    if (lastSlash === -1) return null;
+    return node.path.substring(0, lastSlash);
+  };
+
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isRenaming) return;
 
     if (node.type === 'folder') {
-      setIsOpen(!isOpen);
+      onToggleExpand(node.path);
+      onSelect(node);
     } else {
       onSelect(node);
     }
@@ -203,6 +346,7 @@ function FileTreeNode({
     <ContextMenu.Root>
       <ContextMenu.Trigger>
         <div
+          ref={nodeRef}
           style={{ paddingLeft: level * 12 }}
           draggable
           onDragStart={handleDragStart}
@@ -258,10 +402,14 @@ function FileTreeNode({
                   onRename={onRename}
                   onDelete={onDelete}
                   onCreateFolder={onCreateFolder}
+                  onCreateFile={onCreateFile}
                   onMove={onMove}
                   renamingPath={renamingPath}
                   onRenameSubmit={onRenameSubmit}
                   onRenameCancel={onRenameCancel}
+                  expandedPaths={expandedPaths}
+                  onToggleExpand={onToggleExpand}
+                  scrollToPath={scrollToPath}
                 />
               ))}
             </div>
@@ -272,11 +420,12 @@ function FileTreeNode({
         <ContextMenu.Item onSelect={() => onRename(node)}>
           Rename
         </ContextMenu.Item>
-        {node.type === 'folder' && (
-          <ContextMenu.Item onSelect={() => onCreateFolder(node)}>
-            New Folder
-          </ContextMenu.Item>
-        )}
+        <ContextMenu.Item onSelect={() => onCreateFile(getParentPath())}>
+          New File
+        </ContextMenu.Item>
+        <ContextMenu.Item onSelect={() => onCreateFolder(getParentPath())}>
+          New Folder
+        </ContextMenu.Item>
         <ContextMenu.Separator />
         <ContextMenu.Item color='red' onSelect={() => onDelete(node)}>
           Delete
@@ -393,7 +542,6 @@ export default function HudEditor() {
   const [fontMap, setFontMap] = useState<Record<string, FontDefinition>>({}); // Scheme Name -> Definition
   const [showFontDialog, setShowFontDialog] = useState(false);
   const [showAddFileDialog, setShowAddFileDialog] = useState(false);
-  const [addFileMode, setAddFileMode] = useState<'search' | 'create'>('search');
   const [fileSearchQuery, setFileSearchQuery] = useState('');
   const [isImporting, setIsImporting] = useState(false);
 
@@ -423,20 +571,74 @@ export default function HudEditor() {
   >({});
   const [schemeBorders, setSchemeBorders] = useState<SchemeBorderMap>({});
   const [skippedElements, setSkippedElements] = useState<SkippedElement[]>([]);
+  const [missingFonts, setMissingFonts] = useState<MissingFont[]>([]);
+  const [errorDialogMessage, setErrorDialogMessage] = useState<string | null>(
+    null
+  );
 
   // File Management State
   const [renamingPath, setRenamingPath] = useState<string | null>(null);
-  const [newFolderParent, setNewFolderParent] = useState<FileNode | null>(null);
-  const [newFolderName, setNewFolderName] = useState('');
-  const [showNewFolderDialog, setShowNewFolderDialog] = useState(false);
+  const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
+  const [scrollToPath, setScrollToPath] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<FileNode | null>(null);
 
   const skippedElementsRef = useRef<SkippedElement[]>([]);
+  const missingFontsRef = useRef<MissingFont[]>([]);
+
+  const getCurrentDirectoryPath = useCallback(() => {
+    if (!activePath) return '';
+
+    const activeNode = findNodeByPath(fileTree, activePath);
+    if (activeNode?.type === 'folder') {
+      return activeNode.path;
+    }
+
+    const lastSlash = activePath.lastIndexOf('/');
+    if (lastSlash === -1) return '';
+    return activePath.substring(0, lastSlash);
+  }, [activePath, fileTree]);
+
+  const showErrorDialog = useCallback((message: string) => {
+    setErrorDialogMessage(message);
+  }, []);
+  const autoOpenedClientSchemeRef = useRef(false);
+
+
+  const toggleExpand = useCallback((path: string) => {
+    setExpandedPaths((prev) => {
+      const next = new Set(prev);
+      if (next.has(path)) {
+        next.delete(path);
+      } else {
+        next.add(path);
+      }
+      return next;
+    });
+  }, []);
+
+  const expandToPath = useCallback((path: string) => {
+    const parts = path.split('/');
+    const pathsToExpand = new Set<string>();
+    let current = '';
+    // Don't expand the leaf node itself if it's a file, but if it's a folder we might want to?
+    // Usually we expand parents.
+    for (let i = 0; i < parts.length - 1; i++) {
+      current = current ? `${current}/${parts[i]}` : parts[i];
+      pathsToExpand.add(current);
+    }
+    setExpandedPaths((prev) => {
+      const next = new Set(prev);
+      pathsToExpand.forEach((p) => next.add(p));
+      return next;
+    });
+  }, []);
+
   // Helper to save tree
-  const saveTree = async (tree: FileNode[]) => {
+  const saveTree = useCallback(async (tree: FileNode[]) => {
     const normalized = sortFileNodes(tree);
     setFileTree(normalized);
     await saveFile('__MANIFEST__', JSON.stringify(normalized));
-  };
+  }, []);
 
   const handleRenameSubmit = async (node: FileNode, newName: string) => {
     setRenamingPath(null);
@@ -526,8 +728,13 @@ export default function HudEditor() {
     }
   };
 
-  const handleDelete = async (node: FileNode) => {
-    if (!confirm(`Are you sure you want to delete ${node.name}?`)) return;
+  const handleDeleteRequest = (node: FileNode) => {
+    setDeleteTarget(node);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    const node = deleteTarget;
 
     const removeNode = (nodes: FileNode[]): FileNode[] => {
       return nodes
@@ -567,100 +774,103 @@ export default function HudEditor() {
     }
   };
 
-  const handleCreateFolder = async () => {
-    if (!newFolderName) return;
+  const handleCreateFolder = useCallback(
+    async (parentPathOverride?: string | null) => {
+      const currentDir = parentPathOverride ?? getCurrentDirectoryPath();
+      const normalizedParent =
+        currentDir && currentDir.length > 0 ? currentDir : null;
 
-    let parentPath = '';
-    if (newFolderParent) {
-      parentPath = newFolderParent.path;
-    } else if (activePath) {
-      // Infer from active path
-      const lastSlash = activePath.lastIndexOf('/');
-      if (lastSlash !== -1) {
-        parentPath = activePath.substring(0, lastSlash);
+      let baseName = 'New Folder';
+      let counter = 1;
+      const buildPath = () =>
+        normalizedParent ? `${normalizedParent}/${baseName}` : baseName;
+
+      let newPath = buildPath();
+      while (pathExistsInTree(fileTree, newPath)) {
+        baseName = `New Folder (${counter})`;
+        counter++;
+        newPath = buildPath();
       }
-    }
 
-    const newPath = parentPath
-      ? `${parentPath}/${newFolderName}`
-      : newFolderName;
+      const newNode: FileNode = {
+        name: baseName,
+        type: 'folder',
+        path: newPath,
+        children: []
+      };
 
-    const newNode: FileNode = {
-      name: newFolderName,
-      type: 'folder',
-      path: newPath,
-      children: []
-    };
-
-    const insertNode = (nodes: FileNode[]): FileNode[] => {
-      if (!parentPath) {
-        return [...nodes, newNode].sort((a, b) => {
-          if (a.type === b.type) return a.name.localeCompare(b.name);
-          return a.type === 'folder' ? -1 : 1;
-        });
+      const newTree = insertFileNode(fileTree, normalizedParent, newNode);
+      await saveTree(newTree);
+      
+      // Auto-expand parent if needed
+      if (normalizedParent) {
+        expandToPath(newPath);
       }
-      return nodes.map((node) => {
-        if (node.path === parentPath) {
-          return {
-            ...node,
-            children: [...(node.children || []), newNode].sort((a, b) => {
-              if (a.type === b.type) return a.name.localeCompare(b.name);
-              return a.type === 'folder' ? -1 : 1;
-            })
-          };
-        }
-        if (node.children) {
-          return { ...node, children: insertNode(node.children) };
-        }
-        return node;
-      });
-    };
+      // Trigger rename and scroll
+      setRenamingPath(newPath);
+      setScrollToPath(newPath);
+      // Reset scroll target after animation
+      setTimeout(() => setScrollToPath(null), 500);
+    },
+    [fileTree, getCurrentDirectoryPath, saveTree, expandToPath]
+  );
 
-    const newTree = insertNode(fileTree);
-    await saveTree(newTree);
-    setShowNewFolderDialog(false);
-    setNewFolderName('');
-  };
+  const handleCreateFile = useCallback(
+    async (parentPathOverride?: string | null) => {
+      const currentDir = parentPathOverride ?? getCurrentDirectoryPath();
+      const normalizedParent =
+        currentDir && currentDir.length > 0 ? currentDir : null;
 
-  const handleCreateFile = async () => {
-    // Create a default name
-    let finalName = 'new_file.res';
-    let counter = 1;
+      let baseName = 'new_file.res';
+      let counter = 1;
+      const buildPath = () =>
+        normalizedParent ? `${normalizedParent}/${baseName}` : baseName;
 
-    // Simple collision check (only checks root for now, ideally check target dir)
-    // Since we create at root by default:
-    while (fileTree.some((n) => n.path === finalName)) {
-      finalName = `new_file_${counter}.res`;
-      counter++;
-    }
+      let newPath = buildPath();
+      while (pathExistsInTree(fileTree, newPath)) {
+        baseName = `new_file_${counter}.res`;
+        counter++;
+        newPath = buildPath();
+      }
 
-    const newPath = finalName;
+      const newNode: FileNode = {
+        name: baseName,
+        path: newPath,
+        type: 'file'
+      };
 
-    const newNode: FileNode = {
-      name: finalName,
-      type: 'file',
-      path: newPath
-    };
+      const newTree = insertFileNode(fileTree, normalizedParent, newNode);
 
-    const newTree = [...fileTree, newNode].sort((a, b) => {
-      if (a.type === b.type) return a.name.localeCompare(b.name);
-      return a.type === 'folder' ? -1 : 1;
-    });
+      await saveFile(newPath, '');
+      await saveTree(newTree);
 
-    await saveFile(newPath, ''); // Empty content
-    await saveTree(newTree);
-
-    // Open it
-    setFiles((prev) => [
-      ...prev,
-      { name: finalName, path: newPath, content: '' }
-    ]);
-    setActiveFileIndex(files.length);
-    setShowAddFileDialog(false);
-
-    // Trigger rename
-    setRenamingPath(newPath);
-  };
+      setFiles((prev) => [
+        ...prev,
+        { name: baseName, path: newPath, content: '' }
+      ]);
+      setActiveFileIndex(files.length);
+      setActivePath(newPath);
+      setShowAddFileDialog(false);
+      setRenamingPath(newPath);
+      
+      // Auto-expand and scroll
+      expandToPath(newPath);
+      setScrollToPath(newPath);
+      setTimeout(() => setScrollToPath(null), 500);
+    },
+    [
+      fileTree,
+      files.length,
+      getCurrentDirectoryPath,
+      saveTree,
+      setFiles,
+      setActiveFileIndex,
+      setActivePath,
+      setShowAddFileDialog,
+      setRenamingPath,
+      expandToPath
+    ]
+  );
 
   const handleMove = async (
     sourceNode: FileNode,
@@ -701,7 +911,6 @@ export default function HudEditor() {
     };
     const updatedSource = updatePaths(sourceNode, targetPath);
 
-    // 3. Add to new location
     const insertNode = (nodes: FileNode[]): FileNode[] => {
       if (!targetNode) {
         // Insert at root
@@ -915,57 +1124,72 @@ export default function HudEditor() {
     }
   }, []);
 
-  const loadScheme = useCallback(async () => {
-    // Try to find it in open files first
-    let content = files.find(
-      (f: HudFile) => f.name.toLowerCase() === 'clientscheme.res'
-    )?.content;
-
-    // If not open, try to load from storage
-    if (!content) {
-      const paths = [
-        'resource/ClientScheme.res',
-        'resource/clientscheme.res',
-        'ClientScheme.res',
-        'clientscheme.res'
-      ];
-
-      for (const path of paths) {
-        const stored = await loadFile(path);
-        if (stored) {
-          content = stored;
-          break;
-        }
-      }
-    }
-
-    // If still no content, fall back to default HUD copy
-    if (!content) {
-      const defaultPaths = [
-        '/default_hud/resource/ClientScheme.res',
-        '/default_hud/resource/clientscheme.res'
-      ];
-      for (const path of defaultPaths) {
-        try {
-          const res = await fetch(path);
-          if (res.ok) {
-            content = await res.text();
-            break;
-          }
-        } catch (e) {
-          console.error('Failed to fetch default ClientScheme', e);
-        }
-      }
-    }
-
-    if (content) {
-      applySchemeContent(content);
+  useEffect(() => {
+    const schemeFile = files.find(isClientSchemeHudFile);
+    if (schemeFile) {
+      applySchemeContent(schemeFile.content);
     }
   }, [files, applySchemeContent]);
 
   useEffect(() => {
-    loadScheme();
-  }, [loadScheme]);
+    if (autoOpenedClientSchemeRef.current) return;
+    if (files.some(isClientSchemeHudFile)) {
+      autoOpenedClientSchemeRef.current = true;
+      return;
+    }
+    if (!fileTree.length) return;
+
+    const targetNode = findClientSchemeNode(fileTree);
+    if (!targetNode) return;
+
+    autoOpenedClientSchemeRef.current = true;
+    setActivePath(targetNode.path);
+
+    const openScheme = async () => {
+      try {
+        let text = await loadFile(targetNode.path);
+        if (!text) {
+          const res = await fetch(`/default_hud/${targetNode.path}`);
+          if (res.ok) {
+            text = await res.text();
+          }
+        }
+
+        if (!text) return;
+
+        const content = text;
+        setFileCache((prev) => ({ ...prev, [targetNode.path]: content }));
+
+        let openedScheme = false;
+        setFiles((prev) => {
+          if (prev.some(isClientSchemeHudFile)) {
+            return prev;
+          }
+
+          openedScheme = true;
+          return [
+            ...prev,
+            {
+              name: targetNode.name,
+              path: targetNode.path,
+              content
+            }
+          ];
+        });
+
+        if (openedScheme) {
+          const welcomeIndex = files.findIndex(isWelcomeFile);
+          if (welcomeIndex !== -1) {
+            setActiveFileIndex(welcomeIndex);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to auto-open ClientScheme', err);
+      }
+    };
+
+    openScheme();
+  }, [fileTree, files]);
 
   useEffect(() => {
     if (!activeFile) return;
@@ -1195,7 +1419,7 @@ export default function HudEditor() {
         );
 
         if (!hasResource) {
-          alert(
+          showErrorDialog(
             'Invalid HUD structure. Please ensure the ZIP file contains a "resource" folder at the root.'
           );
           setIsImporting(false);
@@ -1267,7 +1491,9 @@ export default function HudEditor() {
         window.location.reload();
       } catch (err) {
         console.error('Failed to import HUD', err);
-        alert('Failed to import HUD. Please ensure it is a valid ZIP file.');
+        showErrorDialog(
+          'Failed to import HUD. Please ensure it is a valid ZIP file.'
+        );
         setIsImporting(false);
       }
     };
@@ -1323,9 +1549,9 @@ export default function HudEditor() {
   };
 
   const handleNodeSelect = async (node: FileNode) => {
-    if (node.type !== 'file') return;
-
     setActivePath(node.path);
+
+    if (node.type !== 'file') return;
 
     // Check if already loaded by path
     const existingIndex = files.findIndex((f) => f.path === node.path);
@@ -1472,10 +1698,13 @@ export default function HudEditor() {
       setShowConditionalHint(false);
       setSkippedElements([]);
       skippedElementsRef.current = [];
+      setMissingFonts([]);
+      missingFontsRef.current = [];
       return;
     }
     setShowConditionalHint(hasConditionalBlocks(parsedPreview));
     setSkippedElements(skippedElementsRef.current.slice());
+    setMissingFonts(missingFontsRef.current.slice());
   }, [parsedPreview, platform]);
 
   const handleElementSkip = useCallback((info: SkippedElement) => {
@@ -1488,6 +1717,19 @@ export default function HudEditor() {
       )
     ) {
       skippedElementsRef.current.push(info);
+    }
+  }, []);
+
+  const handleMissingFont = useCallback((info: MissingFont) => {
+    if (
+      !missingFontsRef.current.some(
+        (item) =>
+          item.name === info.name &&
+          item.line === info.line &&
+          item.fontName === info.fontName
+      )
+    ) {
+      missingFontsRef.current.push(info);
     }
   }, []);
 
@@ -1552,6 +1794,7 @@ export default function HudEditor() {
   const previewDimensions = getPreviewDimensions();
 
   skippedElementsRef.current = [];
+  missingFontsRef.current = [];
 
   const renderPreviewHeading = () => (
     <Flex align='center' gap='2'>
@@ -1593,6 +1836,34 @@ export default function HudEditor() {
           }
         >
           <QuestionMarkCircledIcon className='text-blue-400 cursor-help' />
+        </Tooltip>
+      )}
+      {missingFonts.length > 0 && (
+        <Tooltip
+          content={
+            <div className='max-w-xs'>
+              <Text size='2' weight='bold' className='mb-1 block'>
+                Missing fonts
+              </Text>
+              <div className='max-h-40 overflow-auto border border-dashed border-amber-500 rounded px-2 py-1'>
+                <Flex direction='column' gap='1'>
+                  {missingFonts.map((item, index) => (
+                    <Text
+                      key={`${item.name}-${item.line ?? index}-${item.fontName}`}
+                      size='2'
+                      className='whitespace-nowrap'
+                    >
+                      {`• ${item.name}${
+                        item.line ? ` (line ${item.line})` : ''
+                      } – ${item.fontName} (${item.mappedFamily})`}
+                    </Text>
+                  ))}
+                </Flex>
+              </div>
+            </div>
+          }
+        >
+          <ExclamationTriangleIcon className='text-amber-500 cursor-help' />
         </Tooltip>
       )}
     </Flex>
@@ -2054,6 +2325,7 @@ export default function HudEditor() {
                             platform={platform}
                             sourceFile={lastSourceFile}
                             onSkipElement={handleElementSkip}
+                            onMissingFont={handleMissingFont}
                             schemeColors={schemeColors}
                             schemeBaseSettings={schemeBaseSettings}
                             schemeBorders={schemeBorders}
@@ -2091,89 +2363,109 @@ export default function HudEditor() {
           align='stretch'
         >
           {/* Sidebar */}
-          <Flex
-            direction='column'
-            className={`h-full rounded-md border transition-colors overflow-hidden ${containerBg} ${isDragging ? 'border-blue-500' : borderColor}`}
-            p='2'
-            gap='2'
-            style={{ width: `${sidebarWidth}px`, flexShrink: 0 }}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-          >
-            <Flex justify='between' align='center' className='mb-2'>
-              <Text size='3'>Files</Text>
-              <input
-                type='file'
-                multiple
-                ref={fileInputRef}
-                className='hidden'
-                onChange={handleFileUpload}
-                accept='.res,.txt,.ttf,.otf'
-              />
-              <Flex gap='2'>
-                <IconButton
-                  size='1'
-                  variant='ghost'
-                  onClick={() => setShowFontDialog(true)}
-                >
-                  <FontBoldIcon />
-                </IconButton>
-                <IconButton
-                  size='1'
-                  variant='ghost'
-                  onClick={() => {
-                    setNewFolderParent(null);
-                    setShowNewFolderDialog(true);
-                  }}
-                >
-                  <FilePlusIcon />
-                </IconButton>
-                <IconButton
-                  size='1'
-                  variant='ghost'
-                  onClick={() => setShowAddFileDialog(true)}
-                >
-                  <PlusIcon />
-                </IconButton>
-              </Flex>
-            </Flex>
-
-            <ScrollArea className='flex-1'>
-              <Flex direction='column' gap='1'>
-                {fileTree.map((node) => (
-                  <FileTreeNode
-                    key={node.path}
-                    node={node}
-                    level={0}
-                    onSelect={handleNodeSelect}
-                    activePath={activePath}
-                    loadingPaths={loadingPaths}
-                    onRename={(n) => setRenamingPath(n.path)}
-                    onDelete={handleDelete}
-                    onCreateFolder={(n) => {
-                      setNewFolderParent(n);
-                      setShowNewFolderDialog(true);
-                    }}
-                    onMove={handleMove}
-                    renamingPath={renamingPath}
-                    onRenameSubmit={handleRenameSubmit}
-                    onRenameCancel={() => setRenamingPath(null)}
-                  />
-                ))}
-              </Flex>
-            </ScrollArea>
-
-            {isDragging && (
+          <ContextMenu.Root>
+            <ContextMenu.Trigger>
               <Flex
-                align='center'
-                justify='center'
-                className='absolute inset-0 bg-black/50 pointer-events-none rounded-md'
+                direction='column'
+                className={`h-full rounded-md border transition-colors overflow-hidden ${containerBg} ${isDragging ? 'border-blue-500' : borderColor}`}
+                p='2'
+                gap='2'
+                style={{ width: `${sidebarWidth}px`, flexShrink: 0 }}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onClick={() => setActivePath(null)}
               >
-                <Text size='4'>Drop files here</Text>
+                <Flex justify='between' align='center' className='mb-2'>
+                  <Text size='3'>Files</Text>
+                  <input
+                    type='file'
+                    multiple
+                    ref={fileInputRef}
+                    className='hidden'
+                    onChange={handleFileUpload}
+                    accept='.res,.txt,.ttf,.otf'
+                  />
+                  <Flex gap='2'>
+                    <IconButton
+                      size='1'
+                      variant='ghost'
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowFontDialog(true);
+                      }}
+                    >
+                      <FontBoldIcon />
+                    </IconButton>
+                    <IconButton
+                      size='1'
+                      variant='ghost'
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCreateFolder(null);
+                      }}
+                    >
+                      <FilePlusIcon />
+                    </IconButton>
+                    <IconButton
+                      size='1'
+                      variant='ghost'
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowAddFileDialog(true);
+                      }}
+                    >
+                      <PlusIcon />
+                    </IconButton>
+                  </Flex>
+                </Flex>
+
+                <ScrollArea className='flex-1'>
+                  <Flex direction='column' gap='1'>
+                    {fileTree.map((node) => (
+                      <FileTreeNode
+                        key={node.path}
+                        node={node}
+                        level={0}
+                        onSelect={handleNodeSelect}
+                        activePath={activePath}
+                        loadingPaths={loadingPaths}
+                        onRename={(n) => setRenamingPath(n.path)}
+                        onDelete={handleDeleteRequest}
+                        onCreateFolder={handleCreateFolder}
+                        onCreateFile={handleCreateFile}
+                        onMove={handleMove}
+                        renamingPath={renamingPath}
+                        onRenameSubmit={handleRenameSubmit}
+                        onRenameCancel={() => setRenamingPath(null)}
+                        expandedPaths={expandedPaths}
+                        onToggleExpand={toggleExpand}
+                        scrollToPath={scrollToPath}
+                      />
+                    ))}
+                  </Flex>
+                </ScrollArea>
+
+                {isDragging && (
+                  <Flex
+                    align='center'
+                    justify='center'
+                    className='absolute inset-0 bg-black/50 pointer-events-none rounded-md'
+                  >
+                    <Text size='4'>Drop files here</Text>
+                  </Flex>
+                )}
               </Flex>
-            )}
-          </Flex>
+            </ContextMenu.Trigger>
+            <ContextMenu.Content>
+              <ContextMenu.Item onSelect={() => handleCreateFile(null)}>
+                New File
+              </ContextMenu.Item>
+              <ContextMenu.Item onSelect={() => handleCreateFolder(null)}>
+                New Folder
+              </ContextMenu.Item>
+            </ContextMenu.Content>
+          </ContextMenu.Root>
 
           <div
             className={`w-3 cursor-col-resize flex items-center justify-center rounded-md h-full ${isDark ? 'hover:bg-blue-500/50' : 'hover:bg-blue-400/50'} transition-colors`}
@@ -2350,6 +2642,7 @@ export default function HudEditor() {
                                 platform={platform}
                                 sourceFile={lastSourceFile}
                                 onSkipElement={handleElementSkip}
+                                onMissingFont={handleMissingFont}
                                 schemeColors={schemeColors}
                                 schemeBaseSettings={schemeBaseSettings}
                                 schemeBorders={schemeBorders}
@@ -2424,199 +2717,193 @@ export default function HudEditor() {
         >
           <Dialog.Title>Add File</Dialog.Title>
 
-          {addFileMode === 'search' ? (
-            <>
-              <Flex direction='column' gap='3' className='flex-1 min-h-0 mt-4'>
-                <input
-                  type='text'
-                  placeholder='Search files...'
-                  className={`w-full px-3 py-2 rounded border ${borderColor} ${containerBg}`}
-                  value={fileSearchQuery}
-                  onChange={(e) => setFileSearchQuery(e.target.value)}
-                  autoFocus
-                />
-
-                <ScrollArea className='flex-1 border rounded p-2'>
-                  {fileSearchQuery ? (
-                    <Flex direction='column' gap='1'>
-                      {(() => {
-                        const matches: FileNode[] = [];
-                        const search = (nodes: FileNode[]) => {
-                          for (const node of nodes) {
-                            if (node.type === 'file') {
-                              if (
-                                node.name
-                                  .toLowerCase()
-                                  .includes(fileSearchQuery.toLowerCase())
-                              ) {
-                                matches.push(node);
-                              }
-                            } else if (node.children) {
-                              search(node.children);
-                            }
-                          }
-                        };
-                        search(fileTree);
-
-                        if (matches.length === 0) {
-                          return <Text color='gray'>No matches found.</Text>;
-                        }
-
-                        return matches.map((node) => (
-                          <div
-                            key={node.path}
-                            className={`p-1 rounded cursor-pointer ${hoverItemBg}`}
-                            onClick={() => {
-                              handleNodeSelect(node);
-                              setShowAddFileDialog(false);
-                            }}
-                          >
-                            <Flex align='center' gap='2'>
-                              <FileTextIcon className='text-gray-500' />
-                              <Text size='1'>{node.path}</Text>
-                            </Flex>
-                          </div>
-                        ));
-                      })()}
-                    </Flex>
-                  ) : (
-                    <Flex direction='column' gap='1'>
-                      {fileTree.map((node) => (
-                        <FileTreeNode
-                          key={node.path}
-                          node={node}
-                          level={0}
-                          onSelect={(n) => {
-                            handleNodeSelect(n);
-                            setShowAddFileDialog(false);
-                          }}
-                          activePath={null}
-                          loadingPaths={loadingPaths}
-                          onRename={() => {}}
-                          onDelete={() => {}}
-                          onCreateFolder={() => {}}
-                          onMove={() => {}}
-                          renamingPath={null}
-                          onRenameSubmit={() => {}}
-                          onRenameCancel={() => {}}
-                        />
-                      ))}
-                    </Flex>
-                  )}
-                </ScrollArea>
-              </Flex>
-
-              <Flex gap='3' mt='4' justify='between' align='center'>
-                <Flex gap='3'>
-                  <Button
-                    variant='surface'
-                    onClick={() => setAddFileMode('create')}
-                  >
-                    Create Empty
-                  </Button>
-                  <label>
-                    <input
-                      type='file'
-                      style={{ display: 'none' }}
-                      onChange={(e) => {
-                        if (e.target.files?.[0]) {
-                          const file = e.target.files[0];
-                          const reader = new FileReader();
-                          reader.onload = async (ev) => {
-                            const content = ev.target?.result as string;
-                            const path = file.name; // Root
-
-                            // Add to tree
-                            const newNode: FileNode = {
-                              name: file.name,
-                              type: 'file',
-                              path: path
-                            };
-                            const newTree = [...fileTree, newNode];
-                            await saveTree(newTree);
-                            await saveFile(path, content);
-
-                            setFiles((prev) => [
-                              ...prev,
-                              { name: file.name, path, content }
-                            ]);
-                            setActiveFileIndex(files.length);
-                            setShowAddFileDialog(false);
-                          };
-                          reader.readAsText(file);
-                        }
-                      }}
-                    />
-                    <Button
-                      variant='surface'
-                      asChild
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <span>Import Local</span>
-                    </Button>
-                  </label>
-                </Flex>
-                <Dialog.Close>
-                  <Button variant='soft' color='gray'>
-                    Cancel
-                  </Button>
-                </Dialog.Close>
-              </Flex>
-            </>
-          ) : (
-            <Flex direction='column' gap='3' className='mt-4'>
-              <Text size='2'>
-                Create a new empty file. You can rename it after creation.
-              </Text>
-
-              <Flex justify='end' gap='3' mt='4'>
-                <Button
-                  variant='soft'
-                  color='gray'
-                  onClick={() => setAddFileMode('search')}
-                >
-                  Back
-                </Button>
-                <Button onClick={handleCreateFile}>Create File</Button>
-              </Flex>
-            </Flex>
-          )}
-        </Dialog.Content>
-      </Dialog.Root>
-
-      {/* New Folder Dialog */}
-      <Dialog.Root
-        open={showNewFolderDialog}
-        onOpenChange={setShowNewFolderDialog}
-      >
-        <Dialog.Content maxWidth='400px'>
-          <Dialog.Title>New Folder</Dialog.Title>
-          <Flex direction='column' gap='3' mt='4'>
-            <Text size='2'>
-              Creating folder in:{' '}
-              {newFolderParent
-                ? newFolderParent.path
-                : activePath
-                  ? activePath.substring(0, activePath.lastIndexOf('/')) ||
-                    'Root'
-                  : 'Root'}
-            </Text>
-            <TextField.Root
-              value={newFolderName}
-              onChange={(e) => setNewFolderName(e.target.value)}
-              placeholder='Folder name'
+          <Flex direction='column' gap='3' className='flex-1 min-h-0 mt-4'>
+            <input
+              type='text'
+              placeholder='Search files...'
+              className={`w-full px-3 py-2 rounded border ${borderColor} ${containerBg}`}
+              value={fileSearchQuery}
+              onChange={(e) => setFileSearchQuery(e.target.value)}
+              autoFocus
             />
-            <Flex justify='end' gap='3'>
-              <Dialog.Close>
-                <Button variant='soft' color='gray'>
-                  Cancel
+
+            <ScrollArea className='flex-1 border rounded p-2'>
+              {fileSearchQuery ? (
+                <Flex direction='column' gap='1'>
+                  {(() => {
+                    const matches: FileNode[] = [];
+                    const search = (nodes: FileNode[]) => {
+                      for (const node of nodes) {
+                        if (node.type === 'file') {
+                          if (
+                            node.name
+                              .toLowerCase()
+                              .includes(fileSearchQuery.toLowerCase())
+                          ) {
+                            matches.push(node);
+                          }
+                        } else if (node.children) {
+                          search(node.children);
+                        }
+                      }
+                    };
+                    search(fileTree);
+
+                    if (matches.length === 0) {
+                      return <Text color='gray'>No matches found.</Text>;
+                    }
+
+                    return matches.map((node) => (
+                      <div
+                        key={node.path}
+                        className={`p-1 rounded cursor-pointer ${hoverItemBg}`}
+                        onClick={() => {
+                          handleNodeSelect(node);
+                          setShowAddFileDialog(false);
+                        }}
+                      >
+                        <Flex align='center' gap='2'>
+                          <FileTextIcon className='text-gray-500' />
+                          <Text size='1'>{node.path}</Text>
+                        </Flex>
+                      </div>
+                    ));
+                  })()}
+                </Flex>
+              ) : (
+                <Flex direction='column' gap='1'>
+                  {fileTree.map((node) => (
+                    <FileTreeNode
+                      key={node.path}
+                      node={node}
+                      level={0}
+                      onSelect={(n) => {
+                        handleNodeSelect(n);
+                        setShowAddFileDialog(false);
+                      }}
+                      activePath={null}
+                      loadingPaths={loadingPaths}
+                      onRename={() => {}}
+                      onDelete={() => {}}
+                      onCreateFolder={() => {}}
+                      onCreateFile={() => {}}
+                      onMove={() => {}}
+                      renamingPath={null}
+                      onRenameSubmit={() => {}}
+                      onRenameCancel={() => {}}
+                      expandedPaths={new Set()}
+                      onToggleExpand={() => {}}
+                      scrollToPath={null}
+                    />
+                  ))}
+                </Flex>
+              )}
+            </ScrollArea>
+          </Flex>
+
+          <Flex gap='3' mt='4' justify='between' align='center'>
+            <Flex gap='3'>
+              <Button variant='surface' onClick={() => handleCreateFile()}>
+                Create Empty
+              </Button>
+              <label>
+                <input
+                  type='file'
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    if (e.target.files?.[0]) {
+                      const file = e.target.files[0];
+                      const reader = new FileReader();
+                      reader.onload = async (ev) => {
+                        const content = ev.target?.result as string;
+                        const path = file.name; // Root
+
+                        const newNode: FileNode = {
+                          name: file.name,
+                          type: 'file',
+                          path
+                        };
+                        const newTree = [...fileTree, newNode];
+                        await saveTree(newTree);
+                        await saveFile(path, content);
+
+                        setFiles((prev) => [
+                          ...prev,
+                          { name: file.name, path, content }
+                        ]);
+                        setActiveFileIndex(files.length);
+                        setShowAddFileDialog(false);
+                      };
+                      reader.readAsText(file);
+                    }
+                  }}
+                />
+                <Button variant='surface' asChild style={{ cursor: 'pointer' }}>
+                  <span>Import Local</span>
                 </Button>
-              </Dialog.Close>
-              <Button onClick={handleCreateFolder}>Create</Button>
+              </label>
             </Flex>
+            <Dialog.Close>
+              <Button variant='soft' color='gray'>
+                Cancel
+              </Button>
+            </Dialog.Close>
           </Flex>
         </Dialog.Content>
       </Dialog.Root>
+
+      <Dialog.Root
+        open={Boolean(errorDialogMessage)}
+        onOpenChange={(open) => {
+          if (!open) setErrorDialogMessage(null);
+        }}
+      >
+        <Dialog.Content maxWidth='420px'>
+          <Dialog.Title>Error</Dialog.Title>
+          <Dialog.Description className='mt-2'>
+            {errorDialogMessage}
+          </Dialog.Description>
+          <Flex justify='end' mt='4'>
+            <Dialog.Close>
+              <Button
+                variant='soft'
+                color='gray'
+                onClick={() => setErrorDialogMessage(null)}
+              >
+                Close
+              </Button>
+            </Dialog.Close>
+          </Flex>
+        </Dialog.Content>
+      </Dialog.Root>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog.Root
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+      >
+        <AlertDialog.Content maxWidth='450px'>
+          <AlertDialog.Title>Delete Item</AlertDialog.Title>
+          <AlertDialog.Description size='2'>
+            Are you sure you want to delete "{deleteTarget?.name}"? This action
+            cannot be undone.
+          </AlertDialog.Description>
+
+          <Flex gap='3' mt='4' justify='end'>
+            <AlertDialog.Cancel>
+              <Button variant='soft' color='gray'>
+                Cancel
+              </Button>
+            </AlertDialog.Cancel>
+            <AlertDialog.Action>
+              <Button variant='solid' color='red' onClick={handleDeleteConfirm}>
+                Delete
+              </Button>
+            </AlertDialog.Action>
+          </Flex>
+        </AlertDialog.Content>
+      </AlertDialog.Root>
+
     </Flex>
   );
 }
