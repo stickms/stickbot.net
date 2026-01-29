@@ -6,6 +6,13 @@ import {
   checkCondition,
   isConditionalBlockKey
 } from '../lib/keyvalues';
+import { loadTexture } from '../lib/texture-loader';
+import { useState, useEffect } from 'react';
+import { parseColor, isTransparentColor } from '../lib/colors';
+import { clientScheme } from '../lib/client-scheme';
+import { useBorder } from '../hooks/use-border';
+import { useModTextures } from '../contexts/ModTexturesContext';
+import { VGUIControlRenderer, VGUIControlProps } from './vgui-controls';
 
 export type FontDefinition = {
   family: string;
@@ -27,30 +34,7 @@ const CONTROL_DEFAULT_SIZES: Record<string, { width: number; height: number }> =
     CExImageButton: { width: 64, height: 64 }
   };
 
-function parseColor(colorStr: string): string {
-  if (!colorStr) return 'transparent';
 
-  const parts = colorStr.split(' ').map(Number);
-  if (parts.length >= 3) {
-    const a = parts.length > 3 ? parts[3] / 255 : 1;
-    return `rgba(${parts[0]}, ${parts[1]}, ${parts[2]}, ${a})`;
-  }
-  return colorStr;
-}
-
-function isTransparentColor(color?: string | null) {
-  if (!color) return false;
-  if (color.toLowerCase() === 'transparent') return true;
-  const rgbaMatch = color.match(/^rgba\s*\(([^)]+)\)/i);
-  if (!rgbaMatch) return false;
-  const parts = rgbaMatch[1]
-    .split(',')
-    .map((part) => parseFloat(part.trim()))
-    .filter((value) => !Number.isNaN(value));
-  if (parts.length < 4) return false;
-  const alpha = parts[3];
-  return alpha <= 0;
-}
 
 function getControlBaseSize(controlName: string) {
   return (
@@ -179,6 +163,7 @@ export default function HudComponent({
   schemeBaseSettings: Record<string, string>;
   schemeBorders: Record<string, KeyValues>;
 }) {
+  const { getIcon } = useModTextures();
   // data is now KVMap, but we need to check if it's valid
   if (typeof data !== 'object') return null;
 
@@ -235,10 +220,10 @@ export default function HudComponent({
   const tallStr = getStr('tall');
 
   const visible = getStr('visible') !== '0';
-  const fontName = getStr('font');
+  const fontName = getStr('font') || 'Default';
 
   const fontDef = fontName ? fontMap[fontName] : null;
-  const mappedFamily = fontDef?.family || 'inherit';
+  const mappedFamily = fontDef?.family || 'tf2build';
   const fontSize = fontDef?.size || 14; // Default to 14px if unknown
 
   // Check if font is loaded (if it's not a generic one)
@@ -249,7 +234,9 @@ export default function HudComponent({
     !['Arial', 'Verdana', 'Tahoma'].includes(mappedFamily);
   const fontFamily = isFontMissing ? 'monospace' : mappedFamily;
   const wrapText = getStr('wrap') === '1';
-  const imageValue = getStr('image') || '';
+  
+  // Check for various image keys
+  const imageValue = getStr('image') || getStr('activeimage') || getStr('icon') || getStr('image_default') || '';
 
   const resolveColorValue = (value?: string) => {
     if (!value) return undefined;
@@ -327,36 +314,49 @@ export default function HudComponent({
     getStr('border') ||
     getBaseSettingValue(['border', 'Border', 'defaultborder']);
 
-  const getSchemeBorderStyle = () => {
-    if (!borderName) return undefined;
-    const def = schemeBorders[borderName];
-    if (!def) return undefined;
-    const colorCandidate =
-      (def['color'] as string) ||
-      (def['color1'] as string) ||
-      outlineColorValue;
-    const borderColor = colorCandidate
-      ? resolveColorValue(colorCandidate)
-      : undefined;
-    const insetStr = def['inset'] as string | undefined;
-    let width = 1;
-    if (insetStr) {
-      const insetValues = insetStr
-        .split(/\s+/)
-        .map((n) => Math.abs(parseInt(n, 10)) || 0);
-      const maxInset = Math.max(...insetValues, 0);
-      width = Math.max(1, maxInset);
-    }
-    return `${width}px solid ${
-      borderColor ||
-      resolvedOutlineColor ||
-      outlineColor ||
-      'rgba(255,255,255,0.2)'
-    }`;
-  };
-  const schemeBorderStyle = getSchemeBorderStyle();
+  const borderStyle = useBorder(clientScheme, borderName);
 
   const hasTexture = Boolean(imageValue);
+  const [textureUrl, setTextureUrl] = useState<string | null>(null);
+  const iconDef = getIcon(imageValue);
+  const [iconTextureSize, setIconTextureSize] = useState<{width: number, height: number} | null>(null);
+
+  useEffect(() => {
+    if (hasTexture && imageValue) {
+      let isMounted = true;
+      
+      if (iconDef && iconDef.file) {
+         // Load icon texture
+         // mod_textures.txt paths are relative to materials/, so we pass empty searchPath
+         loadTexture(iconDef.file, '').then((url) => {
+            if (isMounted && url) {
+               setTextureUrl(url);
+               const img = new Image();
+               img.onload = () => {
+                  if (isMounted) setIconTextureSize({width: img.naturalWidth, height: img.naturalHeight});
+               };
+               img.src = url;
+            }
+         });
+      } else if (!iconDef) {
+          // Load regular texture
+          loadTexture(imageValue).then((url) => {
+            if (isMounted) {
+              if (url) {
+                setTextureUrl(url);
+              }
+            }
+          });
+      }
+      
+      return () => {
+        isMounted = false;
+      };
+    } else {
+        setTextureUrl(null);
+    }
+  }, [imageValue, hasTexture, iconDef]);
+
   const hasVisibleBackground =
     Boolean(resolvedBgColor) && !isTransparentColor(resolvedBgColor);
 
@@ -430,12 +430,19 @@ export default function HudComponent({
   const formattedLabelText = labelText ? labelText.replace(/\\n/g, '\n') : '';
   const hasLabelContent = formattedLabelText.trim().length > 0;
 
-  const computedBorder =
-    schemeBorderStyle ||
-    (resolvedOutlineColor ? `1px solid ${resolvedOutlineColor}` : undefined);
+  const hasBorderStyle = Object.keys(borderStyle).length > 0;
+  const computedBorder = hasBorderStyle
+    ? undefined
+    : resolvedOutlineColor
+      ? `1px solid ${resolvedOutlineColor}`
+      : undefined;
   let finalBorder = computedBorder;
   const lacksVisualFill =
-    !skipSelfRender && !hasTexture && !hasLabelContent && !hasVisibleBackground;
+    !skipSelfRender &&
+    !hasTexture &&
+    !hasLabelContent &&
+    !hasVisibleBackground &&
+    !hasBorderStyle;
   const dashedOutlineColor = outlineColor ?? 'rgba(255,255,255,0.4)';
   const dashedOutlineStyle = `1px dashed ${dashedOutlineColor}`;
 
@@ -444,17 +451,17 @@ export default function HudComponent({
   }
 
   const horizAlignment =
-    pinCorner === 1 || pinCorner === 3
+    pinCorner === 1 || pinCorner === 3 || pinCorner === 5
       ? 'right'
-      : pinCorner === 0 || pinCorner === 2
+      : pinCorner === 0 || pinCorner === 2 || pinCorner === 7
         ? 'left'
-        : 'center';
+        : 'center'; // 4, 6
   const vertAlignment =
-    pinCorner === 2 || pinCorner === 3
+    pinCorner === 2 || pinCorner === 3 || pinCorner === 6
       ? 'bottom'
-      : pinCorner === 0 || pinCorner === 1
+      : pinCorner === 0 || pinCorner === 1 || pinCorner === 4
         ? 'top'
-        : 'center';
+        : 'center'; // 5, 7
 
   const style: React.CSSProperties = {
     position: 'absolute',
@@ -477,6 +484,7 @@ export default function HudComponent({
     color: resolvedFgColor,
     backgroundColor: resolvedBgColor,
     border: finalBorder,
+    ...borderStyle,
     outline: lacksVisualFill ? dashedOutlineStyle : undefined,
     outlineOffset: 0,
     overflow: 'visible',
@@ -508,6 +516,331 @@ export default function HudComponent({
   const spanClassName = wrapText
     ? 'whitespace-pre-wrap break-words'
     : 'whitespace-nowrap';
+
+  // VGUI Control Integration
+  const isVGUIControl = [
+    'ProgressBar',
+    'ContinuousProgressBar',
+    'CircularProgressBar',
+    'Button',
+    'ToggleButton',
+    'CheckButton',
+    'Panel',
+    'EditablePanel',
+    'ScalableImagePanel',
+    'CTFImagePanel',
+    'CExLabel',
+    'CExButton',
+    'ImagePanel'
+  ].includes(controlName || '');
+
+  if (isVGUIControl && !skipSelfRender) {
+     const vguiProps: VGUIControlProps = {
+        name: fieldName,
+        data: data,
+        fontMap: fontMap,
+        scaleX: scaleX,
+        scaleY: scaleY,
+        parentWidth: parentWidth,
+        parentHeight: parentHeight,
+        visible: visible,
+        enabled: getStr('enabled') !== '0',
+        zpos: Number.isNaN(parsedZpos) ? 0 : parsedZpos,
+        xpos: resolvedXUnits,
+        ypos: resolvedYUnits,
+        wide: widthUnits,
+        tall: heightUnits,
+        fgColor: resolvedFgColor,
+        bgColor: resolvedBgColor,
+        paintBackground: getStr('paintbackground') !== '0',
+        paintBorder: getStr('paintborder') !== '0',
+        style: {
+            border: finalBorder,
+            ...borderStyle,
+            outline: lacksVisualFill ? dashedOutlineStyle : undefined,
+            cursor: line && onElementClick ? 'pointer' : 'default',
+        },
+        children: hasRenderableChildren ? (
+            <>
+              {/* 
+                Reverse render order: 
+                Elements defined FIRST in the file should appear ON TOP visually.
+                By reversing the array, the first element becomes the last in the DOM, 
+                which (with same z-index) causes it to paint on top of previous siblings.
+                This satisfies "First in file = Top visually", even for shared z-pos.
+              */}
+              {Object.entries(data).reverse().map(([key, node]) => {
+                if (
+                  ['ControlName', 'fieldName', 'font', 'labelText'].includes(key)
+                )
+                  return null;
+                
+                // Merge definitions for this child
+                let mergedChildData: KVMap = {};
+                let lastLine: number | undefined;
+                let lastSourceFile: string | undefined;
+                let foundAny = false;
+
+                if (node.definitions) {
+                    for (const def of node.definitions) {
+                        if (typeof def.value !== 'object') continue;
+                        
+                        if (checkCondition(def.condition, platform)) {
+                            foundAny = true;
+                            mergedChildData = mergeKVMap(mergedChildData, def.value as KVMap);
+                            lastLine = def.line;
+                            if (def.sourceFile) {
+                                lastSourceFile = def.sourceFile;
+                            }
+                        }
+                    }
+                }
+
+                if (!foundAny) return null;
+                
+                const effectiveSourceFile = lastSourceFile || sourceFile;
+    
+                return (
+                  <HudComponent
+                    key={key}
+                    name={key}
+                    data={mergedChildData}
+                    fontMap={fontMap}
+                    loadedFonts={loadedFonts}
+                    line={lastLine}
+                    onElementClick={onElementClick}
+                    outlineColor={outlineColor}
+                    hoveredLine={hoveredLine}
+                    onHover={onHover}
+                    scaleX={scaleX}
+                    scaleY={scaleY}
+                    platform={platform}
+                    sourceFile={effectiveSourceFile}
+                    parentWidth={widthUnits}
+                    parentHeight={heightUnits}
+                    onSkipElement={onSkipElement}
+                    onMissingFont={onMissingFont}
+                    schemeColors={schemeColors}
+                    schemeBaseSettings={schemeBaseSettings}
+                    schemeBorders={schemeBorders}
+                  />
+                );
+              })}
+            </>
+        ) : undefined
+     };
+
+     return (
+        <div
+            style={{
+                position: 'absolute',
+                left: horizAlignment === 'left'
+                    ? resolvedXUnits * scaleX
+                    : horizAlignment === 'right'
+                      ? (resolvedXUnits - widthUnits) * scaleX
+                      : (resolvedXUnits - widthUnits / 2) * scaleX,
+                top: vertAlignment === 'top'
+                    ? resolvedYUnits * scaleY
+                    : vertAlignment === 'bottom'
+                      ? (resolvedYUnits - heightUnits) * scaleY
+                      : (resolvedYUnits - heightUnits / 2) * scaleY,
+                width: widthUnits * scaleX,
+                height: heightUnits * scaleY,
+                zIndex: Number.isNaN(parsedZpos) ? 0 : parsedZpos,
+                display: visible ? 'block' : 'none',
+            }}
+            title={fieldName}
+            data-hud-line={line}
+            data-hud-source={sourceFile}
+            onClick={(e) => {
+                e.stopPropagation();
+                if (line && onElementClick) onElementClick(line, sourceFile);
+            }}
+            onMouseEnter={(e) => {
+                e.stopPropagation();
+                if (onHover) onHover(line || null);
+            }}
+            onMouseLeave={(e) => {
+                e.stopPropagation();
+                if (onHover) onHover(null);
+            }}
+        >
+            <VGUIControlRenderer 
+                controlName={controlName || 'Panel'} 
+                controlProps={{
+                    ...vguiProps,
+                    xpos: 0,
+                    ypos: 0,
+                    scaleX: 1,
+                    scaleY: 1,
+                    wide: widthUnits * scaleX,
+                    tall: heightUnits * scaleY,
+                    parentWidth: widthUnits,
+                    parentHeight: heightUnits,
+                }} 
+            />
+            {/* Hover overlay */}
+            {line && hoveredLine === line && (
+                <div className='absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/70 text-white text-xs font-mono px-2 py-1 pointer-events-none z-50'>
+                  <span className='whitespace-nowrap'>{fieldName}</span>
+                </div>
+            )}
+        </div>
+     );
+  }
+
+  // ... (rest of existing logic)
+
+
+  if (
+    !skipSelfRender &&
+    (controlName === 'ImagePanel' || controlName === 'CExImageButton' || controlName === 'CTFImagePanel' || controlName === 'CIconPanel')
+  ) {
+    // CExImageButton might have text too, but usually it's an image or bg.
+    if (imageValue) {
+      if (iconDef) {
+          if (iconDef.font && iconDef.character) {
+             // Font Icon
+             const iconFontDef = fontMap[iconDef.font];
+             const iconFontFamily = iconFontDef?.family || 'inherit';
+             const iconFontSize = iconFontDef?.size || fontSize;
+             
+             return (
+                <div
+                  title={fieldName}
+                  data-hud-line={line}
+                  data-hud-source={sourceFile}
+                  className='relative'
+                  style={{
+                    ...style,
+                    display: visible ? 'flex' : 'none',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontFamily: iconFontFamily,
+                    fontSize: `${iconFontSize * Math.min(scaleX, scaleY)}px`,
+                  }}
+                >
+                  {iconDef.character}
+                  {line && hoveredLine === line && (
+                    <div className='absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/70 text-white text-xs font-mono px-2 py-1 pointer-events-none'>
+                      <span className='whitespace-nowrap'>{fieldName}</span>
+                    </div>
+                  )}
+                </div>
+             );
+          } else if (iconDef.file && textureUrl && iconTextureSize) {
+             // Sprite Icon
+             const x = parseInt(iconDef.x || '0', 10);
+             const y = parseInt(iconDef.y || '0', 10);
+             const w = parseInt(iconDef.width || '0', 10);
+             const h = parseInt(iconDef.height || '0', 10);
+             
+             // We need to scale the background image so that the sprite region maps to the element size?
+             // No, usually icons are fixed size, but the element might be scaled.
+             // The element size is `widthUnits` x `heightUnits`.
+             // The sprite is `w` x `h` in the texture.
+             
+             // If we use background-position, we need the background-size to be correct relative to the element.
+             // Actually, the easiest way is to use an inner div that is the size of the *texture*, positioned negatively.
+             // But we want to scale it to fit the element?
+             // Usually icons in HUD are drawn at 1:1 scale of the screen resolution (or scaled by resolution).
+             
+             // Let's assume we want to display the sprite region (x,y,w,h) inside the element.
+             // We can use background-position and background-size.
+             // background-size should be: (textureWidth / w) * elementWidth
+             
+             // Wait, if the element is 64x64, and the sprite is 64x64, and texture is 256x256.
+             // We want the sprite to fill the element.
+             // So we want the 64x64 region to be 64x64 (or whatever the element size is).
+             
+             // Scale factor = elementWidth / w
+             // bgSizeX = textureWidth * scaleFactor
+             // bgSizeY = textureHeight * scaleFactor
+             // bgPosX = -x * scaleFactor
+             // bgPosY = -y * scaleFactor
+             
+             const scaleW = (widthUnits * scaleX) / w;
+             const scaleH = (heightUnits * scaleY) / h;
+             
+             // Use the smaller scale to maintain aspect ratio? Or stretch?
+             // HUD icons usually stretch if the element size is different.
+             
+             const bgSizeX = iconTextureSize.width * scaleW;
+             const bgSizeY = iconTextureSize.height * scaleH;
+             const bgPosX = -x * scaleW;
+             const bgPosY = -y * scaleH;
+             
+             return (
+                <div
+                  title={fieldName}
+                  data-hud-line={line}
+                  data-hud-source={sourceFile}
+                  className='relative'
+                  style={{
+                    ...style,
+                    display: visible ? 'block' : 'none',
+                    overflow: 'hidden',
+                    border:
+                      resolvedOutlineColor
+                        ? `1px solid ${resolvedOutlineColor}`
+                        : finalBorder || '1px solid #444',
+                    ...borderStyle,
+                  }}
+                >
+                   <div style={{
+                       width: '100%',
+                       height: '100%',
+                       backgroundImage: `url(${textureUrl})`,
+                       backgroundSize: `${bgSizeX}px ${bgSizeY}px`,
+                       backgroundPosition: `${bgPosX}px ${bgPosY}px`,
+                       backgroundRepeat: 'no-repeat'
+                   }} />
+                   
+                  {line && hoveredLine === line && (
+                    <div className='absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/70 text-white text-xs font-mono px-2 py-1 pointer-events-none'>
+                      <span className='whitespace-nowrap'>{fieldName}</span>
+                    </div>
+                  )}
+                </div>
+             );
+          }
+      }
+    
+      return (
+        <div
+          title={fieldName}
+          data-hud-line={line}
+          data-hud-source={sourceFile}
+          className='relative'
+          style={{
+            ...style,
+            display: visible ? 'flex' : 'none',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border:
+              resolvedOutlineColor
+                ? `1px solid ${resolvedOutlineColor}`
+                : finalBorder || '1px solid #444',
+            ...borderStyle,
+            // Source Engine missing texture pattern (purple/black checkerboard)
+            backgroundImage: textureUrl
+              ? `url(${textureUrl})`
+              : 'repeating-conic-gradient(#ff00ff 0% 25%, #000000 0% 50%)',
+            backgroundSize: textureUrl ? 'contain' : '20px 20px',
+            backgroundRepeat: textureUrl ? 'no-repeat' : 'repeat',
+            backgroundPosition: 'center',
+            opacity: textureUrl ? 1 : 0.8
+          }}
+        >
+          {line && hoveredLine === line && (
+            <div className='absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/70 text-white text-xs font-mono px-2 py-1 pointer-events-none'>
+              <span className='whitespace-nowrap'>{fieldName}</span>
+            </div>
+          )}
+        </div>
+      );
+    }
+  }
 
   if (labelText && !skipSelfRender) {
     if (isFontMissing && fontName) {
@@ -543,45 +876,6 @@ export default function HudComponent({
         )}
       </div>
     );
-  }
-
-  if (
-    !skipSelfRender &&
-    (controlName === 'ImagePanel' || controlName === 'CExImageButton')
-  ) {
-    // CExImageButton might have text too, but usually it's an image or bg.
-    if (imageValue) {
-      return (
-        <div
-          title={fieldName}
-          data-hud-line={line}
-          data-hud-source={sourceFile}
-          className='relative'
-          style={{
-            ...style,
-            display: visible ? 'flex' : 'none',
-            alignItems: 'center',
-            justifyContent: 'center',
-            border:
-              schemeBorderStyle ??
-              (resolvedOutlineColor
-                ? `1px solid ${resolvedOutlineColor}`
-                : finalBorder || '1px solid #444'),
-            // Source Engine missing texture pattern (purple/black checkerboard)
-            backgroundImage:
-              'repeating-conic-gradient(#ff00ff 0% 25%, #000000 0% 50%)',
-            backgroundSize: '20px 20px',
-            opacity: 0.8
-          }}
-        >
-          {line && hoveredLine === line && (
-            <div className='absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/70 text-white text-xs font-mono px-2 py-1 pointer-events-none'>
-              <span className='whitespace-nowrap'>{fieldName}</span>
-            </div>
-          )}
-        </div>
-      );
-    }
   }
 
   const renderChildren = () =>

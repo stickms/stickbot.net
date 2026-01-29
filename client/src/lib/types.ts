@@ -93,3 +93,35 @@ export type Sourceban = {
   url: string;
   reason: string;
 };
+
+// HUD Editor Types
+import { KeyValues } from './keyvalues';
+
+export type HudFile = {
+  name: string;
+  path: string;
+  content: string;
+};
+
+export type FontFile = {
+  name: string;
+  url: string;
+  family: string;
+  blob?: Blob;
+};
+
+export type SkippedElement = {
+  name: string;
+  line?: number;
+  reason: 'zero-size' | 'missing-position';
+};
+
+export type MissingFont = {
+  name: string;
+  line?: number;
+  fontName: string;
+  mappedFamily: string;
+  sourceFile?: string;
+};
+
+export type SchemeBorderMap = Record<string, KeyValues>;

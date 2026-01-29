@@ -81,9 +81,9 @@ export function parseKeyValues(text: string): KeyValues {
           i++;
           return str;
         }
-        if (text[i] === '\\') {
+        if (text[i] === '\\' && i + 1 < len && text[i + 1] === '"') {
           i++;
-          if (i < len) str += text[i];
+          str += '"';
         } else {
           str += text[i];
         }
@@ -202,12 +202,9 @@ export function parseKeyValuesWithLineNumbers(text: string): KVMap {
           i++;
           return str;
         }
-        if (text[i] === '\\') {
+        if (text[i] === '\\' && i + 1 < len && text[i + 1] === '"') {
           i++;
-          if (i < len) {
-            if (text[i] === '\n') lineNumber++;
-            str += text[i];
-          }
+          str += '"';
         } else {
           if (text[i] === '\n') lineNumber++;
           str += text[i];

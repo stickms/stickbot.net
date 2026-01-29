@@ -15,9 +15,7 @@ import {
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { ComponentProps } from 'react';
 import {
-  parseKeyValues,
   parseKeyValuesWithLineNumbers,
-  KeyValues,
   KVMap,
   extractBaseIncludes,
   mergeKVMap,
@@ -27,9 +25,7 @@ import {
 import {
   saveFile,
   loadFile,
-  clearAllFiles,
-  deleteFile,
-  getAllKeys
+  clearAllFiles
 } from '../lib/storage';
 import {
   PlusIcon,
@@ -37,8 +33,6 @@ import {
   FileTextIcon,
   DownloadIcon,
   FontBoldIcon,
-  ChevronRightIcon,
-  ChevronDownIcon,
   ReloadIcon,
   HamburgerMenuIcon,
   UploadIcon,
@@ -50,390 +44,27 @@ import JSZip from 'jszip';
 import Editor from '@monaco-editor/react';
 import { useTheme } from 'next-themes';
 
-import HudComponent, { FontDefinition } from '../components/hud-component';
+import HudComponent from '../components/hud-component';
+import {
+  FileExplorer,
+  FileTreeNode,
+  FileNode,
+  sortFileNodes
+} from '../components/file-explorer';
+import { useFileSystem } from '../hooks/use-file-system';
+import { useHudProject } from '../hooks/use-hud-project';
+import { useClientScheme } from '../hooks/use-client-scheme';
+import {
+  HudFile,
+  FontFile,
+  MissingFont,
+  SkippedElement
+} from '../lib/types';
+import { ModTexturesProvider } from '../contexts/ModTexturesContext';
 
 type MonacoInstance = Parameters<
   NonNullable<ComponentProps<typeof Editor>['beforeMount']>
 >[0];
-
-type HudFile = {
-  name: string;
-  path: string;
-  content: string;
-};
-
-type FontFile = {
-  name: string;
-  url: string;
-  family: string;
-  blob: Blob;
-};
-
-type FileNode = {
-  name: string;
-  type: 'file' | 'folder';
-  path: string;
-  children?: FileNode[];
-};
-
-type SkippedElement = {
-  name: string;
-  line?: number;
-  reason: 'zero-size' | 'missing-position';
-};
-
-type MissingFont = {
-  name: string;
-  line?: number;
-  fontName: string;
-  mappedFamily: string;
-  sourceFile?: string;
-};
-
-type SchemeBorderMap = Record<string, KeyValues>;
-
-const CLIENT_SCHEME_FILE = 'clientscheme.res';
-const WELCOME_FILE = 'welcome.res';
-
-const normalizePathKey = (value: string) =>
-  value.replace(/\\/g, '/').toLowerCase();
-
-const pathMatchesClientScheme = (path: string) => {
-  const normalized = normalizePathKey(path);
-  return (
-    normalized === CLIENT_SCHEME_FILE ||
-    normalized.endsWith(`/${CLIENT_SCHEME_FILE}`)
-  );
-};
-
-const matchesClientScheme = (name: string, path: string) =>
-  name.toLowerCase() === CLIENT_SCHEME_FILE || pathMatchesClientScheme(path);
-
-const isClientSchemeHudFile = (file: HudFile) =>
-  matchesClientScheme(file.name, file.path);
-
-const matchesWelcomeFile = (value: string) =>
-  normalizePathKey(value) === WELCOME_FILE;
-
-const isWelcomeFile = (file: HudFile) =>
-  matchesWelcomeFile(file.name) || matchesWelcomeFile(file.path);
-
-const isClientSchemeNode = (node: FileNode) =>
-  matchesClientScheme(node.name, node.path);
-
-const findClientSchemeNode = (nodes: FileNode[]): FileNode | null => {
-  for (const node of nodes) {
-    if (node.type === 'file' && isClientSchemeNode(node)) {
-      return node;
-    }
-    if (node.children) {
-      const found = findClientSchemeNode(node.children);
-      if (found) return found;
-    }
-  }
-  return null;
-};
-
-const findNodeByPath = (
-  nodes: FileNode[],
-  targetPath: string
-): FileNode | null => {
-  for (const node of nodes) {
-    if (node.path === targetPath) {
-      return node;
-    }
-    if (node.children) {
-      const found = findNodeByPath(node.children, targetPath);
-      if (found) return found;
-    }
-  }
-  return null;
-};
-
-const pathExistsInTree = (nodes: FileNode[], targetPath: string): boolean => {
-  for (const node of nodes) {
-    if (node.path === targetPath) return true;
-    if (node.children && pathExistsInTree(node.children, targetPath)) {
-      return true;
-    }
-  }
-  return false;
-};
-
-const insertFileNode = (
-  nodes: FileNode[],
-  parentPath: string | null,
-  newNode: FileNode
-): FileNode[] => {
-  if (!parentPath) {
-    return [...nodes, newNode];
-  }
-
-  return nodes.map((node) => {
-    if (node.path === parentPath && node.type === 'folder') {
-      return {
-        ...node,
-        children: node.children ? [...node.children, newNode] : [newNode]
-      };
-    }
-    if (node.children) {
-      return {
-        ...node,
-        children: insertFileNode(node.children, parentPath, newNode)
-      };
-    }
-    return node;
-  });
-};
-
-const sortFileNodes = (nodes: FileNode[]): FileNode[] => {
-  return nodes
-    .map((node) => ({
-      ...node,
-      children: node.children ? sortFileNodes(node.children) : undefined
-    }))
-    .sort((a, b) => {
-      if (a.type === b.type) {
-        return a.name.localeCompare(b.name);
-      }
-      return a.type === 'folder' ? -1 : 1;
-    });
-};
-
-function FileTreeNode({
-  node,
-  level,
-  onSelect,
-  activePath,
-  loadingPaths,
-  onRename,
-  onDelete,
-  onCreateFolder,
-  onCreateFile,
-  onMove,
-  renamingPath,
-  onRenameSubmit,
-  onRenameCancel,
-  expandedPaths,
-  onToggleExpand,
-  scrollToPath
-}: {
-  node: FileNode;
-  level: number;
-  onSelect: (node: FileNode) => void;
-  activePath: string | null;
-  loadingPaths: Set<string>;
-  onRename: (node: FileNode) => void;
-  onDelete: (node: FileNode) => void;
-  onCreateFolder: (parentPath: string | null) => void;
-  onCreateFile: (parentPath: string | null) => void;
-  onMove: (sourceNode: FileNode, targetNode: FileNode) => void;
-  renamingPath: string | null;
-  onRenameSubmit: (node: FileNode, newName: string) => void;
-  onRenameCancel: () => void;
-  expandedPaths: Set<string>;
-  onToggleExpand: (path: string) => void;
-  scrollToPath: string | null;
-}) {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
-  const hoverItemBg = isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-200';
-  const activeItemBg = isDark ? 'bg-gray-800' : 'bg-gray-200';
-
-  const [editName, setEditName] = useState(node.name);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const nodeRef = useRef<HTMLDivElement>(null);
-
-  const isActive = node.path === activePath;
-  const isRenaming = renamingPath === node.path;
-  const isOpen = expandedPaths.has(node.path);
-
-  useEffect(() => {
-    if (scrollToPath === node.path && nodeRef.current) {
-      nodeRef.current.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    }
-  }, [scrollToPath, node.path]);
-
-  useEffect(() => {
-    if (isRenaming && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
-      setEditName(node.name);
-    }
-  }, [isRenaming, node.name]);
-
-  useEffect(() => {
-    if (!isRenaming) return;
-
-    const handlePointerDown = (event: PointerEvent) => {
-      if (!inputRef.current) return;
-      if (inputRef.current.contains(event.target as Node)) {
-        return;
-      }
-      onRenameSubmit(node, editName);
-    };
-
-    document.addEventListener('pointerdown', handlePointerDown);
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown);
-    };
-  }, [isRenaming, editName, node, onRenameSubmit]);
-
-  const getParentPath = () => {
-    if (node.type === 'folder') {
-      return node.path;
-    }
-    const lastSlash = node.path.lastIndexOf('/');
-    if (lastSlash === -1) return null;
-    return node.path.substring(0, lastSlash);
-  };
-
-  const handleClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (isRenaming) return;
-
-    if (node.type === 'folder') {
-      onToggleExpand(node.path);
-      onSelect(node);
-    } else {
-      onSelect(node);
-    }
-  };
-
-  const handleDragStart = (e: React.DragEvent) => {
-    e.stopPropagation();
-    e.dataTransfer.setData('application/json', JSON.stringify(node));
-    e.dataTransfer.effectAllowed = 'move';
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (node.type === 'folder') {
-      e.dataTransfer.dropEffect = 'move';
-      e.currentTarget.classList.add('bg-blue-500/20');
-    }
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    e.currentTarget.classList.remove('bg-blue-500/20');
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    e.currentTarget.classList.remove('bg-blue-500/20');
-
-    if (node.type !== 'folder') return;
-
-    try {
-      const data = e.dataTransfer.getData('application/json');
-      const sourceNode = JSON.parse(data) as FileNode;
-
-      // Prevent dropping on itself or children (simple check)
-      if (sourceNode.path === node.path) return;
-      if (node.path.startsWith(sourceNode.path + '/')) return;
-
-      onMove(sourceNode, node);
-    } catch (err) {
-      console.error('Failed to parse drop data', err);
-    }
-  };
-
-  return (
-    <ContextMenu.Root>
-      <ContextMenu.Trigger>
-        <div
-          ref={nodeRef}
-          style={{ paddingLeft: level * 12 }}
-          draggable
-          onDragStart={handleDragStart}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-        >
-          <Flex
-            align='center'
-            gap='2'
-            className={`p-1 rounded cursor-pointer ${hoverItemBg} ${isActive ? activeItemBg : ''}`}
-            onClick={handleClick}
-          >
-            {node.type === 'folder' && (
-              <span className='text-gray-500'>
-                {isOpen ? <ChevronDownIcon /> : <ChevronRightIcon />}
-              </span>
-            )}
-            {node.type === 'file' && <FileTextIcon className='text-gray-500' />}
-            {loadingPaths.has(node.path) && (
-              <ReloadIcon className='text-blue-500 ml-1 animate-spin' />
-            )}
-            <Text size='1' className='truncate select-none flex-1'>
-              {isRenaming ? (
-                <input
-                  ref={inputRef}
-                  type='text'
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  onBlur={() => onRenameSubmit(node, editName)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') onRenameSubmit(node, editName);
-                    if (e.key === 'Escape') onRenameCancel();
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                  className={`w-full bg-transparent outline-none border-b border-blue-500 ${isDark ? 'text-white' : 'text-black'}`}
-                />
-              ) : (
-                node.name
-              )}
-            </Text>
-          </Flex>
-          {node.type === 'folder' && isOpen && node.children && (
-            <div>
-              {node.children.map((child) => (
-                <FileTreeNode
-                  key={child.path}
-                  node={child}
-                  level={level + 1}
-                  onSelect={onSelect}
-                  activePath={activePath}
-                  loadingPaths={loadingPaths}
-                  onRename={onRename}
-                  onDelete={onDelete}
-                  onCreateFolder={onCreateFolder}
-                  onCreateFile={onCreateFile}
-                  onMove={onMove}
-                  renamingPath={renamingPath}
-                  onRenameSubmit={onRenameSubmit}
-                  onRenameCancel={onRenameCancel}
-                  expandedPaths={expandedPaths}
-                  onToggleExpand={onToggleExpand}
-                  scrollToPath={scrollToPath}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      </ContextMenu.Trigger>
-      <ContextMenu.Content>
-        <ContextMenu.Item onSelect={() => onRename(node)}>
-          Rename
-        </ContextMenu.Item>
-        <ContextMenu.Item onSelect={() => onCreateFile(getParentPath())}>
-          New File
-        </ContextMenu.Item>
-        <ContextMenu.Item onSelect={() => onCreateFolder(getParentPath())}>
-          New Folder
-        </ContextMenu.Item>
-        <ContextMenu.Separator />
-        <ContextMenu.Item color='red' onSelect={() => onDelete(node)}>
-          Delete
-        </ContextMenu.Item>
-      </ContextMenu.Content>
-    </ContextMenu.Root>
-  );
-}
 
 function resolvePath(currentPath: string, importPath: string): string {
   // Normalize slashes
@@ -469,56 +100,73 @@ function resolvePath(currentPath: string, importPath: string): string {
   return stack.join('/');
 }
 
-const WELCOME_TEXT = `"stickbot/welcome.res"
-{
-	"WelcomePanel"
-	{
-		"ControlName"		"EditablePanel"
-		"fieldName"		"WelcomePanel"
-		"xpos"			"c-150"
-		"ypos"			"c-75"
-		"wide"			"300"
-		"tall"			"150"
-		"visible"		"1"
-		"enabled"		"1"
-		"bgcolor_override"	"46 43 42 255"
-		"PaintBackgroundType"	"2"
-		
-		"WelcomeLabel"
-		{
-			"ControlName"	"Label"
-			"fieldName"		"WelcomeLabel"
-			"font"			"DefaultLarge"
-			"labelText"		"Welcome to Stick's TF2 HUD Editor"
-			"textAlignment"	"center"
-			"xpos"			"0"
-			"ypos"			"20"
-			"wide"			"300"
-			"tall"			"40"
-			"fgcolor_override" "255 255 255 255"
-		}
-		
-		"InstructionLabel"
-		{
-			"ControlName"	"Label"
-			"fieldName"		"InstructionLabel"
-			"font"			"Default"
-			"labelText"		"Select a file to start editing."
-			"textAlignment"	"center"
-			"xpos"			"0"
-			"ypos"			"60"
-			"wide"			"300"
-			"tall"			"60"
-			"fgcolor_override" "200 200 200 255"
-		}
-	}
-}
-`;
+
+import { LocalizationProvider } from '../contexts/LocalizationContext';
 
 export default function HudEditor() {
+  return (
+    <LocalizationProvider>
+      <HudEditorContent />
+    </LocalizationProvider>
+  );
+}
+
+function HudEditorContent() {
   const { theme } = useTheme();
-  const [files, setFiles] = useState<HudFile[]>([]);
-  const [activeFileIndex, setActiveFileIndex] = useState(0);
+  useClientScheme();
+
+  const {
+    files,
+    setFiles,
+    activeFileIndex,
+    setActiveFileIndex,
+    activeFile,
+    fileTree,
+    activePath,
+    setActivePath,
+    loadingPaths,
+    renamingPath,
+    setRenamingPath,
+    expandedPaths,
+    scrollToPath,
+    deleteTarget,
+    setDeleteTarget,
+    fileCache,
+    setFileCache,
+    toggleExpand,
+    saveTree,
+    handleRenameSubmit,
+    handleDeleteRequest,
+    handleDeleteConfirm,
+    handleCreateFolder,
+    handleCreateFile,
+    handleMove,
+    handleNodeSelect,
+    WELCOME_TEXT
+  } = useFileSystem();
+
+  const {
+    fonts,
+    setFonts,
+    fontMap,
+    schemeColors,
+    schemeBaseSettings,
+    schemeBorders,
+    missingFonts,
+    setMissingFonts,
+    skippedElements,
+    setSkippedElements
+  } = useHudProject(
+    files,
+    fileTree,
+    setFiles,
+    setActiveFileIndex,
+    setActivePath,
+    setFileCache,
+    loadFile
+  );
+
+  // UI state
   const [error, setError] = useState<string | null>(null);
   const editorRef = useRef<
     MonacoInstance['editor']['IStandaloneCodeEditor'] | null
@@ -531,21 +179,11 @@ export default function HudEditor() {
   const hoverItemBg = isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-200';
 
   const [isDragging, setIsDragging] = useState(false);
-
-  // File Explorer State
-  const [fileTree, setFileTree] = useState<FileNode[]>([]);
-  const [activePath, setActivePath] = useState<string | null>(null);
-  const [loadingPaths, setLoadingPaths] = useState<Set<string>>(new Set());
-
-  // Font state
-  const [fonts, setFonts] = useState<FontFile[]>([]);
-  const [fontMap, setFontMap] = useState<Record<string, FontDefinition>>({}); // Scheme Name -> Definition
   const [showFontDialog, setShowFontDialog] = useState(false);
   const [showAddFileDialog, setShowAddFileDialog] = useState(false);
   const [fileSearchQuery, setFileSearchQuery] = useState('');
   const [isImporting, setIsImporting] = useState(false);
 
-  // UI state
   const [aspectRatio, setAspectRatio] = useState('16:9');
   const [customWidth, setCustomWidth] = useState('16');
   const [customHeight, setCustomHeight] = useState('9');
@@ -562,437 +200,23 @@ export default function HudEditor() {
   );
   const [hoveredLine, setHoveredLine] = useState<number | null>(null);
   const [platform, setPlatform] = useState<string>('WIN32');
-  const [fileCache, setFileCache] = useState<Record<string, string>>({});
   const [parsedPreview, setParsedPreview] = useState<KVMap | null>(null);
   const [showConditionalHint, setShowConditionalHint] = useState(false);
-  const [schemeColors, setSchemeColors] = useState<Record<string, string>>({});
-  const [schemeBaseSettings, setSchemeBaseSettings] = useState<
-    Record<string, string>
-  >({});
-  const [schemeBorders, setSchemeBorders] = useState<SchemeBorderMap>({});
-  const [skippedElements, setSkippedElements] = useState<SkippedElement[]>([]);
-  const [missingFonts, setMissingFonts] = useState<MissingFont[]>([]);
   const [errorDialogMessage, setErrorDialogMessage] = useState<string | null>(
     null
   );
 
-  // File Management State
-  const [renamingPath, setRenamingPath] = useState<string | null>(null);
-  const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
-  const [scrollToPath, setScrollToPath] = useState<string | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<FileNode | null>(null);
-
   const skippedElementsRef = useRef<SkippedElement[]>([]);
   const missingFontsRef = useRef<MissingFont[]>([]);
-
-  const getCurrentDirectoryPath = useCallback(() => {
-    if (!activePath) return '';
-
-    const activeNode = findNodeByPath(fileTree, activePath);
-    if (activeNode?.type === 'folder') {
-      return activeNode.path;
-    }
-
-    const lastSlash = activePath.lastIndexOf('/');
-    if (lastSlash === -1) return '';
-    return activePath.substring(0, lastSlash);
-  }, [activePath, fileTree]);
 
   const showErrorDialog = useCallback((message: string) => {
     setErrorDialogMessage(message);
   }, []);
-  const autoOpenedClientSchemeRef = useRef(false);
-
-
-  const toggleExpand = useCallback((path: string) => {
-    setExpandedPaths((prev) => {
-      const next = new Set(prev);
-      if (next.has(path)) {
-        next.delete(path);
-      } else {
-        next.add(path);
-      }
-      return next;
-    });
-  }, []);
-
-  const expandToPath = useCallback((path: string) => {
-    const parts = path.split('/');
-    const pathsToExpand = new Set<string>();
-    let current = '';
-    // Don't expand the leaf node itself if it's a file, but if it's a folder we might want to?
-    // Usually we expand parents.
-    for (let i = 0; i < parts.length - 1; i++) {
-      current = current ? `${current}/${parts[i]}` : parts[i];
-      pathsToExpand.add(current);
-    }
-    setExpandedPaths((prev) => {
-      const next = new Set(prev);
-      pathsToExpand.forEach((p) => next.add(p));
-      return next;
-    });
-  }, []);
-
-  // Helper to save tree
-  const saveTree = useCallback(async (tree: FileNode[]) => {
-    const normalized = sortFileNodes(tree);
-    setFileTree(normalized);
-    await saveFile('__MANIFEST__', JSON.stringify(normalized));
-  }, []);
-
-  const handleRenameSubmit = async (node: FileNode, newName: string) => {
-    setRenamingPath(null);
-    if (!newName || newName === node.name) return;
-
-    const oldPath = node.path;
-    const parentPath = oldPath.substring(0, oldPath.lastIndexOf('/'));
-    const newPath = parentPath ? `${parentPath}/${newName}` : newName;
-
-    if (oldPath === newPath) return;
-
-    // Recursive update function
-    const updateNode = (nodes: FileNode[]): FileNode[] => {
-      return nodes.map((node) => {
-        if (node.path === oldPath) {
-          // Found the node to rename
-          const updateChildrenPaths = (
-            children: FileNode[],
-            parentP: string
-          ): FileNode[] => {
-            return children.map((child) => {
-              const childNewPath = `${parentP}/${child.name}`;
-              return {
-                ...child,
-                path: childNewPath,
-                children: child.children
-                  ? updateChildrenPaths(child.children, childNewPath)
-                  : undefined
-              };
-            });
-          };
-
-          return {
-            ...node,
-            name: newName,
-            path: newPath,
-            children: node.children
-              ? updateChildrenPaths(node.children, newPath)
-              : undefined
-          };
-        }
-        if (node.children) {
-          return { ...node, children: updateNode(node.children) };
-        }
-        return node;
-      });
-    };
-
-    const newTree = updateNode(fileTree);
-    await saveTree(newTree);
-
-    // Move content in storage
-    if (node.type === 'file') {
-      const content = await loadFile(oldPath);
-      if (content) {
-        await saveFile(newPath, content);
-        await deleteFile(oldPath);
-      }
-      // Update open files
-      setFiles((prev) =>
-        prev.map((f) =>
-          f.path === oldPath ? { ...f, path: newPath, name: newName } : f
-        )
-      );
-      if (activePath === oldPath) setActivePath(newPath);
-    } else {
-      // Folder rename - move all children content
-      const allKeys = await getAllKeys();
-      const keysToMove = allKeys.filter((k) => k.startsWith(oldPath + '/'));
-      for (const key of keysToMove) {
-        const content = await loadFile(key);
-        if (content) {
-          const newKey = newPath + key.substring(oldPath.length);
-          await saveFile(newKey, content);
-          await deleteFile(key);
-        }
-      }
-      // Update open files paths
-      setFiles((prev) =>
-        prev.map((f) => {
-          if (f.path.startsWith(oldPath + '/')) {
-            return { ...f, path: newPath + f.path.substring(oldPath.length) };
-          }
-          return f;
-        })
-      );
-    }
-  };
-
-  const handleDeleteRequest = (node: FileNode) => {
-    setDeleteTarget(node);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!deleteTarget) return;
-    const node = deleteTarget;
-
-    const removeNode = (nodes: FileNode[]): FileNode[] => {
-      return nodes
-        .filter((n) => n.path !== node.path)
-        .map((n) => {
-          if (n.children) return { ...n, children: removeNode(n.children) };
-          return n;
-        });
-    };
-
-    const newTree = removeNode(fileTree);
-    await saveTree(newTree);
-
-    // Delete content
-    if (node.type === 'file') {
-      await deleteFile(node.path);
-      // Close if open
-      const idx = files.findIndex((f) => f.path === node.path);
-      if (idx !== -1) {
-        const newFiles = files.filter((_, i) => i !== idx);
-        setFiles(newFiles);
-        if (activeFileIndex >= newFiles.length)
-          setActiveFileIndex(Math.max(0, newFiles.length - 1));
-      }
-    } else {
-      // Folder delete
-      const allKeys = await getAllKeys();
-      const keysToDelete = allKeys.filter((k) => k.startsWith(node.path + '/'));
-      for (const key of keysToDelete) {
-        await deleteFile(key);
-      }
-      // Close open files in folder
-      const newFiles = files.filter((f) => !f.path.startsWith(node.path + '/'));
-      setFiles(newFiles);
-      if (activeFileIndex >= newFiles.length)
-        setActiveFileIndex(Math.max(0, newFiles.length - 1));
-    }
-  };
-
-  const handleCreateFolder = useCallback(
-    async (parentPathOverride?: string | null) => {
-      const currentDir = parentPathOverride ?? getCurrentDirectoryPath();
-      const normalizedParent =
-        currentDir && currentDir.length > 0 ? currentDir : null;
-
-      let baseName = 'New Folder';
-      let counter = 1;
-      const buildPath = () =>
-        normalizedParent ? `${normalizedParent}/${baseName}` : baseName;
-
-      let newPath = buildPath();
-      while (pathExistsInTree(fileTree, newPath)) {
-        baseName = `New Folder (${counter})`;
-        counter++;
-        newPath = buildPath();
-      }
-
-      const newNode: FileNode = {
-        name: baseName,
-        type: 'folder',
-        path: newPath,
-        children: []
-      };
-
-      const newTree = insertFileNode(fileTree, normalizedParent, newNode);
-      await saveTree(newTree);
-      
-      // Auto-expand parent if needed
-      if (normalizedParent) {
-        expandToPath(newPath);
-      }
-      // Trigger rename and scroll
-      setRenamingPath(newPath);
-      setScrollToPath(newPath);
-      // Reset scroll target after animation
-      setTimeout(() => setScrollToPath(null), 500);
-    },
-    [fileTree, getCurrentDirectoryPath, saveTree, expandToPath]
-  );
-
-  const handleCreateFile = useCallback(
-    async (parentPathOverride?: string | null) => {
-      const currentDir = parentPathOverride ?? getCurrentDirectoryPath();
-      const normalizedParent =
-        currentDir && currentDir.length > 0 ? currentDir : null;
-
-      let baseName = 'new_file.res';
-      let counter = 1;
-      const buildPath = () =>
-        normalizedParent ? `${normalizedParent}/${baseName}` : baseName;
-
-      let newPath = buildPath();
-      while (pathExistsInTree(fileTree, newPath)) {
-        baseName = `new_file_${counter}.res`;
-        counter++;
-        newPath = buildPath();
-      }
-
-      const newNode: FileNode = {
-        name: baseName,
-        path: newPath,
-        type: 'file'
-      };
-
-      const newTree = insertFileNode(fileTree, normalizedParent, newNode);
-
-      await saveFile(newPath, '');
-      await saveTree(newTree);
-
-      setFiles((prev) => [
-        ...prev,
-        { name: baseName, path: newPath, content: '' }
-      ]);
-      setActiveFileIndex(files.length);
-      setActivePath(newPath);
-      setShowAddFileDialog(false);
-      setRenamingPath(newPath);
-      
-      // Auto-expand and scroll
-      expandToPath(newPath);
-      setScrollToPath(newPath);
-      setTimeout(() => setScrollToPath(null), 500);
-    },
-    [
-      fileTree,
-      files.length,
-      getCurrentDirectoryPath,
-      saveTree,
-      setFiles,
-      setActiveFileIndex,
-      setActivePath,
-      setShowAddFileDialog,
-      setRenamingPath,
-      expandToPath
-    ]
-  );
-
-  const handleMove = async (
-    sourceNode: FileNode,
-    targetNode: FileNode | null
-  ) => {
-    // Move sourceNode to be a child of targetNode (folder) or root (null)
-    if (targetNode && targetNode.type !== 'folder') return;
-
-    const targetPath = targetNode ? targetNode.path : '';
-    const newPath = targetPath
-      ? `${targetPath}/${sourceNode.name}`
-      : sourceNode.name;
-
-    // Prevent moving to same location
-    if (sourceNode.path === newPath) return;
-
-    // 1. Remove from old location
-    const removeNode = (nodes: FileNode[]): FileNode[] => {
-      return nodes
-        .filter((n) => n.path !== sourceNode.path)
-        .map((n) => {
-          if (n.children) return { ...n, children: removeNode(n.children) };
-          return n;
-        });
-    };
-    const tempTree = removeNode(fileTree);
-
-    // 2. Update paths recursively for sourceNode
-    const updatePaths = (node: FileNode, parentPath: string): FileNode => {
-      const myNewPath = parentPath ? `${parentPath}/${node.name}` : node.name;
-      return {
-        ...node,
-        path: myNewPath,
-        children: node.children
-          ? node.children.map((c) => updatePaths(c, myNewPath))
-          : undefined
-      };
-    };
-    const updatedSource = updatePaths(sourceNode, targetPath);
-
-    const insertNode = (nodes: FileNode[]): FileNode[] => {
-      if (!targetNode) {
-        // Insert at root
-        return [...nodes, updatedSource].sort((a, b) => {
-          if (a.type === b.type) return a.name.localeCompare(b.name);
-          return a.type === 'folder' ? -1 : 1;
-        });
-      }
-      return nodes.map((node) => {
-        if (node.path === targetNode.path) {
-          return {
-            ...node,
-            children: [...(node.children || []), updatedSource].sort((a, b) => {
-              if (a.type === b.type) return a.name.localeCompare(b.name);
-              return a.type === 'folder' ? -1 : 1;
-            })
-          };
-        }
-        if (node.children) {
-          return { ...node, children: insertNode(node.children) };
-        }
-        return node;
-      });
-    };
-    const newTree = insertNode(tempTree);
-    await saveTree(newTree);
-
-    // 4. Move content
-    if (sourceNode.type === 'file') {
-      const content = await loadFile(sourceNode.path);
-      if (content) {
-        await saveFile(updatedSource.path, content);
-        await deleteFile(sourceNode.path);
-      }
-    } else {
-      const allKeys = await getAllKeys();
-      const keysToMove = allKeys.filter((k) =>
-        k.startsWith(sourceNode.path + '/')
-      );
-      for (const key of keysToMove) {
-        const content = await loadFile(key);
-        if (content) {
-          const newKey =
-            updatedSource.path + key.substring(sourceNode.path.length);
-          await saveFile(newKey, content);
-          await deleteFile(key);
-        }
-      }
-    }
-
-    // 5. Update open files paths
-    setFiles((prev) =>
-      prev.map((f) => {
-        if (f.path === sourceNode.path) {
-          return { ...f, path: updatedSource.path };
-        }
-        if (f.path.startsWith(sourceNode.path + '/')) {
-          return {
-            ...f,
-            path: updatedSource.path + f.path.substring(sourceNode.path.length)
-          };
-        }
-        return f;
-      })
-    );
-
-    // Update active path if needed
-    if (activePath === sourceNode.path) {
-      setActivePath(updatedSource.path);
-    } else if (activePath && activePath.startsWith(sourceNode.path + '/')) {
-      setActivePath(
-        updatedSource.path + activePath.substring(sourceNode.path.length)
-      );
-    }
-  };
 
   // Update outline color based on theme
   useEffect(() => {
     setOutlineColor(isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.2)');
   }, [isDark]);
-
-  const activeFile = files[activeFileIndex];
 
   // Ensure welcome file is open if no files are open
   useEffect(() => {
@@ -1033,163 +257,9 @@ export default function HudEditor() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Load manifest
-  useEffect(() => {
-    const loadManifest = async () => {
-      try {
-        // Check for custom manifest in storage first
-        const customManifest = await loadFile('__MANIFEST__');
-        if (customManifest) {
-          setFileTree(sortFileNodes(JSON.parse(customManifest)));
-          return;
-        }
 
-        // Fallback to default
-        const res = await fetch('/default_hud/manifest.json');
-        const data = await res.json();
-        setFileTree(sortFileNodes(data));
-      } catch (err) {
-        console.error('Failed to load manifest', err);
-      }
-    };
-    loadManifest();
-  }, []);
 
-  // Parse ClientScheme.res and cache fonts/colors/borders for rendering
-  const applySchemeContent = useCallback((content: string) => {
-    try {
-      const scheme = parseKeyValues(content);
-      const schemeSection = scheme['Scheme'] as KeyValues;
-      const schemeFonts = (schemeSection?.['Fonts'] as KeyValues) || null;
 
-      if (schemeFonts) {
-        const newMap: Record<string, FontDefinition> = {};
-        Object.entries(schemeFonts).forEach(([fontName, fontDef]) => {
-          // This is simplified. Real scheme parsing is complex (conditional blocks).
-          // We look for "name" in the first block (usually "1")
-          const firstBlock = (fontDef as KeyValues)?.['1'] as KeyValues;
-          const family = firstBlock?.['name'] as string;
-          const tall = firstBlock?.['tall'] as string;
-
-          if (family) {
-            newMap[fontName] = {
-              family,
-              size: parseInt(tall) || 14
-            };
-          }
-        });
-        setFontMap((prev) => ({ ...prev, ...newMap }));
-      }
-
-      const colorsSection = schemeSection
-        ? (schemeSection['Colors'] as KeyValues)
-        : null;
-      if (colorsSection) {
-        const colorMap: Record<string, string> = {};
-        Object.entries(colorsSection).forEach(([colorName, colorValue]) => {
-          if (typeof colorValue === 'string') {
-            colorMap[colorName.toLowerCase()] = colorValue;
-          }
-        });
-        setSchemeColors(colorMap);
-      }
-
-      const baseSettingsSection = schemeSection
-        ? (schemeSection['BaseSettings'] as KeyValues)
-        : null;
-      if (baseSettingsSection) {
-        const flattened: Record<string, string> = {};
-        Object.entries(baseSettingsSection).forEach(([key, value]) => {
-          if (typeof value === 'string') {
-            flattened[key] = value;
-          }
-        });
-        setSchemeBaseSettings(flattened);
-      }
-
-      const bordersSection = schemeSection
-        ? (schemeSection['Borders'] as KeyValues)
-        : null;
-      if (bordersSection) {
-        const borderMap: SchemeBorderMap = {};
-        Object.entries(bordersSection).forEach(([borderName, borderDef]) => {
-          if (typeof borderDef === 'object' && borderDef !== null) {
-            borderMap[borderName] = borderDef as KeyValues;
-          }
-        });
-        setSchemeBorders(borderMap);
-      }
-    } catch (e) {
-      console.error('Failed to parse ClientScheme', e);
-    }
-  }, []);
-
-  useEffect(() => {
-    const schemeFile = files.find(isClientSchemeHudFile);
-    if (schemeFile) {
-      applySchemeContent(schemeFile.content);
-    }
-  }, [files, applySchemeContent]);
-
-  useEffect(() => {
-    if (autoOpenedClientSchemeRef.current) return;
-    if (files.some(isClientSchemeHudFile)) {
-      autoOpenedClientSchemeRef.current = true;
-      return;
-    }
-    if (!fileTree.length) return;
-
-    const targetNode = findClientSchemeNode(fileTree);
-    if (!targetNode) return;
-
-    autoOpenedClientSchemeRef.current = true;
-    setActivePath(targetNode.path);
-
-    const openScheme = async () => {
-      try {
-        let text = await loadFile(targetNode.path);
-        if (!text) {
-          const res = await fetch(`/default_hud/${targetNode.path}`);
-          if (res.ok) {
-            text = await res.text();
-          }
-        }
-
-        if (!text) return;
-
-        const content = text;
-        setFileCache((prev) => ({ ...prev, [targetNode.path]: content }));
-
-        let openedScheme = false;
-        setFiles((prev) => {
-          if (prev.some(isClientSchemeHudFile)) {
-            return prev;
-          }
-
-          openedScheme = true;
-          return [
-            ...prev,
-            {
-              name: targetNode.name,
-              path: targetNode.path,
-              content
-            }
-          ];
-        });
-
-        if (openedScheme) {
-          const welcomeIndex = files.findIndex(isWelcomeFile);
-          if (welcomeIndex !== -1) {
-            setActiveFileIndex(welcomeIndex);
-          }
-        }
-      } catch (err) {
-        console.error('Failed to auto-open ClientScheme', err);
-      }
-    };
-
-    openScheme();
-  }, [fileTree, files]);
 
   useEffect(() => {
     if (!activeFile) return;
@@ -1547,51 +617,6 @@ export default function HudEditor() {
       colors: {}
     });
   };
-
-  const handleNodeSelect = async (node: FileNode) => {
-    setActivePath(node.path);
-
-    if (node.type !== 'file') return;
-
-    // Check if already loaded by path
-    const existingIndex = files.findIndex((f) => f.path === node.path);
-    if (existingIndex !== -1) {
-      setActiveFileIndex(existingIndex);
-      return;
-    }
-
-    // Show loading indicator
-    setLoadingPaths((prev) => new Set(prev).add(node.path));
-
-    try {
-      // Check local storage first
-      const stored = await loadFile(node.path);
-      let text = stored;
-
-      if (!text) {
-        const res = await fetch(`/default_hud/${node.path}`);
-        text = await res.text();
-      }
-
-      setFiles((prev) => [
-        ...prev,
-        { name: node.name, path: node.path, content: text! }
-      ]);
-      setFileCache((prev) => ({ ...prev, [node.path]: text! }));
-      setActiveFileIndex(files.length); // It will be the last one
-    } catch (e) {
-      console.error('Failed to load file', e);
-    } finally {
-      setLoadingPaths((prev) => {
-        const next = new Set(prev);
-        next.delete(node.path);
-        return next;
-      });
-    }
-  };
-
-  // Helper to merge KVMaps - MOVED TO LIB
-  // const mergeKVMap = ...
 
   // Recursive function to load base files and parse
   const loadAndParse = useCallback(
@@ -1993,7 +1018,8 @@ export default function HudEditor() {
   const scaleY = previewDimensions.height / 480;
 
   return (
-    <Flex
+    <ModTexturesProvider baseUrl="/default_hud">
+      <Flex
       className='min-h-screen w-full pt-16'
       direction='column'
       gap='2'
@@ -2422,27 +1448,23 @@ export default function HudEditor() {
 
                 <ScrollArea className='flex-1'>
                   <Flex direction='column' gap='1'>
-                    {fileTree.map((node) => (
-                      <FileTreeNode
-                        key={node.path}
-                        node={node}
-                        level={0}
-                        onSelect={handleNodeSelect}
-                        activePath={activePath}
-                        loadingPaths={loadingPaths}
-                        onRename={(n) => setRenamingPath(n.path)}
-                        onDelete={handleDeleteRequest}
-                        onCreateFolder={handleCreateFolder}
-                        onCreateFile={handleCreateFile}
-                        onMove={handleMove}
-                        renamingPath={renamingPath}
-                        onRenameSubmit={handleRenameSubmit}
-                        onRenameCancel={() => setRenamingPath(null)}
-                        expandedPaths={expandedPaths}
-                        onToggleExpand={toggleExpand}
-                        scrollToPath={scrollToPath}
-                      />
-                    ))}
+                    <FileExplorer
+                      fileTree={fileTree}
+                      onSelect={handleNodeSelect}
+                      activePath={activePath}
+                      loadingPaths={loadingPaths}
+                      onRename={(n) => setRenamingPath(n.path)}
+                      onDelete={handleDeleteRequest}
+                      onCreateFolder={handleCreateFolder}
+                      onCreateFile={handleCreateFile}
+                      onMove={handleMove}
+                      renamingPath={renamingPath}
+                      onRenameSubmit={handleRenameSubmit}
+                      onRenameCancel={() => setRenamingPath(null)}
+                      expandedPaths={expandedPaths}
+                      onToggleExpand={toggleExpand}
+                      scrollToPath={scrollToPath}
+                    />
                   </Flex>
                 </ScrollArea>
 
@@ -2905,5 +1927,6 @@ export default function HudEditor() {
       </AlertDialog.Root>
 
     </Flex>
+    </ModTexturesProvider>
   );
 }

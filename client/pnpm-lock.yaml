@@ -50,6 +50,9 @@ importers:
       next-themes:
         specifier: ^0.4.4
         version: 0.4.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      pica:
+        specifier: 1.1.1
+        version: 1.1.1
       qrcode:
         specifier: ^1.5.4
         version: 1.5.4
@@ -71,6 +74,9 @@ importers:
       react-type-animation:
         specifier: ^3.2.0
         version: 3.2.0(prop-types@15.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      vtf:
+        specifier: ^0.0.3
+        version: 0.0.3
     devDependencies:
       '@eslint/js':
         specifier: ^9.13.0
@@ -1764,6 +1770,9 @@ packages:
     resolution: {integrity: sha512-yeyNSjdbyVaWurlwCpcA6XNBrHTMIeDdj0/hnvX/OLJ9ekOXYbLsLinH/MucQyGvNnXhidTdNhTtJaffL2sMfw==}
     engines: {node: '>=18'}
 
+  glur@1.1.2:
+    resolution: {integrity: sha512-l+8esYHTKOx2G/Aao4lEQ0bnHWg4fWtJbVoZZT9Knxi01pB8C80BR85nONLFwkkQoFRCmXY+BUcGZN3yZ2QsRA==}
+
   graphemer@1.4.0:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
 
@@ -2084,6 +2093,9 @@ packages:
   path-scurry@1.11.1:
     resolution: {integrity: sha512-Xa4Nw17FS9ApQFJ9umLiJS4orGjm7ZzwUrwamcGQuHSzDyth9boKDaycYdDcZDuqYATXw4HFXgaqWTctW/v1HA==}
     engines: {node: '>=16 || 14 >=14.18'}
+
+  pica@1.1.1:
+    resolution: {integrity: sha512-EllPo0f871ZEYMWMyNSd5wF2hss1Uvy7fgRh0PmaEtmzIdeEW9UobxqqiWUZrw+YdlCaghF0PYtQ0WM66ikvKQ==}
 
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
@@ -2530,6 +2542,12 @@ packages:
         optional: true
       terser:
         optional: true
+
+  vtf@0.0.3:
+    resolution: {integrity: sha512-6C/qZ7bJ68bTzAfnRL32hb2nbepPnmkAaSvT3C9t7xQZYuXqBVa7CWi3nfyKRj/Pr4/W+Cira5XXvt7iD3+cJw==}
+
+  webworkify@1.0.2:
+    resolution: {integrity: sha512-gB3Dgc0yeR5heUyamGw5EGERTxfqKvQClKkP1tmCpNThCVa/bkiue2+x6OSPmsoWGUZy+i1CfQenjyKyyfR42g==}
 
   which-module@2.0.1:
     resolution: {integrity: sha512-iBdZ57RDvnOR9AGBhML2vFZf7h8vmBjhoaZqODJBFWHVtKkDmKuHai3cx5PgVMrX5YDNp27AofYbAwctSS+vhQ==}
@@ -4274,6 +4292,8 @@ snapshots:
 
   globals@15.11.0: {}
 
+  glur@1.1.2: {}
+
   graphemer@1.4.0: {}
 
   has-flag@3.0.0: {}
@@ -4538,6 +4558,11 @@ snapshots:
     dependencies:
       lru-cache: 10.4.3
       minipass: 7.1.2
+
+  pica@1.1.1:
+    dependencies:
+      glur: 1.1.2
+      webworkify: 1.0.2
 
   picocolors@1.1.1: {}
 
@@ -4963,6 +4988,12 @@ snapshots:
     optionalDependencies:
       '@types/node': 22.8.6
       fsevents: 2.3.3
+
+  vtf@0.0.3:
+    dependencies:
+      pica: 1.1.1
+
+  webworkify@1.0.2: {}
 
   which-module@2.0.1: {}
 
