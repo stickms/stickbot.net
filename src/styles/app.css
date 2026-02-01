@@ -74,6 +74,18 @@
   label[for] {
     cursor: pointer;
   }
+
+  /* Remove input[type=number] arrows */
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type=number] {
+    -moz-appearance: textfield;
+    appearance: textfield; /* Standard property for newer browsers */
+  }
 }
 
 @theme inline {

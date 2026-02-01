@@ -11,7 +11,7 @@
 			"src/**/*.tsx",
 			"src/**/*.ts",
 			"!!**/routeTree.gen.ts",
-			"!!src/components/ui/*.tsx"
+			"!!**/components/ui/*.tsx"
 		]
 	},
 	"formatter": {

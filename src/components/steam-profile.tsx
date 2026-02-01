@@ -3,10 +3,11 @@ import type { SteamProfileSummary } from '~/types';
 import '~/styles/steam-profile.css';
 import { notFound } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
-import { Clipboard } from 'lucide-react';
+import { Clipboard, LoaderCircle } from 'lucide-react';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { playersDB } from '~/lib/db';
+import { Card } from './card';
 
 const getBotTags = createServerFn({ method: 'GET' })
 	.inputValidator((data: { steamid: string; guildid: string }) => data)
@@ -146,7 +147,7 @@ function ProfileSummary({ summary }: { summary: SteamProfileSummary }) {
 
 			<div className="steam-profile-summary">
 				{/* Username */}
-				<h2>
+				<div>
 					<a
 						className="font-semibold text-lg hover:underline"
 						href={`https://steamcommunity.com/profiles/${summary.steamid}/`}
@@ -155,7 +156,7 @@ function ProfileSummary({ summary }: { summary: SteamProfileSummary }) {
 					>
 						{summary.personaname}
 					</a>
-				</h2>
+				</div>
 
 				{/* Rest of the summary */}
 				<div className="flex w-full justify-between gap-4 flex-wrap">
@@ -197,16 +198,18 @@ export function SteamProfile({ query }: { query: string }) {
 	}, [query]);
 
 	return (
-		<div className="steam-profile-card">
+		<Card className="steam-profile-card">
 			{summary === undefined && (
-				<h2 className="col-span-5 m-auto text-center">Loading...</h2>
+				<div className="flex gap-2 col-span-5 m-auto text-center">
+					<LoaderCircle className="animate-spin" /> Loading...
+				</div>
 			)}
 
 			{summary === null && (
-				<h2 className="col-span-5 m-auto text-center">Error: {error}</h2>
+				<div className="col-span-5 m-auto text-center">Error: {error}</div>
 			)}
 
 			{summary && <ProfileSummary summary={summary} />}
-		</div>
+		</Card>
 	);
 }
