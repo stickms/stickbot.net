@@ -14,7 +14,7 @@ function Home() {
 					<Link to="/steam-lookup/{-$query}">steam profile lookup</Link>
 				</li>
 				<li>
-					<Link to="/region-selector">valve region selector</Link>
+					<Link to="/region-selector">steam region selector</Link>
 				</li>
 				<li>
 					<Link to="/qr-code-generator">qr code generator</Link>

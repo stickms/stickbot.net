@@ -30,3 +30,24 @@ export interface SteamProfileSummary {
 	NumberOfGameBans: number;
 	EconomyBan: string;
 }
+
+// Removed things we don't care about
+export interface SDRConfigResult {
+	revision: number;
+	pops: Record<
+		string,
+		{
+			desc: string;
+			geo: [number, number];
+			partners: number;
+			tier: number;
+			// No idea when this is not undefined, but seems to be when on VPS
+			has_gameservers?: boolean;
+			// We exclude null/undefined relays
+			relays: {
+				ipv4: string;
+				port_range: [number, number];
+			}[];
+		}
+	>;
+}

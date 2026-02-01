@@ -190,6 +190,7 @@ export function SteamProfile({ query }: { query: string }) {
 
 				setSummary(await summary_resp.json());
 			} catch (error) {
+				setSummary(null);
 				setError(error);
 			}
 		};
@@ -200,13 +201,13 @@ export function SteamProfile({ query }: { query: string }) {
 	return (
 		<Card className="steam-profile-card">
 			{summary === undefined && (
-				<div className="flex gap-2 col-span-5 m-auto text-center">
+				<span className="flex gap-2 col-span-5 m-auto text-center">
 					<LoaderCircle className="animate-spin" /> Loading...
-				</div>
+				</span>
 			)}
 
 			{summary === null && (
-				<div className="col-span-5 m-auto text-center">Error: {error}</div>
+				<Badge variant='destructive' className="col-span-5 m-auto text-sm">{error?.toString()}</Badge>
 			)}
 
 			{summary && <ProfileSummary summary={summary} />}
