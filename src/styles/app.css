@@ -1,0 +1,111 @@
+@import 'tailwindcss' source('../');
+@import 'tw-animate-css';
+
+@font-face {
+  font-family: 'ACTT';
+  src: url('/fonts/Alphabetized Cassette Tapes Thin.ttf') format('truetype');
+}
+
+@layer base {
+  :root {
+    /* Background colors - semi-transparent to show texture */
+    --background: 180 10% 8% / 0.85;
+    --foreground: 190 15% 95%;
+
+    /* Card colors - more opaque for better contrast */
+    --card: 185 12% 12% / 0.92;
+    --card-foreground: 190 15% 95%;
+
+    /* Popover colors - fully opaque for readability */
+    --popover: 185 12% 14%;
+    --popover-foreground: 190 15% 95%;
+
+    /* Primary colors - teal accent for visibility */
+    --primary: 175 45% 40%;
+    --primary-foreground: 180 15% 98%;
+
+    /* Secondary colors - slate tones */
+    --secondary: 190 10% 28%;
+    --secondary-foreground: 190 15% 95%;
+
+    /* Muted colors - darker slate, lighter text */
+    --muted: 185 10% 20%;
+    --muted-foreground: 190 8% 65%;
+
+    /* Accent colors - subtle slate highlight */
+    --accent: 185 12% 24%;
+    --accent-foreground: 190 15% 95%;
+
+    /* Destructive colors - muted red for visibility */
+    --destructive: 0 65% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Border colors - visible but subtle slate */
+    --border: 185 10% 22%;
+    --input: 185 10% 22%;
+    --ring: 175 45% 40%;
+
+    /* Chart colors - teal/cyan range */
+    --chart-1: 175 65% 55%;
+    --chart-2: 185 55% 50%;
+    --chart-3: 190 50% 55%;
+    --chart-4: 195 45% 58%;
+    --chart-5: 200 40% 55%;
+
+    /* Border radius */
+    --radius: 0.5rem;
+  }
+
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-weight: 300;
+  }
+
+  button,
+  [role='button'],
+  a,
+  select,
+  [type='checkbox'],
+  [type='radio'],
+  label[for] {
+    cursor: pointer;
+  }
+}
+
+@theme inline {
+  --font-header: 'ACTT', sans-serif;
+  --font-sans: 'Poppins', sans-serif;
+
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}

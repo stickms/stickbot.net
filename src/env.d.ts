@@ -1,0 +1,13 @@
+/// <reference types="vite/client" />
+
+declare global {
+	namespace NodeJS {
+		interface ProcessEnv {
+			readonly STEAM_API_KEY: string;
+			readonly MONGO_API_URL: string;
+			readonly NODE_ENV: 'development' | 'production' | 'test';
+		}
+	}
+}
+
+export {};
