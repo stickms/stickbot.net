@@ -12,8 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as RegionSelectorRouteImport } from './routes/region-selector'
 import { Route as QrCodeGeneratorRouteImport } from './routes/qr-code-generator'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as WatchTogetherIndexRouteImport } from './routes/watch-together/index'
 import { Route as SteamLookupChar123QueryChar125RouteImport } from './routes/steam-lookup.{-$query}'
 import { Route as OpenProfileSteamidRouteImport } from './routes/open-profile.$steamid'
+import { Route as WatchTogetherRoomRoomidRouteImport } from './routes/watch-together/room.$roomid'
 import { Route as ApiResolveQueryRouteImport } from './routes/api/resolve.$query'
 import { Route as ApiLookupSteamidRouteImport } from './routes/api/lookup.$steamid'
 
@@ -32,6 +34,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WatchTogetherIndexRoute = WatchTogetherIndexRouteImport.update({
+  id: '/watch-together/',
+  path: '/watch-together/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SteamLookupChar123QueryChar125Route =
   SteamLookupChar123QueryChar125RouteImport.update({
     id: '/steam-lookup/{-$query}',
@@ -41,6 +48,11 @@ const SteamLookupChar123QueryChar125Route =
 const OpenProfileSteamidRoute = OpenProfileSteamidRouteImport.update({
   id: '/open-profile/$steamid',
   path: '/open-profile/$steamid',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WatchTogetherRoomRoomidRoute = WatchTogetherRoomRoomidRouteImport.update({
+  id: '/watch-together/room/$roomid',
+  path: '/watch-together/room/$roomid',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiResolveQueryRoute = ApiResolveQueryRouteImport.update({
@@ -60,8 +72,10 @@ export interface FileRoutesByFullPath {
   '/region-selector': typeof RegionSelectorRoute
   '/open-profile/$steamid': typeof OpenProfileSteamidRoute
   '/steam-lookup/{-$query}': typeof SteamLookupChar123QueryChar125Route
+  '/watch-together/': typeof WatchTogetherIndexRoute
   '/api/lookup/$steamid': typeof ApiLookupSteamidRoute
   '/api/resolve/$query': typeof ApiResolveQueryRoute
+  '/watch-together/room/$roomid': typeof WatchTogetherRoomRoomidRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -69,8 +83,10 @@ export interface FileRoutesByTo {
   '/region-selector': typeof RegionSelectorRoute
   '/open-profile/$steamid': typeof OpenProfileSteamidRoute
   '/steam-lookup/{-$query}': typeof SteamLookupChar123QueryChar125Route
+  '/watch-together': typeof WatchTogetherIndexRoute
   '/api/lookup/$steamid': typeof ApiLookupSteamidRoute
   '/api/resolve/$query': typeof ApiResolveQueryRoute
+  '/watch-together/room/$roomid': typeof WatchTogetherRoomRoomidRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -79,8 +95,10 @@ export interface FileRoutesById {
   '/region-selector': typeof RegionSelectorRoute
   '/open-profile/$steamid': typeof OpenProfileSteamidRoute
   '/steam-lookup/{-$query}': typeof SteamLookupChar123QueryChar125Route
+  '/watch-together/': typeof WatchTogetherIndexRoute
   '/api/lookup/$steamid': typeof ApiLookupSteamidRoute
   '/api/resolve/$query': typeof ApiResolveQueryRoute
+  '/watch-together/room/$roomid': typeof WatchTogetherRoomRoomidRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -90,8 +108,10 @@ export interface FileRouteTypes {
     | '/region-selector'
     | '/open-profile/$steamid'
     | '/steam-lookup/{-$query}'
+    | '/watch-together/'
     | '/api/lookup/$steamid'
     | '/api/resolve/$query'
+    | '/watch-together/room/$roomid'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -99,8 +119,10 @@ export interface FileRouteTypes {
     | '/region-selector'
     | '/open-profile/$steamid'
     | '/steam-lookup/{-$query}'
+    | '/watch-together'
     | '/api/lookup/$steamid'
     | '/api/resolve/$query'
+    | '/watch-together/room/$roomid'
   id:
     | '__root__'
     | '/'
@@ -108,8 +130,10 @@ export interface FileRouteTypes {
     | '/region-selector'
     | '/open-profile/$steamid'
     | '/steam-lookup/{-$query}'
+    | '/watch-together/'
     | '/api/lookup/$steamid'
     | '/api/resolve/$query'
+    | '/watch-together/room/$roomid'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -118,8 +142,10 @@ export interface RootRouteChildren {
   RegionSelectorRoute: typeof RegionSelectorRoute
   OpenProfileSteamidRoute: typeof OpenProfileSteamidRoute
   SteamLookupChar123QueryChar125Route: typeof SteamLookupChar123QueryChar125Route
+  WatchTogetherIndexRoute: typeof WatchTogetherIndexRoute
   ApiLookupSteamidRoute: typeof ApiLookupSteamidRoute
   ApiResolveQueryRoute: typeof ApiResolveQueryRoute
+  WatchTogetherRoomRoomidRoute: typeof WatchTogetherRoomRoomidRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -145,6 +171,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/watch-together/': {
+      id: '/watch-together/'
+      path: '/watch-together'
+      fullPath: '/watch-together/'
+      preLoaderRoute: typeof WatchTogetherIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/steam-lookup/{-$query}': {
       id: '/steam-lookup/{-$query}'
       path: '/steam-lookup/{-$query}'
@@ -157,6 +190,13 @@ declare module '@tanstack/react-router' {
       path: '/open-profile/$steamid'
       fullPath: '/open-profile/$steamid'
       preLoaderRoute: typeof OpenProfileSteamidRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/watch-together/room/$roomid': {
+      id: '/watch-together/room/$roomid'
+      path: '/watch-together/room/$roomid'
+      fullPath: '/watch-together/room/$roomid'
+      preLoaderRoute: typeof WatchTogetherRoomRoomidRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/resolve/$query': {
@@ -182,8 +222,10 @@ const rootRouteChildren: RootRouteChildren = {
   RegionSelectorRoute: RegionSelectorRoute,
   OpenProfileSteamidRoute: OpenProfileSteamidRoute,
   SteamLookupChar123QueryChar125Route: SteamLookupChar123QueryChar125Route,
+  WatchTogetherIndexRoute: WatchTogetherIndexRoute,
   ApiLookupSteamidRoute: ApiLookupSteamidRoute,
   ApiResolveQueryRoute: ApiResolveQueryRoute,
+  WatchTogetherRoomRoomidRoute: WatchTogetherRoomRoomidRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
