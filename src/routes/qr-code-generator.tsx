@@ -142,7 +142,7 @@ function RouteComponent() {
 				value={data}
 				onChange={(e) => setData(e.target.value)}
 			/>
-			<Card className="flex flex-wrap justify-center max-w-[90vw] p-4 gap-4">
+			<Card className="flex flex-wrap justify-center max-w-[90vw] gap-4">
 				<div className="size-80 aspect-square">
 					{!ready && <Skeleton className="size-full" />}
 					<img

@@ -2,6 +2,7 @@
   width: 720px;
   max-width: 90vw;
   min-height: 300px;
+  padding: 0;
 
   display: grid;
   grid-template-columns: repeat(5, 1fr);
