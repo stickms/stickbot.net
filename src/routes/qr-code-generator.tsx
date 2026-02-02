@@ -134,7 +134,8 @@ function RouteComponent() {
 	}, [data, size, margin, filetype, errorCorrection]);
 
 	return (
-		<div className="w-full flex flex-col items-center justify-center mt-40 mb-8 gap-8 text-center">
+		<div className="w-full min-h-screen flex flex-col items-center gap-8 text-center">
+			<div className="flex-1 min-h-20" />
 			<h1 className="font-header text-6xl">qr code generator</h1>
 			<Input
 				className="w-150 max-w-[90vw]"
@@ -187,6 +188,7 @@ function RouteComponent() {
 					/>
 				</div>
 			</Card>
+			<div className="flex-1 min-h-8" />
 		</div>
 	);
 }

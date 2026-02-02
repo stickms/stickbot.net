@@ -207,7 +207,9 @@ export function SteamProfile({ query }: { query: string }) {
 			)}
 
 			{summary === null && (
-				<Badge variant='destructive' className="col-span-5 m-auto text-sm">{error?.toString()}</Badge>
+				<Badge variant="destructive" className="col-span-5 m-auto text-sm">
+					{error?.toString()}
+				</Badge>
 			)}
 
 			{summary && <ProfileSummary summary={summary} />}
