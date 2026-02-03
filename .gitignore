@@ -1,7 +1,8 @@
 # Development
-/.git
-/.vscode
-/.tanstack
+.git
+.vscode
+.tanstack
+.generated
 
 # Dependencies
 /node_modules

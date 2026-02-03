@@ -6,7 +6,7 @@ import { createServerFn } from '@tanstack/react-start';
 import { Clipboard, LoaderCircle } from 'lucide-react';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
-import { playersDB } from '~/lib/db';
+import { playersDB } from '~/lib/mongo';
 import { Card } from './card';
 
 const getBotTags = createServerFn({ method: 'GET' })

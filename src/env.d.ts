@@ -5,6 +5,7 @@ declare global {
 		interface ProcessEnv {
 			readonly STEAM_API_KEY: string;
 			readonly MONGO_API_URL: string;
+			readonly PRISMA_DB_URL: string;
 			readonly NODE_ENV: 'development' | 'production' | 'test';
 		}
 	}

@@ -1,0 +1,34 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/.generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model SyncUser {
+  id          String @id @unique @default(uuid())
+  username    String
+  ownedRooms  SyncRoom[]
+  messages    SyncMessage[]
+}
+
+model SyncRoom {
+  id          String @id @unique
+  name        String
+  owner       SyncUser @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId     String
+  queue       String[]
+  messages    SyncMessage[]
+}
+
+model SyncMessage {
+  id          String @id @unique @default(uuid())
+  content     String
+  timestamp   DateTime @default(now())
+  room        SyncRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  roomId      String
+  owner       SyncUser @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId     String   
+}

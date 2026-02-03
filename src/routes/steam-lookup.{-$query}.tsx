@@ -20,7 +20,7 @@ function RouteComponent() {
 	const [userSearch, setUserSearch] = useState<string>('');
 
 	return (
-		<div className="w-full flex flex-col items-center justify-center mt-40 mb-8 gap-8 text-center">
+		<div className="w-full flex flex-col items-center justify-center mt-40 mb-16 gap-8 text-center">
 			<h1 className="font-header text-6xl">steam profile lookup</h1>
 			<InputGroup className="w-150 max-w-[90vw]">
 				<InputGroupInput
