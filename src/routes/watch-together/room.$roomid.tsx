@@ -50,7 +50,7 @@ function RouteComponent() {
 				<ScrollArea className='w-100 h-72'>
 					<div className='flex flex-col items-start gap-1'>
 						{messages.map((msg) => (
-							<span key={`${msg.id}`}>{msg.username} : {msg.content}</span>
+							<span key={`${msg.id}`}>{msg.user.username} : {msg.content}</span>
 						))}
 					</div>
 				</ScrollArea>

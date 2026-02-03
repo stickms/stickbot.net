@@ -1,24 +1,19 @@
 import { createServer } from 'node:http';
 import { Server } from 'socket.io';
 import { prisma } from './lib/prisma';
-import { SocketChat } from './lib/socket';
+import type { ClientToServerEvents, ServerToClientEvents, SocketChatMessage, SocketUser } from './types';
 
 const httpServer = createServer();
 
-const io = new Server(httpServer, {
+const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
 	cors: {
 		origin: 'http://localhost:3000',
 		methods: ['GET', 'POST'],
 	},
 });
 
-interface RoomUser {
-	userId: string;
-	username: string;
-}
-
 interface Room {
-	users: Map<string, RoomUser>;
+	users: Map<string, SocketUser>;
 }
 
 const rooms = new Map<string, Room>();
@@ -26,7 +21,7 @@ const rooms = new Map<string, Room>();
 io.on('connection', (socket) => {
 	console.log('Client connected:', socket.id);
 
-	socket.on('join-room', ({ roomId, userId, username }: { roomId: string; userId: string; username: string }) => {
+	socket.on('join-room', (roomId, user) => {
 		socket.join(roomId);
 
 		if (!rooms.has(roomId)) {
@@ -35,18 +30,17 @@ io.on('connection', (socket) => {
 
 		// biome-ignore lint/style/noNonNullAssertion: false positive
 		const room = rooms.get(roomId)!;
-		room.users.set(socket.id, { userId, username });
+		room.users.set(socket.id, user);
 
-		socket.to(roomId).emit('user-joined', { id: userId, username });
+		socket.to(roomId).emit('user-joined', user);
 
 		prisma.syncRoom.findUnique({ where: { id: roomId }, include: { messages: { include: { owner: true } } } })
 			.then((syncRoom) => {
-				const messages: SocketChat[] = syncRoom?.messages.map((message) => ({
+				const messages: SocketChatMessage[] = syncRoom?.messages.map((message) => ({
 					id: message.id,
-					userId: message.ownerId,
-					username: message.owner.username,
+					user: message.owner,
 					content: message.content,
-					timestamp: message.timestamp
+					timestamp: message.timestamp.getMilliseconds()
 				})) ?? [];
 
 				socket.emit('room-state', {
@@ -55,10 +49,10 @@ io.on('connection', (socket) => {
 				});
 			});
 
-		console.log(`${username} joined room ${roomId}`);
+		console.log(`${user.username} joined room ${roomId}`);
 	});
 
-	socket.on('leave-room', ({ roomId }: { roomId: string }) => {
+	socket.on('leave-room', (roomId) => {
 		handleLeaveRoom(socket, roomId);
 	});
 
@@ -73,14 +67,14 @@ io.on('connection', (socket) => {
 		console.log('Client disconnected:', socket.id);
 	});
 
-	socket.on('chat-message', ({ roomId, content }: { roomId: string; content: string }) => {
+	socket.on('chat-message', (roomId, content) => {
 		const room = rooms.get(roomId);
 		const user = room?.users.get(socket.id);
 		
 		if (user) {
 			prisma.syncMessage.create({
 				data: {
-					ownerId: user.userId,
+					ownerId: user.id,
 					roomId: roomId,
 					content: content
 				}
@@ -88,7 +82,7 @@ io.on('connection', (socket) => {
 				.then((message) => {
 					io.to(roomId).emit('chat-message', {
 						id: message.id,
-						username: user.username,
+						user: user,
 						content,
 						timestamp: Date.now(),
 					});
@@ -105,7 +99,7 @@ function handleLeaveRoom(socket: { id: string; to: (room: string) => { emit: (ev
 	const user = room.users.get(socket.id);
 	if (user) {
 		room.users.delete(socket.id);
-		socket.to(roomId).emit('user-left', { id: user.userId, username: user.username });
+		socket.to(roomId).emit('user-left', { id: user.id, username: user.username });
 		console.log(`${user.username} left room ${roomId}`);
 	}
 
