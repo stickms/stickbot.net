@@ -1,3 +1,4 @@
+import { arrayMove } from '@dnd-kit/sortable';
 import { useEffect, useState } from 'react';
 import { io, type Socket } from 'socket.io-client';
 import type {
@@ -94,6 +95,10 @@ export function useRoom(
 			setQueue((prev) => prev.filter((media) => media.id !== id));
 		});
 
+		socket.on('order-media', (from, to) => {
+			setQueue((prev) => arrayMove(prev, from, to));
+		});
+
 		return () => {
 			socket.emit('leave-room', roomId);
 			socket.off('room-state');
@@ -103,6 +108,7 @@ export function useRoom(
 			socket.off('chat-message');
 			socket.off('queue-media');
 			socket.off('dequeue-media');
+			socket.off('order-media');
 		};
 	}, [socket, isConnected, roomId, userId, username]);
 
@@ -124,6 +130,12 @@ export function useRoom(
 		}
 	};
 
+	const orderMedia = (from: number, to: number) => {
+		if (socket && isConnected) {
+			socket.emit('order-media', roomId, from, to);
+		}
+	};
+
 	const sendMediaState = (playing?: boolean, curtime?: number) => {
 		if (socket && isConnected) {
 			socket.emit('media-state', roomId, { playing, curtime });
@@ -138,6 +150,7 @@ export function useRoom(
 		sendMessage,
 		queueMedia,
 		dequeueMedia,
+		orderMedia,
 		sendMediaState,
 		isConnected,
 	};

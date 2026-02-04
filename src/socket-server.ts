@@ -1,5 +1,6 @@
 import { createServer } from 'node:http';
-import { Server } from 'socket.io';
+import { arrayMove } from '@dnd-kit/sortable';
+import { Server, type Socket } from 'socket.io';
 import { prisma } from './lib/prisma';
 import { getContentDispositionFilename } from './lib/utils';
 import type {
@@ -47,8 +48,8 @@ io.on('connection', (socket) => {
 			.findUnique({
 				where: { id: roomId },
 				include: {
-					messages: { include: { owner: true } },
-					queue: { include: { owner: true } },
+					messages: { include: { owner: true }, orderBy: { timestamp: 'asc' } },
+					queue: { include: { owner: true }, orderBy: { order: 'asc' } },
 				},
 			})
 			.then((syncRoom) => {
@@ -134,13 +135,18 @@ io.on('connection', (socket) => {
 		};
 
 		getMediaTitle()
-			.then((title) => {
+			.then(async (title) => {
 				const room = rooms.get(roomId);
 				const user = room?.users.get(socket.id);
 
 				if (!user) {
 					return;
 				}
+
+				const maxOrder = await prisma.syncMedia.aggregate({
+					where: { roomId },
+					_max: { order: true },
+				});
 
 				prisma.syncMedia
 					.create({
@@ -149,6 +155,7 @@ io.on('connection', (socket) => {
 							roomId: roomId,
 							url: url,
 							title: title,
+							order: (maxOrder._max.order ?? -1) + 1,
 						},
 					})
 					.then((media) => {
@@ -171,6 +178,31 @@ io.on('connection', (socket) => {
 				io.to(roomId).emit('dequeue-media', media.id);
 			})
 			.catch(console.error);
+	});
+
+	socket.on('order-media', async (roomId, from, to) => {
+		const room = await prisma.syncRoom.findUnique({ 
+			where: { id: roomId }, 
+			include: { queue: { orderBy: { order: 'asc' } } } 
+		});
+
+		if (!room) {
+			return;
+		}
+
+		const queue = arrayMove(room.queue, from, to);
+
+		// Update each item's order
+		await Promise.all(
+			queue.map((media, index) =>
+				prisma.syncMedia.update({
+					where: { id: media.id },
+					data: { order: index }
+				})
+			)
+		);
+
+		io.to(roomId).emit('order-media', from, to);
 	});
 
 	socket.on('chat-message', (roomId, content) => {
@@ -224,10 +256,7 @@ io.on('connection', (socket) => {
 });
 
 function handleLeaveRoom(
-	socket: {
-		id: string;
-		to: (room: string) => { emit: (event: string, data: unknown) => void };
-	},
+	socket: Socket,
 	roomId: string,
 ) {
 	const room = rooms.get(roomId);

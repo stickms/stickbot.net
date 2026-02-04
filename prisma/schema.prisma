@@ -38,6 +38,7 @@ model SyncMedia {
   id          String @id @unique @default(uuid())
   url         String
   title       String
+  order       Int
   owner       SyncUser @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId     String
   syncRoom    SyncRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)

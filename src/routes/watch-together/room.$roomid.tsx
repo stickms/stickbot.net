@@ -1,3 +1,6 @@
+import { DndContext, type DragEndEvent, useDroppable } from '@dnd-kit/core';
+import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 import { PlusSquareIcon, SendIcon, TrashIcon } from 'lucide-react';
@@ -15,6 +18,7 @@ import { ScrollArea } from '~/components/ui/scroll-area';
 import { prisma } from '~/lib/prisma';
 import { useRoom } from '~/lib/socket';
 import { type UserStore, useUserStore } from '~/lib/stores';
+import type { SocketQueueEntry } from '~/types';
 
 import '~/styles/chat-box.css';
 
@@ -121,12 +125,59 @@ function ChatBox({ roomId, user }: { roomId: string; user: UserStore }) {
 	);
 }
 
+function QueueEntry({ media, dequeue }: { media: SocketQueueEntry, dequeue: (id: string) => void }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({id: media.id});
+  
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+	return (
+		<Card
+			ref={setNodeRef}
+			className="flex justify-between items-center gap-1 text-left w-full py-1.5!"
+			style={style}
+			{...listeners}
+			{...attributes}
+		>
+			<span>
+				<a className="link" href={media.url}>
+					{media.title}
+				</a>
+			</span>
+			<span className="text-sm italic text-muted-foreground">
+				added by {media.user.username}
+			</span>
+			<Button variant="ghost" onClick={() => dequeue(media.id)}>
+				<TrashIcon className="text-destructive" />
+			</Button>
+		</Card>
+	);
+}
+
 function MediaQueue({ roomId, user }: { roomId: string; user: UserStore }) {
-	const { queue, queueMedia, dequeueMedia, sendMediaState } = useRoom(
+	const { queue, queueMedia, dequeueMedia, orderMedia, sendMediaState } = useRoom(
 		roomId,
 		user.id,
 		user.username,
 	);
+
+	const { setNodeRef } = useDroppable({
+    id: 'droppable',
+  });
+
+	const [ internalQueue, setInternalQueue ] = useState<SocketQueueEntry[]>([]);
+
+	useEffect(() => {
+		setInternalQueue(queue);
+	}, [queue]);
 
 	const inputRef = useRef<HTMLInputElement>(null);
 
@@ -146,6 +197,28 @@ function MediaQueue({ roomId, user }: { roomId: string; user: UserStore }) {
 
 		dequeueMedia(mediaId);
 	};
+
+	const onDragEnd = (event: DragEndEvent) => {
+		const {active, over} = event;
+
+		if (!over || active.id === over.id) {
+			return;
+		}
+    
+		const from = queue.findIndex((m) => m.id === active.id);
+		const to = queue.findIndex((m) => m.id === over.id);
+
+		if (from === -1 || to === -1) {
+			return;
+		}
+
+		if (from === 0 || to === 0) {
+			sendMediaState(undefined, 0);
+		}
+
+		setInternalQueue((prev) => arrayMove(prev, from, to));
+		orderMedia(from, to);
+	}
 
 	return (
 		<div className="flex flex-col gap-2 min-[850px]:col-start-2">
@@ -174,26 +247,17 @@ function MediaQueue({ roomId, user }: { roomId: string; user: UserStore }) {
 			</InputGroup>
 
 			{/* Queue List */}
-			<div className="flex flex-col gap-2">
-				{queue.map((media) => (
-					<Card
-						key={media.id}
-						className="flex justify-between items-center gap-1 text-left w-full py-1.5!"
-					>
-						<span>
-							<a className="link" href={media.url}>
-								{media.title}
-							</a>
-						</span>
-						<span className="text-sm italic text-muted-foreground">
-							added by {media.user.username}
-						</span>
-						<Button variant="ghost" onClick={() => dequeueSyncMedia(media.id)}>
-							<TrashIcon className="text-destructive" />
-						</Button>
+			<DndContext onDragEnd={onDragEnd}>
+				<SortableContext items={internalQueue} strategy={verticalListSortingStrategy}>
+					<Card ref={setNodeRef} className="flex flex-col gap-2">
+						{internalQueue.length ? internalQueue.map((media) => (
+							<QueueEntry key={media.id} media={media} dequeue={dequeueSyncMedia} />
+						)) : (
+							<span>Queue a video to get started!</span>
+						)}
 					</Card>
-				))}
-			</div>
+				</SortableContext>
+			</DndContext>
 		</div>
 	);
 }
