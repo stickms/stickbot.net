@@ -91,6 +91,7 @@ export function useRoom(roomId: string, userId: string | null, username: string 
 			socket.off('user-joined');
 			socket.off('user-left');
 			socket.off('chat-message');
+			socket.off('queue-media');
 		};
 	}, [socket, isConnected, roomId, userId, username]);
 

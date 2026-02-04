@@ -176,13 +176,18 @@ io.on('connection', (socket) => {
 			return;
 		}
 
-		if (state.playing) {
+		if (state.playing !== undefined) {
 			room.playing = state.playing;
 		}
 
-		if (state.curtime) {
+		if (state.curtime !== undefined) {
 			room.started = Date.now() - (state.curtime * 1000);
 		}
+
+		io.to(roomId).emit('media-state', {
+			playing: room.playing,
+			curtime: (Date.now() - room.started) / 1000
+		});
 	});
 });
 

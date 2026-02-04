@@ -166,13 +166,15 @@ function MediaPlayer({ roomId, user }: { roomId: string, user: UserStore }) {
 			return;
 		}
 
-		if (mediaState.playing) {
+		if (mediaState.playing && playerRef.current.paused) {
 			playerRef.current.play();
-		} else {
+		} else if (!mediaState.playing && !playerRef.current.paused) {
 			playerRef.current.pause();
 		}
 
-		playerRef.current.currentTime = (mediaState.curtime / 1000);		
+		if (Math.abs(playerRef.current.currentTime - mediaState.curtime) > 2.5) {
+			playerRef.current.currentTime = mediaState.curtime;
+		}
 	}, [mediaState.playing, mediaState.curtime]);
 
 	return (
@@ -187,7 +189,9 @@ function MediaPlayer({ roomId, user }: { roomId: string, user: UserStore }) {
 					autoPlay
 					muted
 					onPlay={() => sendMediaState(true, playerRef.current?.currentTime)}
-					onPause={() => sendMediaState(false, playerRef.current?.currentTime)}
+					onPause={() => {
+						sendMediaState(playerRef.current?.seeking ? undefined : false, playerRef.current?.currentTime);
+					}}
 				/>
 			)}
 		</Card>
