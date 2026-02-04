@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "pnpm run dev:socket & pnpm run dev:web",
+    "dev": "run-p dev:socket dev:web",
     "dev:web": "vite dev",
     "dev:socket": "tsx watch src/socket-server.ts",
     "build": "vite build",
@@ -56,6 +56,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.2",
     "dotenv": "^17.2.3",
+    "npm-run-all": "^4.1.5",
     "prisma": "^7.3.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",

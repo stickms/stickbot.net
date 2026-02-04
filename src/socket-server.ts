@@ -2,7 +2,7 @@ import { createServer } from 'node:http';
 import { Server } from 'socket.io';
 import { prisma } from './lib/prisma';
 import { getContentDispositionFilename } from './lib/utils';
-import type { ClientToServerEvents, ServerToClientEvents, SocketChatMessage, SocketUser } from './types';
+import type { ClientToServerEvents, ServerToClientEvents, SocketChatMessage, SocketQueueEntry, SocketUser } from './types';
 
 const httpServer = createServer();
 
@@ -15,6 +15,8 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
 
 interface Room {
 	users: Map<string, SocketUser>;
+	playing: boolean;
+	started: number;
 }
 
 const rooms = new Map<string, Room>();
@@ -26,7 +28,7 @@ io.on('connection', (socket) => {
 		socket.join(roomId);
 
 		if (!rooms.has(roomId)) {
-			rooms.set(roomId, { users: new Map() });
+			rooms.set(roomId, { users: new Map(), playing: false, started: 0 });
 		}
 
 		// biome-ignore lint/style/noNonNullAssertion: false positive
@@ -35,7 +37,7 @@ io.on('connection', (socket) => {
 
 		socket.to(roomId).emit('user-joined', user);
 
-		prisma.syncRoom.findUnique({ where: { id: roomId }, include: { messages: { include: { owner: true } } } })
+		prisma.syncRoom.findUnique({ where: { id: roomId }, include: { messages: { include: { owner: true } }, queue: { include: { owner: true } } } })
 			.then((syncRoom) => {
 				const messages: SocketChatMessage[] = syncRoom?.messages.map((message) => ({
 					id: message.id,
@@ -44,9 +46,22 @@ io.on('connection', (socket) => {
 					timestamp: message.timestamp.getMilliseconds()
 				})) ?? [];
 
+				const queue: SocketQueueEntry[] = syncRoom?.queue.map((media) => ({
+					id: media.id,
+					user: media.owner,
+					url: media.url,
+					title: media.title,
+				})) ?? [];
+
 				socket.emit('room-state', {
 					users: Array.from(room.users.values()),
-					messages: messages
+					messages: messages,
+					queue: queue
+				});
+
+				socket.emit('media-state', {
+					playing: room.playing,
+					curtime: Date.now() - room.started
 				});
 			});
 
@@ -105,12 +120,24 @@ io.on('connection', (socket) => {
 					return;
 				}
 
-				io.to(roomId).emit('queue-media', {
-					id: Date.now().toString(),
-					title: title,
-					url: url,
-					owner: user
-				});
+				prisma.syncMedia.create({
+					data: {
+						ownerId: user.id,
+						roomId: roomId,
+						url: url,
+						title: title
+					}
+				})
+					.then((media) => {
+						io.to(roomId).emit('queue-media', {
+							id: media.id,
+							title: title,
+							url: url,
+							user: user
+						});
+					})
+					.catch(console.error);
+
 			})
 			.catch(console.error);
 	});
@@ -139,6 +166,23 @@ io.on('connection', (socket) => {
 				});
 			})
 			.catch(console.error);
+	});
+
+	socket.on('media-state', (roomId, state) => {
+		const room = rooms.get(roomId);
+		const user = room?.users.get(socket.id);
+
+		if (!room || !user) {
+			return;
+		}
+
+		if (state.playing) {
+			room.playing = state.playing;
+		}
+
+		if (state.curtime) {
+			room.started = Date.now() - (state.curtime * 1000);
+		}
 	});
 });
 

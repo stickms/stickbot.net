@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-type UserStore = {
+export type UserStore = {
   id: string | null;
   username: string | null;
   setId: (arg: string | null) => void,

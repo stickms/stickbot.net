@@ -12,6 +12,7 @@ model SyncUser {
   username    String
   ownedRooms  SyncRoom[]
   messages    SyncMessage[]
+  media       SyncMedia[]
 }
 
 model SyncRoom {
@@ -19,7 +20,7 @@ model SyncRoom {
   name        String
   owner       SyncUser @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId     String
-  queue       String[]
+  queue       SyncMedia[]
   messages    SyncMessage[]
 }
 
@@ -31,4 +32,14 @@ model SyncMessage {
   roomId      String
   owner       SyncUser @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId     String   
+}
+
+model SyncMedia {
+  id          String @id @unique @default(uuid())
+  url         String
+  title       String
+  owner       SyncUser @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId     String
+  syncRoom    SyncRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  roomId      String
 }

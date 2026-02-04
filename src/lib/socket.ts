@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { io, type Socket } from 'socket.io-client';
-import type { ClientToServerEvents, ServerToClientEvents, SocketChatMessage, SocketQueueEntry, SocketUser } from '~/types';
+import type { ClientToServerEvents, ServerToClientEvents, SocketChatMessage, SocketMediaState, SocketQueueEntry, SocketUser } from '~/types';
 
 const SOCKET_URL = 'http://localhost:3001';
 
@@ -41,6 +41,7 @@ export function useRoom(roomId: string, userId: string | null, username: string 
 	const [users, setUsers] = useState<SocketUser[]>([]);
 	const [messages, setMessages] = useState<SocketChatMessage[]>([]);
 	const [queue, setQueue] = useState<SocketQueueEntry[]>([]);
+	const [mediaState, setMediaState] = useState<SocketMediaState>({ playing: false, started: 0, curtime: 0});
 
 	useEffect(() => {
 		if (!socket || !isConnected || !userId || !username) return;
@@ -51,6 +52,16 @@ export function useRoom(roomId: string, userId: string | null, username: string 
 			state.users && setUsers(state.users);
 			state.messages && setMessages(state.messages);
 			state.queue && setQueue(state.queue);
+		});
+
+		socket.on('media-state', (state) => {
+			console.log(`socket: ${state.playing}, ${state.curtime}`)
+
+			setMediaState((prev) => ({
+				...prev,
+				playing: state.playing ?? prev.playing,
+				curtime: state.curtime ?? prev.curtime
+			}));
 		});
 
 		socket.on('user-joined', (user: SocketUser) => {
@@ -76,6 +87,7 @@ export function useRoom(roomId: string, userId: string | null, username: string 
 		return () => {
 			socket.emit('leave-room', roomId);
 			socket.off('room-state');
+			socket.off('media-state');
 			socket.off('user-joined');
 			socket.off('user-left');
 			socket.off('chat-message');
@@ -94,12 +106,20 @@ export function useRoom(roomId: string, userId: string | null, username: string 
 		}
 	};
 
+	const sendMediaState = (playing?: boolean, curtime?: number) => {
+		if (socket && isConnected) {
+			socket.emit('media-state', roomId, { playing, curtime });
+		}
+	}
+
 	return {
 		users,
 		messages,
 		queue,
+		mediaState,
 		sendMessage,
 		queueMedia,
+		sendMediaState,
 		isConnected
 	};
 }
