@@ -165,8 +165,7 @@ io.on('connection', (socket) => {
 							url: url,
 							user: user,
 						});
-					})
-					.catch(console.error);
+					});
 			})
 			.catch(console.error);
 	});
@@ -181,9 +180,9 @@ io.on('connection', (socket) => {
 	});
 
 	socket.on('order-media', async (roomId, from, to) => {
-		const room = await prisma.syncRoom.findUnique({ 
-			where: { id: roomId }, 
-			include: { queue: { orderBy: { order: 'asc' } } } 
+		const room = await prisma.syncRoom.findUnique({
+			where: { id: roomId },
+			include: { queue: { orderBy: { order: 'asc' } } },
 		});
 
 		if (!room) {
@@ -197,9 +196,9 @@ io.on('connection', (socket) => {
 			queue.map((media, index) =>
 				prisma.syncMedia.update({
 					where: { id: media.id },
-					data: { order: index }
-				})
-			)
+					data: { order: index },
+				}),
+			),
 		);
 
 		io.to(roomId).emit('order-media', from, to);
@@ -255,10 +254,7 @@ io.on('connection', (socket) => {
 	});
 });
 
-function handleLeaveRoom(
-	socket: Socket,
-	roomId: string,
-) {
+function handleLeaveRoom(socket: Socket, roomId: string) {
 	const room = rooms.get(roomId);
 	if (!room) return;
 

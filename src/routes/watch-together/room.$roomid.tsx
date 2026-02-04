@@ -1,5 +1,23 @@
-import { DndContext, type DragEndEvent, useDroppable } from '@dnd-kit/core';
-import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import {
+	DndContext,
+	type DragEndEvent,
+	MouseSensor,
+	rectIntersection,
+	TouchSensor,
+	useDroppable,
+	useSensor,
+	useSensors,
+} from '@dnd-kit/core';
+import {
+	restrictToParentElement,
+	restrictToVerticalAxis,
+} from '@dnd-kit/modifiers';
+import {
+	arrayMove,
+	SortableContext,
+	useSortable,
+	verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
@@ -43,12 +61,12 @@ export const Route = createFileRoute('/watch-together/room/$roomid')({
 	ssr: false,
 });
 
-function ChatBox({ roomId, user }: { roomId: string; user: UserStore }) {
+function ChatBox({ room, user }: { room: { id: string, ownerId: string }; user: UserStore }) {
 	const inputRef = useRef<HTMLInputElement>(null);
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 
 	const { users, messages, sendMessage } = useRoom(
-		roomId,
+		room.id,
 		user.id,
 		user.username,
 	);
@@ -79,7 +97,16 @@ function ChatBox({ roomId, user }: { roomId: string; user: UserStore }) {
 									index === arr.findIndex((e) => e.id === u.id),
 							)
 							.map(({ id, username }) => (
-								<span key={id}>{username}</span>
+								<span
+									key={id}
+									style={{
+										color: room.ownerId === id
+											? 'var(--color-primary)'
+											: undefined
+									}}
+								>
+									{username}
+								</span>
 							))}
 					</div>
 				</ScrollArea>
@@ -90,9 +117,18 @@ function ChatBox({ roomId, user }: { roomId: string; user: UserStore }) {
 				>
 					<div className="flex flex-col w-full text-left gap-2">
 						{messages.map(({ id, user, content }) => (
-							<span key={id}>
-								{user.username} : {content}
-							</span>
+							<div key={id}>
+								<span
+									style={{
+										color: room.ownerId === user.id
+											? 'var(--color-primary)'
+											: undefined
+									}}
+								>
+									{user.username}
+								</span>
+								<span> : {content}</span>
+							</div>
 						))}
 						<div ref={messagesEndRef} />
 					</div>
@@ -125,37 +161,53 @@ function ChatBox({ roomId, user }: { roomId: string; user: UserStore }) {
 	);
 }
 
-function QueueEntry({ media, dequeue }: { media: SocketQueueEntry, dequeue: (id: string) => void }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({id: media.id});
-  
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
+function QueueEntry({
+	media,
+	dequeue,
+}: {
+	media: SocketQueueEntry;
+	dequeue: (id: string) => void;
+}) {
+	const {
+		isDragging,
+		attributes,
+		listeners,
+		setNodeRef,
+		transform,
+		transition,
+	} = useSortable({ id: media.id });
+
+	const style = {
+		transform: CSS.Transform.toString(transform),
+		transition,
+	};
 
 	return (
 		<Card
 			ref={setNodeRef}
 			className="flex justify-between items-center gap-1 text-left w-full py-1.5!"
-			style={style}
+			style={{ ...style, pointerEvents: isDragging ? 'none' : 'auto' }}
 			{...listeners}
 			{...attributes}
 		>
 			<span>
-				<a className="link" href={media.url}>
+				<a
+					className="link"
+					href={media.url}
+					target="_blank"
+					rel="noopener noreferrer"
+				>
 					{media.title}
 				</a>
 			</span>
 			<span className="text-sm italic text-muted-foreground">
 				added by {media.user.username}
 			</span>
-			<Button variant="ghost" onClick={() => dequeue(media.id)}>
+			<Button
+				variant="ghost"
+				onClick={() => dequeue(media.id)}
+				disabled={isDragging}
+			>
 				<TrashIcon className="text-destructive" />
 			</Button>
 		</Card>
@@ -163,23 +215,34 @@ function QueueEntry({ media, dequeue }: { media: SocketQueueEntry, dequeue: (id:
 }
 
 function MediaQueue({ roomId, user }: { roomId: string; user: UserStore }) {
-	const { queue, queueMedia, dequeueMedia, orderMedia, sendMediaState } = useRoom(
-		roomId,
-		user.id,
-		user.username,
-	);
+	const inputRef = useRef<HTMLInputElement>(null);
+
+	const { queue, queueMedia, dequeueMedia, orderMedia, sendMediaState } =
+		useRoom(roomId, user.id, user.username);
 
 	const { setNodeRef } = useDroppable({
-    id: 'droppable',
-  });
+		id: 'droppable',
+	});
 
-	const [ internalQueue, setInternalQueue ] = useState<SocketQueueEntry[]>([]);
+	const [internalQueue, setInternalQueue] = useState<SocketQueueEntry[]>([]);
+
+	const mouseSensor = useSensor(MouseSensor, {
+		activationConstraint: {
+			distance: 10,
+		},
+	});
+
+	const touchSensor = useSensor(TouchSensor, {
+		activationConstraint: {
+			delay: 250,
+			tolerance: 5,
+		},
+	});
+	const sensors = useSensors(mouseSensor, touchSensor);
 
 	useEffect(() => {
 		setInternalQueue(queue);
 	}, [queue]);
-
-	const inputRef = useRef<HTMLInputElement>(null);
 
 	const queueSyncMedia = () => {
 		if (!inputRef.current?.value) {
@@ -199,12 +262,12 @@ function MediaQueue({ roomId, user }: { roomId: string; user: UserStore }) {
 	};
 
 	const onDragEnd = (event: DragEndEvent) => {
-		const {active, over} = event;
+		const { active, over } = event;
 
 		if (!over || active.id === over.id) {
 			return;
 		}
-    
+
 		const from = queue.findIndex((m) => m.id === active.id);
 		const to = queue.findIndex((m) => m.id === over.id);
 
@@ -218,7 +281,7 @@ function MediaQueue({ roomId, user }: { roomId: string; user: UserStore }) {
 
 		setInternalQueue((prev) => arrayMove(prev, from, to));
 		orderMedia(from, to);
-	}
+	};
 
 	return (
 		<div className="flex flex-col gap-2 min-[850px]:col-start-2">
@@ -247,12 +310,26 @@ function MediaQueue({ roomId, user }: { roomId: string; user: UserStore }) {
 			</InputGroup>
 
 			{/* Queue List */}
-			<DndContext onDragEnd={onDragEnd}>
-				<SortableContext items={internalQueue} strategy={verticalListSortingStrategy}>
+			<DndContext
+				collisionDetection={rectIntersection}
+				modifiers={[restrictToParentElement, restrictToVerticalAxis]}
+				sensors={sensors}
+				onDragEnd={onDragEnd}
+			>
+				<SortableContext
+					items={internalQueue}
+					strategy={verticalListSortingStrategy}
+				>
 					<Card ref={setNodeRef} className="flex flex-col gap-2">
-						{internalQueue.length ? internalQueue.map((media) => (
-							<QueueEntry key={media.id} media={media} dequeue={dequeueSyncMedia} />
-						)) : (
+						{internalQueue.length ? (
+							internalQueue.map((media) => (
+								<QueueEntry
+									key={media.id}
+									media={media}
+									dequeue={dequeueSyncMedia}
+								/>
+							))
+						) : (
 							<span>Queue a video to get started!</span>
 						)}
 					</Card>
@@ -357,7 +434,7 @@ function RouteComponent() {
 				<MediaQueue roomId={room.id} user={user} />
 
 				{/* Chat message box */}
-				<ChatBox roomId={room.id} user={user} />
+				<ChatBox room={room} user={user} />
 			</div>
 		</div>
 	);
