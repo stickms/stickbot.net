@@ -8,6 +8,7 @@
 
 .chat-box-users {
   grid-area: 1 / 1 / 7 / 2;
+  border-right: 1px solid var(--color-muted);
 }
 
 .chat-box-messages {

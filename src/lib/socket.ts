@@ -92,7 +92,7 @@ export function useRoom(
 
 		socket.on('dequeue-media', (id: string) => {
 			setQueue((prev) => prev.filter((media) => media.id !== id));
-		})
+		});
 
 		return () => {
 			socket.emit('leave-room', roomId);

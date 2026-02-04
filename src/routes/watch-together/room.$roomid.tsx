@@ -122,7 +122,11 @@ function ChatBox({ roomId, user }: { roomId: string; user: UserStore }) {
 }
 
 function MediaQueue({ roomId, user }: { roomId: string; user: UserStore }) {
-	const { queue, queueMedia, dequeueMedia, sendMediaState } = useRoom(roomId, user.id, user.username);
+	const { queue, queueMedia, dequeueMedia, sendMediaState } = useRoom(
+		roomId,
+		user.id,
+		user.username,
+	);
 
 	const inputRef = useRef<HTMLInputElement>(null);
 
@@ -184,8 +188,8 @@ function MediaQueue({ roomId, user }: { roomId: string; user: UserStore }) {
 						<span className="text-sm italic text-muted-foreground">
 							added by {media.user.username}
 						</span>
-						<Button variant='ghost' onClick={() => dequeueSyncMedia(media.id)}>
-							<TrashIcon className='text-destructive' />
+						<Button variant="ghost" onClick={() => dequeueSyncMedia(media.id)}>
+							<TrashIcon className="text-destructive" />
 						</Button>
 					</Card>
 				))}
