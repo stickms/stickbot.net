@@ -5,6 +5,7 @@ export interface ServerToClientEvents {
 	'media-state': (state: SocketMediaState) => void;
 	'chat-message': (message: SocketChatMessage) => void;
 	'queue-media': (media: SocketQueueEntry) => void;
+	'dequeue-media': (mediaId: string) => void;
 }
 
 export interface ClientToServerEvents {
@@ -13,6 +14,7 @@ export interface ClientToServerEvents {
 	'chat-message': (roomId: string, content: string) => void;
 	'queue-media': (roomId: string, url: string) => void;
 	'media-state': (roomId: string, state: Partial<SocketMediaState>) => void;
+	'dequeue-media': (roomId: string, mediaId: string) => void;
 }
 
 export type SocketUser = {

@@ -1,9 +1,10 @@
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
-import { PlusSquareIcon, SendIcon } from 'lucide-react';
+import { PlusSquareIcon, SendIcon, TrashIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import ReactPlayer from 'react-player';
 import { Card } from '~/components/card';
+import { Button } from '~/components/ui/button';
 import {
 	InputGroup,
 	InputGroupAddon,
@@ -121,7 +122,7 @@ function ChatBox({ roomId, user }: { roomId: string; user: UserStore }) {
 }
 
 function MediaQueue({ roomId, user }: { roomId: string; user: UserStore }) {
-	const { queue, queueMedia } = useRoom(roomId, user.id, user.username);
+	const { queue, queueMedia, dequeueMedia, sendMediaState } = useRoom(roomId, user.id, user.username);
 
 	const inputRef = useRef<HTMLInputElement>(null);
 
@@ -132,6 +133,14 @@ function MediaQueue({ roomId, user }: { roomId: string; user: UserStore }) {
 
 		queueMedia(inputRef.current.value);
 		inputRef.current.value = '';
+	};
+
+	const dequeueSyncMedia = (mediaId: string) => {
+		if (mediaId === queue[0]?.id) {
+			sendMediaState(undefined, 0);
+		}
+
+		dequeueMedia(mediaId);
 	};
 
 	return (
@@ -175,6 +184,9 @@ function MediaQueue({ roomId, user }: { roomId: string; user: UserStore }) {
 						<span className="text-sm italic text-muted-foreground">
 							added by {media.user.username}
 						</span>
+						<Button variant='ghost' onClick={() => dequeueSyncMedia(media.id)}>
+							<TrashIcon className='text-destructive' />
+						</Button>
 					</Card>
 				))}
 			</div>
@@ -184,7 +196,7 @@ function MediaQueue({ roomId, user }: { roomId: string; user: UserStore }) {
 
 function MediaPlayer({ roomId, user }: { roomId: string; user: UserStore }) {
 	const playerRef = useRef<HTMLVideoElement>(null);
-	const { queue, mediaState, sendMediaState } = useRoom(
+	const { queue, mediaState, dequeueMedia, sendMediaState } = useRoom(
 		roomId,
 		user.id,
 		user.username,
@@ -233,6 +245,12 @@ function MediaPlayer({ roomId, user }: { roomId: string; user: UserStore }) {
 					autoPlay
 					muted
 					onReady={onReady}
+					onEnded={() => {
+						if (playerRef.current) {
+							sendMediaState(undefined, 0);
+							dequeueMedia(queue[0].id);
+						}
+					}}
 					onPlay={() =>
 						ready && sendMediaState(true, playerRef.current?.currentTime)
 					}

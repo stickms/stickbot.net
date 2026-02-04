@@ -70,11 +70,11 @@ export function useRoom(
 			setMediaState(state);
 		});
 
-		socket.on('user-joined', (user: SocketUser) => {
+		socket.on('user-joined', (user) => {
 			setUsers((prev) => [...prev, user]);
 		});
 
-		socket.on('user-left', (user: SocketUser) => {
+		socket.on('user-left', (user) => {
 			// Delete first instance (just in case a user joins multiple times)
 			setUsers((prev) => {
 				const index = prev.findIndex((u) => u.id === user.id);
@@ -82,13 +82,17 @@ export function useRoom(
 			});
 		});
 
-		socket.on('chat-message', (message: SocketChatMessage) => {
+		socket.on('chat-message', (message) => {
 			setMessages((prev) => [...prev, message]);
 		});
 
-		socket.on('queue-media', (media: SocketQueueEntry) => {
+		socket.on('queue-media', (media) => {
 			setQueue((prev) => [...prev, media]);
 		});
+
+		socket.on('dequeue-media', (id: string) => {
+			setQueue((prev) => prev.filter((media) => media.id !== id));
+		})
 
 		return () => {
 			socket.emit('leave-room', roomId);
@@ -98,6 +102,7 @@ export function useRoom(
 			socket.off('user-left');
 			socket.off('chat-message');
 			socket.off('queue-media');
+			socket.off('dequeue-media');
 		};
 	}, [socket, isConnected, roomId, userId, username]);
 
@@ -110,6 +115,12 @@ export function useRoom(
 	const queueMedia = (url: string) => {
 		if (socket && isConnected) {
 			socket.emit('queue-media', roomId, url);
+		}
+	};
+
+	const dequeueMedia = (mediaId: string) => {
+		if (socket && isConnected) {
+			socket.emit('dequeue-media', roomId, mediaId);
 		}
 	};
 
@@ -126,6 +137,7 @@ export function useRoom(
 		mediaState,
 		sendMessage,
 		queueMedia,
+		dequeueMedia,
 		sendMediaState,
 		isConnected,
 	};

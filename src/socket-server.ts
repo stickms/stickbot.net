@@ -164,6 +164,15 @@ io.on('connection', (socket) => {
 			.catch(console.error);
 	});
 
+	socket.on('dequeue-media', (roomId, mediaId) => {
+		prisma.syncMedia
+			.delete({ where: { id: mediaId } })
+			.then((media) => {
+				io.to(roomId).emit('dequeue-media', media.id);
+			})
+			.catch(console.error);
+	});
+
 	socket.on('chat-message', (roomId, content) => {
 		const room = rooms.get(roomId);
 		const user = room?.users.get(socket.id);
