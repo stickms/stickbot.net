@@ -5,6 +5,7 @@ import { LoaderCircle, LogInIcon, SquarePlus } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import type { SyncRoom, SyncUser } from '~/.generated/prisma/client';
 import { Card } from '~/components/card';
+import { InputButton } from '~/components/input-button';
 import { Button } from '~/components/ui/button';
 import {
 	Field,
@@ -92,28 +93,12 @@ function LogIn() {
 	return (
 		<Field className="w-80 max-w-[90vw]">
 			<FieldLabel htmlFor="username">Username</FieldLabel>
-			<InputGroup className="w-96">
-				<InputGroupInput
-					id="username"
-					ref={inputRef}
-					onKeyDown={(e) => {
-						if (e.key === 'Enter') {
-							login();
-						}
-					}}
-				/>
-				<InputGroupAddon align="inline-end">
-					<InputGroupButton
-						aria-label="Login"
-						title="Login"
-						size="icon-xs"
-						variant="secondary"
-						onClick={login}
-					>
-						<LogInIcon />
-					</InputGroupButton>
-				</InputGroupAddon>
-			</InputGroup>
+			<InputButton
+				id="username"
+				ref={inputRef}
+				onSubmit={login}
+				icon={<LogInIcon />}
+			/>
 			<FieldDescription className="text-left">
 				Enter a username to create or browse rooms!
 			</FieldDescription>

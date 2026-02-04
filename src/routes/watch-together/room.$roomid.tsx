@@ -25,13 +25,8 @@ import { PlusSquareIcon, SendIcon, TrashIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import ReactPlayer from 'react-player';
 import { Card } from '~/components/card';
+import { InputButton } from '~/components/input-button';
 import { Button } from '~/components/ui/button';
-import {
-	InputGroup,
-	InputGroupAddon,
-	InputGroupButton,
-	InputGroupInput,
-} from '~/components/ui/input-group';
 import { ScrollArea } from '~/components/ui/scroll-area';
 import { prisma } from '~/lib/prisma';
 import { useRoom } from '~/lib/socket';
@@ -61,7 +56,13 @@ export const Route = createFileRoute('/watch-together/room/$roomid')({
 	ssr: false,
 });
 
-function ChatBox({ room, user }: { room: { id: string, ownerId: string }; user: UserStore }) {
+function ChatBox({
+	room,
+	user,
+}: {
+	room: { id: string; ownerId: string };
+	user: UserStore;
+}) {
 	const inputRef = useRef<HTMLInputElement>(null);
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -100,9 +101,8 @@ function ChatBox({ room, user }: { room: { id: string, ownerId: string }; user: 
 								<span
 									key={id}
 									style={{
-										color: room.ownerId === id
-											? 'var(--color-primary)'
-											: undefined
+										color:
+											room.ownerId === id ? 'var(--color-primary)' : undefined,
 									}}
 								>
 									{username}
@@ -120,9 +120,10 @@ function ChatBox({ room, user }: { room: { id: string, ownerId: string }; user: 
 							<div key={id}>
 								<span
 									style={{
-										color: room.ownerId === user.id
-											? 'var(--color-primary)'
-											: undefined
+										color:
+											room.ownerId === user.id
+												? 'var(--color-primary)'
+												: undefined,
 									}}
 								>
 									{user.username}
@@ -134,28 +135,13 @@ function ChatBox({ room, user }: { room: { id: string, ownerId: string }; user: 
 					</div>
 				</ScrollArea>
 
-				<InputGroup className="chat-box-input">
-					<InputGroupInput
-						placeholder="Send a message..."
-						ref={inputRef}
-						onKeyDown={(e) => {
-							if (e.key === 'Enter') {
-								sendSyncMessage();
-							}
-						}}
-					/>
-					<InputGroupAddon align="inline-end">
-						<InputGroupButton
-							aria-label="Send Message"
-							title="Send Message"
-							size="icon-xs"
-							variant="secondary"
-							onClick={sendSyncMessage}
-						>
-							<SendIcon />
-						</InputGroupButton>
-					</InputGroupAddon>
-				</InputGroup>
+				<InputButton
+					className="chat-box-input"
+					placeholder="Send a message..."
+					ref={inputRef}
+					icon={<SendIcon />}
+					onSubmit={sendSyncMessage}
+				/>
 			</Card>
 		</div>
 	);
@@ -286,28 +272,13 @@ function MediaQueue({ roomId, user }: { roomId: string; user: UserStore }) {
 	return (
 		<div className="flex flex-col gap-2 min-[850px]:col-start-2">
 			{/* Media Queue Input */}
-			<InputGroup className="w-full">
-				<InputGroupInput
-					placeholder="Enter media url..."
-					ref={inputRef}
-					onKeyDown={(e) => {
-						if (e.key === 'Enter') {
-							queueSyncMedia();
-						}
-					}}
-				/>
-				<InputGroupAddon align="inline-end">
-					<InputGroupButton
-						aria-label="Add to Queue"
-						title="Add to Queue"
-						size="icon-xs"
-						variant="secondary"
-						onClick={queueSyncMedia}
-					>
-						<PlusSquareIcon />
-					</InputGroupButton>
-				</InputGroupAddon>
-			</InputGroup>
+			<InputButton
+				className="w-full"
+				placeholder="Enter media url..."
+				ref={inputRef}
+				icon={<PlusSquareIcon />}
+				onSubmit={queueSyncMedia}
+			/>
 
 			{/* Queue List */}
 			<DndContext
