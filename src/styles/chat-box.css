@@ -1,0 +1,19 @@
+.chat-box {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(6, minmax(0, 1fr)) auto;
+  grid-column-gap: 8px;
+  grid-row-gap: 8px;
+}
+
+.chat-box-users {
+  grid-area: 1 / 1 / 7 / 2;
+}
+
+.chat-box-messages {
+  grid-area: 1 / 2 / 7 / 5;
+}
+
+.chat-box-input {
+  grid-area: 7 / 1 / 7 / 5;
+}

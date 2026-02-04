@@ -1,46 +1,56 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { io, type Socket } from 'socket.io-client';
-import type { ClientToServerEvents, ServerToClientEvents, SocketChatMessage, SocketUser } from '~/types';
+import type { ClientToServerEvents, ServerToClientEvents, SocketChatMessage, SocketQueueEntry, SocketUser } from '~/types';
 
 const SOCKET_URL = 'http://localhost:3001';
 
+// Singleton socket instance
+let socketInstance: Socket<ServerToClientEvents, ClientToServerEvents> | null = null;
+
+function getSocket() {
+	if (!socketInstance) {
+		socketInstance = io(SOCKET_URL);
+	}
+	return socketInstance;
+}
+
 export function useSocket() {
-	const socketRef = useRef<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
 	const [isConnected, setIsConnected] = useState(false);
 
 	useEffect(() => {
-		const socket = io(SOCKET_URL);
-		socketRef.current = socket;
+		const socket = getSocket();
 
-		socket.on('connect', () => {
-			setIsConnected(true);
-		});
+		const onConnect = () => setIsConnected(true);
+		const onDisconnect = () => setIsConnected(false);
 
-		socket.on('disconnect', () => {
-			setIsConnected(false);
-		});
+		socket.on('connect', onConnect);
+		socket.on('disconnect', onDisconnect);
+		setIsConnected(socket.connected);
 
 		return () => {
-			socket.disconnect();
+			socket.off('connect', onConnect);
+			socket.off('disconnect', onDisconnect);
 		};
 	}, []);
 
-	return { socket: socketRef.current, isConnected };
+	return { socket: getSocket(), isConnected };
 }
 
 export function useRoom(roomId: string, userId: string | null, username: string | null) {
 	const { socket, isConnected } = useSocket();
 	const [users, setUsers] = useState<SocketUser[]>([]);
 	const [messages, setMessages] = useState<SocketChatMessage[]>([]);
+	const [queue, setQueue] = useState<SocketQueueEntry[]>([]);
 
 	useEffect(() => {
 		if (!socket || !isConnected || !userId || !username) return;
 
 		socket.emit('join-room', roomId, { id: userId, username: username });
 
-		socket.on('room-state', ({ users, messages }: { users: SocketUser[]; messages: SocketChatMessage[] }) => {
-			setUsers(users);
-			setMessages(messages);
+		socket.on('room-state', (state) => {
+			state.users && setUsers(state.users);
+			state.messages && setMessages(state.messages);
+			state.queue && setQueue(state.queue);
 		});
 
 		socket.on('user-joined', (user: SocketUser) => {
@@ -48,11 +58,19 @@ export function useRoom(roomId: string, userId: string | null, username: string 
 		});
 
 		socket.on('user-left', (user: SocketUser) => {
-			setUsers((prev) => prev.filter((u) => u.id !== user.id));
+			// Delete first instance (just in case a user joins multiple times)
+			setUsers((prev) => {
+				const index = prev.findIndex((u) => u.id === user.id);
+				return index !== -1 ? prev.slice(index) : prev;
+			});
 		});
 
 		socket.on('chat-message', (message: SocketChatMessage) => {
 			setMessages((prev) => [...prev, message]);
+		});
+
+		socket.on('queue-media', (media: SocketQueueEntry) => {
+			setQueue((prev) => [...prev, media]);
 		});
 
 		return () => {
@@ -70,10 +88,18 @@ export function useRoom(roomId: string, userId: string | null, username: string 
 		}
 	};
 
+	const queueMedia = (url: string) => {
+		if (socket && isConnected) {
+			socket.emit('queue-media', roomId, url);
+		}
+	};
+
 	return {
 		users,
 		messages,
+		queue,
 		sendMessage,
+		queueMedia,
 		isConnected
 	};
 }

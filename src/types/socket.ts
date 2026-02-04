@@ -2,13 +2,16 @@ export interface ServerToClientEvents {
   'user-joined': (user: SocketUser) => void;
   'user-left': (user: SocketUser) => void;
   'room-state': (state: Partial<SocketRoomState>) => void;
+  'media-state': (state: Partial<SocketMediaState>) => void;
   'chat-message': ( message: SocketChatMessage ) => void;
+  'queue-media': ( media: SocketQueueEntry ) => void;
 }
 
 export interface ClientToServerEvents {
   'join-room': ( roomId: string, user: SocketUser ) => void;
   'leave-room': ( roomId: string ) => void;
   'chat-message': ( roomId: string, content: string ) => void;
+  'queue-media': ( roomId: string, url: string ) => void;
 }
 
 export type SocketUser = {
@@ -24,7 +27,8 @@ export type SocketChatMessage = {
 }
 
 export type SocketQueueEntry = {
-  name: string;
+  id: string;
+  title: string;
   url: string;
   owner: SocketUser;
 }
@@ -35,7 +39,7 @@ export type SocketRoomState = {
   queue: SocketQueueEntry[]
 }
 
-export type SocketVideoState = {
+export type SocketMediaState = {
   media: SocketQueueEntry,
   playing: boolean,
   curtime: number

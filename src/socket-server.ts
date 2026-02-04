@@ -1,6 +1,7 @@
 import { createServer } from 'node:http';
 import { Server } from 'socket.io';
 import { prisma } from './lib/prisma';
+import { getContentDispositionFilename } from './lib/utils';
 import type { ClientToServerEvents, ServerToClientEvents, SocketChatMessage, SocketUser } from './types';
 
 const httpServer = createServer();
@@ -67,28 +68,77 @@ io.on('connection', (socket) => {
 		console.log('Client disconnected:', socket.id);
 	});
 
+	socket.on('queue-media', (roomId, url) => {
+		const getMediaTitle = async () => {
+			if (!URL.parse(url)) {
+				throw new Error('Invalid URL');
+			}
+
+			const noembed_res = await fetch(`https://noembed.com/embed?url=${url}`);
+			const json = await noembed_res.json();
+
+			if (!noembed_res.ok || json.error) {
+				const head_res = await fetch(url, { method: 'HEAD' });
+
+				if (!head_res.ok) {
+					throw new Error('Could not get URL data');
+				}
+
+				const contentType = head_res.headers.get('content-type');
+
+				if (!contentType?.startsWith('audio/') && !contentType?.startsWith('video/')) {
+					throw new Error('Unsupported media type');
+				}
+
+				return getContentDispositionFilename(head_res.headers.get('content-disposition')) ?? 'Unknown Title';
+			}
+
+			return json.title ?? 'Unknown Title';
+		};
+
+		getMediaTitle()
+			.then((title) => {
+				const room = rooms.get(roomId);
+				const user = room?.users.get(socket.id);
+
+				if (!user) {
+					return;
+				}
+
+				io.to(roomId).emit('queue-media', {
+					id: Date.now().toString(),
+					title: title,
+					url: url,
+					owner: user
+				});
+			})
+			.catch(console.error);
+	});
+
 	socket.on('chat-message', (roomId, content) => {
 		const room = rooms.get(roomId);
 		const user = room?.users.get(socket.id);
-		
-		if (user) {
-			prisma.syncMessage.create({
-				data: {
-					ownerId: user.id,
-					roomId: roomId,
-					content: content
-				}
-			})
-				.then((message) => {
-					io.to(roomId).emit('chat-message', {
-						id: message.id,
-						user: user,
-						content,
-						timestamp: Date.now(),
-					});
-				})
-				.catch(console.error);
+
+		if (!user) {
+			return;
 		}
+		
+		prisma.syncMessage.create({
+			data: {
+				ownerId: user.id,
+				roomId: roomId,
+				content: content
+			}
+		})
+			.then((message) => {
+				io.to(roomId).emit('chat-message', {
+					id: message.id,
+					user: user,
+					content,
+					timestamp: Date.now(),
+				});
+			})
+			.catch(console.error);
 	});
 });
 
