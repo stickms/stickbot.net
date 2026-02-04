@@ -1,11 +1,19 @@
 import { useEffect, useState } from 'react';
 import { io, type Socket } from 'socket.io-client';
-import type { ClientToServerEvents, ServerToClientEvents, SocketChatMessage, SocketMediaState, SocketQueueEntry, SocketUser } from '~/types';
+import type {
+	ClientToServerEvents,
+	ServerToClientEvents,
+	SocketChatMessage,
+	SocketMediaState,
+	SocketQueueEntry,
+	SocketUser,
+} from '~/types';
 
 const SOCKET_URL = 'http://localhost:3001';
 
 // Singleton socket instance
-let socketInstance: Socket<ServerToClientEvents, ClientToServerEvents> | null = null;
+let socketInstance: Socket<ServerToClientEvents, ClientToServerEvents> | null =
+	null;
 
 function getSocket() {
 	if (!socketInstance) {
@@ -36,12 +44,16 @@ export function useSocket() {
 	return { socket: getSocket(), isConnected };
 }
 
-export function useRoom(roomId: string, userId: string | null, username: string | null) {
+export function useRoom(
+	roomId: string,
+	userId: string | null,
+	username: string | null,
+) {
 	const { socket, isConnected } = useSocket();
 	const [users, setUsers] = useState<SocketUser[]>([]);
 	const [messages, setMessages] = useState<SocketChatMessage[]>([]);
 	const [queue, setQueue] = useState<SocketQueueEntry[]>([]);
-	const [mediaState, setMediaState] = useState<SocketMediaState>({ playing: false, started: 0, curtime: 0});
+	const [mediaState, setMediaState] = useState<SocketMediaState>();
 
 	useEffect(() => {
 		if (!socket || !isConnected || !userId || !username) return;
@@ -55,13 +67,7 @@ export function useRoom(roomId: string, userId: string | null, username: string 
 		});
 
 		socket.on('media-state', (state) => {
-			console.log(`socket: ${state.playing}, ${state.curtime}`)
-
-			setMediaState((prev) => ({
-				...prev,
-				playing: state.playing ?? prev.playing,
-				curtime: state.curtime ?? prev.curtime
-			}));
+			setMediaState(state);
 		});
 
 		socket.on('user-joined', (user: SocketUser) => {
@@ -111,7 +117,7 @@ export function useRoom(roomId: string, userId: string | null, username: string 
 		if (socket && isConnected) {
 			socket.emit('media-state', roomId, { playing, curtime });
 		}
-	}
+	};
 
 	return {
 		users,
@@ -121,6 +127,6 @@ export function useRoom(roomId: string, userId: string | null, username: string 
 		sendMessage,
 		queueMedia,
 		sendMediaState,
-		isConnected
+		isConnected,
 	};
 }

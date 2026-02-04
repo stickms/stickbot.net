@@ -2,7 +2,13 @@ import { createServer } from 'node:http';
 import { Server } from 'socket.io';
 import { prisma } from './lib/prisma';
 import { getContentDispositionFilename } from './lib/utils';
-import type { ClientToServerEvents, ServerToClientEvents, SocketChatMessage, SocketQueueEntry, SocketUser } from './types';
+import type {
+	ClientToServerEvents,
+	ServerToClientEvents,
+	SocketChatMessage,
+	SocketQueueEntry,
+	SocketUser,
+} from './types';
 
 const httpServer = createServer();
 
@@ -37,31 +43,40 @@ io.on('connection', (socket) => {
 
 		socket.to(roomId).emit('user-joined', user);
 
-		prisma.syncRoom.findUnique({ where: { id: roomId }, include: { messages: { include: { owner: true } }, queue: { include: { owner: true } } } })
+		prisma.syncRoom
+			.findUnique({
+				where: { id: roomId },
+				include: {
+					messages: { include: { owner: true } },
+					queue: { include: { owner: true } },
+				},
+			})
 			.then((syncRoom) => {
-				const messages: SocketChatMessage[] = syncRoom?.messages.map((message) => ({
-					id: message.id,
-					user: message.owner,
-					content: message.content,
-					timestamp: message.timestamp.getMilliseconds()
-				})) ?? [];
+				const messages: SocketChatMessage[] =
+					syncRoom?.messages.map((message) => ({
+						id: message.id,
+						user: message.owner,
+						content: message.content,
+						timestamp: message.timestamp.getMilliseconds(),
+					})) ?? [];
 
-				const queue: SocketQueueEntry[] = syncRoom?.queue.map((media) => ({
-					id: media.id,
-					user: media.owner,
-					url: media.url,
-					title: media.title,
-				})) ?? [];
+				const queue: SocketQueueEntry[] =
+					syncRoom?.queue.map((media) => ({
+						id: media.id,
+						user: media.owner,
+						url: media.url,
+						title: media.title,
+					})) ?? [];
 
 				socket.emit('room-state', {
 					users: Array.from(room.users.values()),
 					messages: messages,
-					queue: queue
+					queue: queue,
 				});
 
 				socket.emit('media-state', {
 					playing: room.playing,
-					curtime: Date.now() - room.started
+					curtime: (Date.now() - room.started) / 1000,
 				});
 			});
 
@@ -101,11 +116,18 @@ io.on('connection', (socket) => {
 
 				const contentType = head_res.headers.get('content-type');
 
-				if (!contentType?.startsWith('audio/') && !contentType?.startsWith('video/')) {
+				if (
+					!contentType?.startsWith('audio/') &&
+					!contentType?.startsWith('video/')
+				) {
 					throw new Error('Unsupported media type');
 				}
 
-				return getContentDispositionFilename(head_res.headers.get('content-disposition')) ?? 'Unknown Title';
+				return (
+					getContentDispositionFilename(
+						head_res.headers.get('content-disposition'),
+					) ?? 'Unknown Title'
+				);
 			}
 
 			return json.title ?? 'Unknown Title';
@@ -120,24 +142,24 @@ io.on('connection', (socket) => {
 					return;
 				}
 
-				prisma.syncMedia.create({
-					data: {
-						ownerId: user.id,
-						roomId: roomId,
-						url: url,
-						title: title
-					}
-				})
+				prisma.syncMedia
+					.create({
+						data: {
+							ownerId: user.id,
+							roomId: roomId,
+							url: url,
+							title: title,
+						},
+					})
 					.then((media) => {
 						io.to(roomId).emit('queue-media', {
 							id: media.id,
 							title: title,
 							url: url,
-							user: user
+							user: user,
 						});
 					})
 					.catch(console.error);
-
 			})
 			.catch(console.error);
 	});
@@ -149,14 +171,15 @@ io.on('connection', (socket) => {
 		if (!user) {
 			return;
 		}
-		
-		prisma.syncMessage.create({
-			data: {
-				ownerId: user.id,
-				roomId: roomId,
-				content: content
-			}
-		})
+
+		prisma.syncMessage
+			.create({
+				data: {
+					ownerId: user.id,
+					roomId: roomId,
+					content: content,
+				},
+			})
 			.then((message) => {
 				io.to(roomId).emit('chat-message', {
 					id: message.id,
@@ -181,24 +204,32 @@ io.on('connection', (socket) => {
 		}
 
 		if (state.curtime !== undefined) {
-			room.started = Date.now() - (state.curtime * 1000);
+			room.started = Date.now() - state.curtime * 1000;
 		}
 
 		io.to(roomId).emit('media-state', {
 			playing: room.playing,
-			curtime: (Date.now() - room.started) / 1000
+			curtime: (Date.now() - room.started) / 1000,
 		});
 	});
 });
 
-function handleLeaveRoom(socket: { id: string; to: (room: string) => { emit: (event: string, data: unknown) => void } }, roomId: string) {
+function handleLeaveRoom(
+	socket: {
+		id: string;
+		to: (room: string) => { emit: (event: string, data: unknown) => void };
+	},
+	roomId: string,
+) {
 	const room = rooms.get(roomId);
 	if (!room) return;
 
 	const user = room.users.get(socket.id);
 	if (user) {
 		room.users.delete(socket.id);
-		socket.to(roomId).emit('user-left', { id: user.id, username: user.username });
+		socket
+			.to(roomId)
+			.emit('user-left', { id: user.id, username: user.username });
 		console.log(`${user.username} left room ${roomId}`);
 	}
 
