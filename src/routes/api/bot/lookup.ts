@@ -5,8 +5,8 @@ import { prisma } from '~/lib/prisma';
 import { validateJson } from '../-utils';
 
 const lookupSchema = z.object({
-  token: z.string(),
-  steamids: z.array(z.string())
+  token: z.string().nonempty(),
+  steamids: z.array(z.string().nonempty())
 });
 
 export const Route = createFileRoute('/api/bot/lookup')({

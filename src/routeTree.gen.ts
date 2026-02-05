@@ -17,6 +17,7 @@ import { Route as WatchTogetherIndexRouteImport } from './routes/watch-together/
 import { Route as SteamLookupChar123QueryChar125RouteImport } from './routes/steam-lookup.{-$query}'
 import { Route as OpenProfileSteamidRouteImport } from './routes/open-profile.$steamid'
 import { Route as WatchTogetherRoomRoomidRouteImport } from './routes/watch-together/room.$roomid'
+import { Route as ApiBotSourcebansRouteImport } from './routes/api/bot/sourcebans'
 import { Route as ApiBotLookupRouteImport } from './routes/api/bot/lookup'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth.$'
 import { Route as ApiSteamLookupSteamidRouteImport } from './routes/api/steam/lookup.$steamid'
@@ -62,6 +63,11 @@ const WatchTogetherRoomRoomidRoute = WatchTogetherRoomRoomidRouteImport.update({
   path: '/watch-together/room/$roomid',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiBotSourcebansRoute = ApiBotSourcebansRouteImport.update({
+  id: '/api/bot/sourcebans',
+  path: '/api/bot/sourcebans',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiBotLookupRoute = ApiBotLookupRouteImport.update({
   id: '/api/bot/lookup',
   path: '/api/bot/lookup',
@@ -88,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/watch-together/': typeof WatchTogetherIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/bot/lookup': typeof ApiBotLookupRoute
+  '/api/bot/sourcebans': typeof ApiBotSourcebansRoute
   '/watch-together/room/$roomid': typeof WatchTogetherRoomRoomidRoute
   '/api/steam/lookup/$steamid': typeof ApiSteamLookupSteamidRoute
 }
@@ -101,6 +108,7 @@ export interface FileRoutesByTo {
   '/watch-together': typeof WatchTogetherIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/bot/lookup': typeof ApiBotLookupRoute
+  '/api/bot/sourcebans': typeof ApiBotSourcebansRoute
   '/watch-together/room/$roomid': typeof WatchTogetherRoomRoomidRoute
   '/api/steam/lookup/$steamid': typeof ApiSteamLookupSteamidRoute
 }
@@ -115,6 +123,7 @@ export interface FileRoutesById {
   '/watch-together/': typeof WatchTogetherIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/bot/lookup': typeof ApiBotLookupRoute
+  '/api/bot/sourcebans': typeof ApiBotSourcebansRoute
   '/watch-together/room/$roomid': typeof WatchTogetherRoomRoomidRoute
   '/api/steam/lookup/$steamid': typeof ApiSteamLookupSteamidRoute
 }
@@ -130,6 +139,7 @@ export interface FileRouteTypes {
     | '/watch-together/'
     | '/api/auth/$'
     | '/api/bot/lookup'
+    | '/api/bot/sourcebans'
     | '/watch-together/room/$roomid'
     | '/api/steam/lookup/$steamid'
   fileRoutesByTo: FileRoutesByTo
@@ -143,6 +153,7 @@ export interface FileRouteTypes {
     | '/watch-together'
     | '/api/auth/$'
     | '/api/bot/lookup'
+    | '/api/bot/sourcebans'
     | '/watch-together/room/$roomid'
     | '/api/steam/lookup/$steamid'
   id:
@@ -156,6 +167,7 @@ export interface FileRouteTypes {
     | '/watch-together/'
     | '/api/auth/$'
     | '/api/bot/lookup'
+    | '/api/bot/sourcebans'
     | '/watch-together/room/$roomid'
     | '/api/steam/lookup/$steamid'
   fileRoutesById: FileRoutesById
@@ -170,6 +182,7 @@ export interface RootRouteChildren {
   WatchTogetherIndexRoute: typeof WatchTogetherIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiBotLookupRoute: typeof ApiBotLookupRoute
+  ApiBotSourcebansRoute: typeof ApiBotSourcebansRoute
   WatchTogetherRoomRoomidRoute: typeof WatchTogetherRoomRoomidRoute
   ApiSteamLookupSteamidRoute: typeof ApiSteamLookupSteamidRoute
 }
@@ -232,6 +245,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WatchTogetherRoomRoomidRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/bot/sourcebans': {
+      id: '/api/bot/sourcebans'
+      path: '/api/bot/sourcebans'
+      fullPath: '/api/bot/sourcebans'
+      preLoaderRoute: typeof ApiBotSourcebansRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/bot/lookup': {
       id: '/api/bot/lookup'
       path: '/api/bot/lookup'
@@ -266,6 +286,7 @@ const rootRouteChildren: RootRouteChildren = {
   WatchTogetherIndexRoute: WatchTogetherIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiBotLookupRoute: ApiBotLookupRoute,
+  ApiBotSourcebansRoute: ApiBotSourcebansRoute,
   WatchTogetherRoomRoomidRoute: WatchTogetherRoomRoomidRoute,
   ApiSteamLookupSteamidRoute: ApiSteamLookupSteamidRoute,
 }

@@ -7,9 +7,10 @@ import { Clipboard, LoaderCircle } from 'lucide-react';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { playersDB } from '~/lib/mongo';
+import { getSourcebans, type SourcebanResult } from '~/routes/api/-sourcebans';
 import { Card } from './card';
 
-const getBotTags = createServerFn({ method: 'GET' })
+const getBotTags = createServerFn()
 	.inputValidator((data: { steamId: string; guildId: string }) => data)
 	.handler(async ({ data }) => {
 		const player = await (await playersDB()).findOne({
@@ -23,6 +24,14 @@ const getBotTags = createServerFn({ method: 'GET' })
 		return {
 			tags: player.tags[data.guildId] ?? {},
 		};
+	});
+
+const getSourcebansInternal = createServerFn()
+	.inputValidator((data: { steamId: string }) => data)
+	.handler(async ({ data }) => {
+		const { steamId } = data;
+		const sourcebans = await getSourcebans(steamId);
+		return sourcebans;
 	});
 
 function IDList({ summary }: { summary: SteamProfileSummary }) {
@@ -179,6 +188,50 @@ function LinksList({ summary }: { summary: SteamProfileSummary }) {
 	);
 }
 
+function Sourcebans({ summary }: { summary: SteamProfileSummary }) {
+	const [sourcebans, setSourcebans] = useState<SourcebanResult[]>();
+
+	useEffect(() => {
+		setSourcebans(undefined);
+
+		getSourcebansInternal({ data: { steamId: summary.steamid } })
+			.then(setSourcebans)
+			.catch(() => setSourcebans([]));
+	}, [summary.steamid]);
+
+	if (!sourcebans) {
+		return (
+			<div className='flex flex-col items-start gap-1 w-full'>
+				<h3 className="font-medium">Sourcebans</h3>
+				<span className='flex gap-2'>
+					<LoaderCircle className="animate-spin" /> Loading...
+				</span>
+			</div>
+		);
+	}
+
+	return (
+		<div className='flex flex-col items-start gap-1 w-full'>
+			<h3 className="font-medium">Sourcebans</h3>
+			{sourcebans.length ? (
+				sourcebans.map((ban) => (
+					<a
+						key={ban.url}
+						className="link text-left text-sm"
+						href={ban.url}
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						{ban.reason}
+					</a>
+				))
+			) : (
+				<Badge className="bg-green-700">None</Badge>
+			)}
+		</div>
+	);
+}
+
 function ProfileSummary({
 	summary,
 	guildId,
@@ -214,6 +267,7 @@ function ProfileSummary({
 					<IDList summary={summary} />
 					<AlertList summary={summary} guildId={guildId} />
 					<LinksList summary={summary} />
+					<Sourcebans summary={summary} />
 				</div>
 			</div>
 		</>
