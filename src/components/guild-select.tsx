@@ -50,11 +50,15 @@ export function GuildSelect({
 	const [internalValue, setInternalValue] = useState<string | undefined>(value);
 	const selectedValue = value ?? internalValue;
 
-	const { data: guilds = [], isLoading, isError } = useQuery({
+	const {
+		data: guilds = [],
+		isLoading,
+		isError,
+	} = useQuery({
 		queryKey: ['discord-guilds'],
 		queryFn: fetchGuilds,
 		enabled: !!session,
-		staleTime: 5 * 60 * 1000
+		staleTime: 5 * 60 * 1000,
 	});
 
 	const handleValueChange = (guildId: string) => {
@@ -67,7 +71,7 @@ export function GuildSelect({
 		if (!guild.icon) {
 			return undefined;
 		}
-		
+
 		return `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=32`;
 	};
 

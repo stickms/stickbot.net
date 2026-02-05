@@ -8,36 +8,39 @@ import {
 
 export function InputButton({
 	icon,
-  className,
-  id,
-  ref,
+	className,
+	id,
+	ref,
 	placeholder,
 	value,
-  invalid,
+	invalid,
+	readOnly,
 	onChange,
-	onSubmit
+	onSubmit,
 }: {
 	icon: JSX.Element;
-  className?: string;
-  id?: string;
-  ref?: Ref<HTMLInputElement>;
+	className?: string;
+	id?: string;
+	ref?: Ref<HTMLInputElement>;
 	placeholder?: string;
 	value?: string;
-  invalid?: boolean;
+	invalid?: boolean;
+	readOnly?: boolean;
 	onChange?: ChangeEventHandler<HTMLInputElement>;
 	onSubmit?: () => void;
 }) {
 	return (
 		<InputGroup className={className} aria-invalid={invalid}>
 			<InputGroupInput
-        id={id}
-        ref={ref}
+				id={id}
+				ref={ref}
 				placeholder={placeholder}
 				value={value}
-        aria-invalid={invalid}
+				aria-invalid={invalid}
+				readOnly={readOnly}
 				onChange={onChange}
 				onKeyDown={({ key }) => {
-					if (key === 'Enter') onSubmit?.();
+					if (key === 'Enter' && !readOnly) onSubmit?.();
 				}}
 			/>
 			<InputGroupAddon align="inline-end">

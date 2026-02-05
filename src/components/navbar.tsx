@@ -21,9 +21,7 @@ export function Navbar() {
 			</Link>
 
 			<div>
-				{data && (
-					<Button onClick={() => authClient.signOut()}>Logout</Button>
-				)}
+				{data && <Button onClick={() => authClient.signOut()}>Logout</Button>}
 			</div>
 		</nav>
 	);

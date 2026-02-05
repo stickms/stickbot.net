@@ -61,7 +61,13 @@ function IDList({ summary }: { summary: SteamProfileSummary }) {
 	);
 }
 
-function AlertList({ summary, guildId }: { summary: SteamProfileSummary, guildId?: string }) {
+function AlertList({
+	summary,
+	guildId,
+}: {
+	summary: SteamProfileSummary;
+	guildId?: string;
+}) {
 	const [tags, setTags] = useState<string[]>();
 
 	useEffect(() => {
@@ -82,11 +88,11 @@ function AlertList({ summary, guildId }: { summary: SteamProfileSummary, guildId
 	};
 
 	const tagLabel = {
-		'cheater': 'Cheater',
-		'suspicious': 'Suspicious',
-		'popular': 'Content Creator',
-		'banwatch': 'Ban Watch'
-	}
+		cheater: 'Cheater',
+		suspicious: 'Suspicious',
+		popular: 'Content Creator',
+		banwatch: 'Ban Watch',
+	};
 
 	if (!tags) {
 		return (
@@ -96,7 +102,7 @@ function AlertList({ summary, guildId }: { summary: SteamProfileSummary, guildId
 					<LoaderCircle className="animate-spin" /> Loading...
 				</span>
 			</div>
-		)
+		);
 	}
 
 	const alerts: JSX.Element[] = [
@@ -116,17 +122,23 @@ function AlertList({ summary, guildId }: { summary: SteamProfileSummary, guildId
 			label: 'Trade Ban',
 			show: summary.EconomyBan === 'banned',
 		},
-	].filter((alert) => alert.show)
+	]
+		.filter((alert) => alert.show)
 		.map((alert) => (
 			<Badge key={alert.label} className="bg-red-800">
 				{alert.label}
 			</Badge>
-		)
-	).concat(tags.map((tag) => (
-		<Badge key={tag} className={tag === 'banwatch' ? "bg-blue-700" : "bg-yellow-600"}>
-			{tagLabel[tag]}
-		</Badge>
-	)));
+		))
+		.concat(
+			tags.map((tag) => (
+				<Badge
+					key={tag}
+					className={tag === 'banwatch' ? 'bg-blue-700' : 'bg-yellow-600'}
+				>
+					{tagLabel[tag]}
+				</Badge>
+			)),
+		);
 
 	return (
 		<div className="flex flex-col items-start gap-1 min-w-36">
@@ -167,7 +179,13 @@ function LinksList({ summary }: { summary: SteamProfileSummary }) {
 	);
 }
 
-function ProfileSummary({ summary, guildId }: { summary: SteamProfileSummary; guildId?: string }) {
+function ProfileSummary({
+	summary,
+	guildId,
+}: {
+	summary: SteamProfileSummary;
+	guildId?: string;
+}) {
 	return (
 		<>
 			<div className="steam-profile-avatar">
@@ -202,7 +220,13 @@ function ProfileSummary({ summary, guildId }: { summary: SteamProfileSummary; gu
 	);
 }
 
-export function SteamProfile({ query, guildId }: { query: string, guildId?: string }) {
+export function SteamProfile({
+	query,
+	guildId,
+}: {
+	query: string;
+	guildId?: string;
+}) {
 	const [summary, setSummary] = useState<SteamProfileSummary | null>();
 	const [error, setError] = useState<string>();
 

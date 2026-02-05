@@ -17,13 +17,13 @@ function RouteComponent() {
 	const { data } = authClient.useSession();
 
 	const inputRef = useRef<HTMLInputElement>(null);
-	const [ guildId, setGuildId ] = useState<string>();
+	const [guildId, setGuildId] = useState<string>();
 
 	return (
 		<div className="w-full flex flex-col items-center justify-center mt-40 mb-16 gap-8 text-center">
 			<h1 className="font-header text-6xl">steam profile lookup</h1>
-			<div className='flex gap-2 w-150 max-w-[90vw]'>
-				<InputButton 
+			<div className="flex gap-2 w-150 max-w-[90vw]">
+				<InputButton
 					ref={inputRef}
 					placeholder="Lookup a Steam Profile..."
 					icon={<SearchIcon />}
@@ -36,17 +36,19 @@ function RouteComponent() {
 				/>
 				{data ? (
 					<GuildSelect
-						className='min-w-48 w-48'
+						className="min-w-48 w-48"
 						value={guildId}
 						onValueChange={setGuildId}
 					/>
 				) : (
 					<Button
-						onClick={() => authClient.signIn.social({
-							provider: 'discord',
-							callbackURL: location.href,
-							errorCallbackURL: location.href
-						})}
+						onClick={() =>
+							authClient.signIn.social({
+								provider: 'discord',
+								callbackURL: location.href,
+								errorCallbackURL: location.href,
+							})
+						}
 					>
 						Login
 					</Button>
