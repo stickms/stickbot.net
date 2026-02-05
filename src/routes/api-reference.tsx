@@ -28,8 +28,8 @@ const generateBotToken = createServerFn({ method: 'POST' })
 			where: { id: session.user.id },
 			data: {
 				botToken: token,
-				botGuild: data.guildId,
-			},
+				botGuild: data.guildId
+			}
 		});
 
 		return token;
@@ -45,12 +45,13 @@ const revokeBotToken = createServerFn({ method: 'POST' }).handler(async () => {
 
 	await prisma.user.update({
 		where: { id: session.user.id },
-		data: { botToken: null, botGuild: null },
+		data: { botToken: null, botGuild: null }
 	});
 });
 
 export const Route = createFileRoute('/api-reference')({
 	component: RouteComponent,
+	ssr: false
 });
 
 function TokenGeneration() {
@@ -68,7 +69,7 @@ function TokenGeneration() {
 						authClient.signIn.social({
 							provider: 'discord',
 							callbackURL: location.href,
-							errorCallbackURL: location.href,
+							errorCallbackURL: location.href
 						})
 					}
 				>
@@ -130,37 +131,96 @@ function RouteComponent() {
 	return (
 		<div className="w-full flex flex-col items-center justify-center mt-40 mb-16 gap-16 text-center">
 			<h1 className="font-header text-6xl">api & reference</h1>
-			<span className='font-mono'>{`${location.protocol}//`}{location.host}/api/</span>
+			<span className="font-mono">
+				{`${location.protocol}//`}
+				{location.host}/api/
+			</span>
 			<TokenGeneration />
 			<ApiRoute
-				endpoint='/bot/lookup'
-				method='POST'
-				fields={[{
-					key: 'token',
-					type: 'string',
-					description: 'Stickbot API token',
-					example: '"abcdef1234567890"'
-				}, {
-					key: 'steamids',
-					type: 'string[]',
-					description: 'Array of SteamIDs (ID64) for lookup',
-					example: '["76561197960287930"]'
-				}]}
+				endpoint="/bot/lookup"
+				method="POST"
+				fields={[
+					{
+						key: 'token',
+						type: 'string',
+						description: 'Stickbot API token',
+						example: '"abcdef1234567890"'
+					},
+					{
+						key: 'steamids',
+						type: 'string[]',
+						description: 'Array of SteamIDs (ID64) for lookup',
+						example: '["76561197960287930"]'
+					}
+				]}
 			/>
 			<ApiRoute
-				endpoint='/bot/sourcebans'
-				method='POST'
-				fields={[{
-					key: 'token',
-					type: 'string',
-					description: 'Stickbot API token',
-					example: '"abcdef1234567890"'
-				}, {
-					key: 'steamid',
-					type: 'string',
-					description: 'SteamID for lookup',
-					example: '"76561197960287930"'
-				}]}
+				endpoint="/bot/sourcebans"
+				method="POST"
+				fields={[
+					{
+						key: 'token',
+						type: 'string',
+						description: 'Stickbot API token',
+						example: '"abcdef1234567890"'
+					},
+					{
+						key: 'steamid',
+						type: 'string',
+						description: 'SteamID for lookup',
+						example: '"76561197960287930"'
+					}
+				]}
+			/>
+			<ApiRoute
+				endpoint="/bot/addtag"
+				method="POST"
+				fields={[
+					{
+						key: 'token',
+						type: 'string',
+						description: 'Stickbot API token',
+						example: '"abcdef1234567890"'
+					},
+					{
+						key: 'steamid',
+						type: 'string',
+						description: 'SteamID of profile',
+						example: '"76561197960287930"'
+					},
+					{
+						key: 'tag',
+						type: 'string',
+						description:
+							'Profile tag to add\n(cheater, suspicious, popular, banwatch)',
+						example: '"cheater"'
+					}
+				]}
+			/>
+			<ApiRoute
+				endpoint="/bot/removetag"
+				method="POST"
+				fields={[
+					{
+						key: 'token',
+						type: 'string',
+						description: 'Stickbot API token',
+						example: '"abcdef1234567890"'
+					},
+					{
+						key: 'steamid',
+						type: 'string',
+						description: 'SteamID of profile',
+						example: '"76561197960287930"'
+					},
+					{
+						key: 'tag',
+						type: 'string',
+						description:
+							'Profile tag to remove\n(cheater, suspicious, popular, banwatch)',
+						example: '"cheater"'
+					}
+				]}
 			/>
 		</div>
 	);

@@ -4,7 +4,7 @@ import z from 'zod';
 import { callSteamApi, parseSteamID } from '../-utils';
 
 const steamLookupSchema = z.object({
-	query: z.string().nonempty(),
+	query: z.string().nonempty()
 });
 
 const resolveQuery = createServerFn()
@@ -16,9 +16,9 @@ const resolveQuery = createServerFn()
 			const json = await callSteamApi({
 				data: {
 					endpoint: 'ResolveVanityURL/v1/',
-					params: { vanityurl: query },
-				},
-			})
+					params: { vanityurl: query }
+				}
+			});
 
 			if (json.response?.success !== 1) {
 				return parseSteamID(query);
@@ -42,16 +42,16 @@ const steamLookup = createServerFn()
 		const summary = await callSteamApi({
 			data: {
 				endpoint: 'GetPlayerSummaries/v2/',
-				params: { steamids: steamid },
-			},
-		})
+				params: { steamids: steamid }
+			}
+		});
 
 		const bans = await callSteamApi({
 			data: {
 				endpoint: 'GetPlayerBans/v1/',
-				params: { steamids: steamid },
-			},
-		})
+				params: { steamids: steamid }
+			}
+		});
 
 		if (!summary.response?.players.length) {
 			throw notFound();
@@ -64,8 +64,8 @@ const steamLookup = createServerFn()
 		return {
 			...summary.response.players[0],
 			...bans.players[0],
-			SteamId: undefined,
-		}
+			SteamId: undefined
+		};
 	});
 
 export const Route = createFileRoute('/api/steam/lookup/$steamid')({
@@ -73,7 +73,9 @@ export const Route = createFileRoute('/api/steam/lookup/$steamid')({
 		handlers: {
 			GET: async ({ params }) => {
 				try {
-					return Response.json(await steamLookup({ data: { query: params.steamid } }));
+					return Response.json(
+						await steamLookup({ data: { query: params.steamid } })
+					);
 				} catch (error) {
 					if (isNotFound(error)) {
 						return new Response('Profile not found', { status: 404 });
@@ -81,7 +83,7 @@ export const Route = createFileRoute('/api/steam/lookup/$steamid')({
 
 					return new Response('Bad request', { status: 400 });
 				}
-			},
-		},
-	},
+			}
+		}
+	}
 });

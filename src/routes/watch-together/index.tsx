@@ -11,13 +11,13 @@ import {
 	Field,
 	FieldDescription,
 	FieldError,
-	FieldLabel,
+	FieldLabel
 } from '~/components/ui/field';
 import {
 	InputGroup,
 	InputGroupAddon,
 	InputGroupButton,
-	InputGroupInput,
+	InputGroupInput
 } from '~/components/ui/input-group';
 import { prisma } from '~/lib/prisma';
 import { useUserStore } from '~/lib/stores';
@@ -29,8 +29,8 @@ const createUser = createServerFn({ method: 'POST' })
 
 		const user = await prisma.syncUser.create({
 			data: {
-				username,
-			},
+				username
+			}
 		});
 
 		return user;
@@ -47,12 +47,12 @@ const createRoom = createServerFn({ method: 'POST' })
 			data: {
 				id,
 				name,
-				ownerId: userId,
-			},
+				ownerId: userId
+			}
 		});
 
 		return {
-			roomid: room.id,
+			roomid: room.id
 		};
 	});
 
@@ -61,8 +61,8 @@ const deleteRoom = createServerFn({ method: 'POST' })
 	.handler(async ({ data }) => {
 		await prisma.syncRoom.delete({
 			where: {
-				id: data.roomid,
-			},
+				id: data.roomid
+			}
 		});
 	});
 
@@ -72,7 +72,7 @@ const getRooms = createServerFn().handler(async () => {
 
 export const Route = createFileRoute('/watch-together/')({
 	component: RouteComponent,
-	ssr: false,
+	ssr: false
 });
 
 function LogIn() {
@@ -129,11 +129,11 @@ function RoomCreation() {
 		createRoom({
 			data: {
 				name: inputRef.current.value,
-				userId: user.id,
-			},
+				userId: user.id
+			}
 		})
 			.then(({ roomid }) =>
-				navigate({ to: '/watch-together/room/$roomid', params: { roomid } }),
+				navigate({ to: '/watch-together/room/$roomid', params: { roomid } })
 			)
 			.catch((error) => setCreateError(error.toString()));
 	};
@@ -212,7 +212,7 @@ function RoomList() {
 								variant="destructive"
 								onClick={() => {
 									deleteRoom({ data: { roomid: room.id } }).then(() =>
-										setRooms(rooms.filter((rm) => room.id !== rm.id)),
+										setRooms(rooms.filter((rm) => room.id !== rm.id))
 									);
 								}}
 							>
@@ -223,7 +223,7 @@ function RoomList() {
 							onClick={() =>
 								navigate({
 									to: '/watch-together/room/$roomid',
-									params: { roomid: room.id },
+									params: { roomid: room.id }
 								})
 							}
 						>

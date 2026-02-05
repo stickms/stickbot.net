@@ -6,7 +6,7 @@ import {
 	SelectGroup,
 	SelectItem,
 	SelectTrigger,
-	SelectValue,
+	SelectValue
 } from '~/components/ui/select';
 import { authClient } from '~/lib/auth-client';
 
@@ -25,7 +25,7 @@ async function fetchGuilds(): Promise<DiscordGuild[]> {
 	}
 
 	const res = await fetch('https://discord.com/api/v10/users/@me/guilds', {
-		headers: { Authorization: `Bearer ${tokenData.data.accessToken}` },
+		headers: { Authorization: `Bearer ${tokenData.data.accessToken}` }
 	});
 
 	if (!res.ok) {
@@ -39,7 +39,7 @@ export function GuildSelect({
 	value,
 	onValueChange,
 	placeholder = 'Select a server',
-	className,
+	className
 }: {
 	value?: string;
 	onValueChange?: (guildId: string, guild: DiscordGuild | undefined) => void;
@@ -53,12 +53,12 @@ export function GuildSelect({
 	const {
 		data: guilds = [],
 		isLoading,
-		isError,
+		isError
 	} = useQuery({
 		queryKey: ['discord-guilds'],
 		queryFn: fetchGuilds,
 		enabled: !!session,
-		staleTime: 5 * 60 * 1000,
+		staleTime: 5 * 60 * 1000
 	});
 
 	const handleValueChange = (guildId: string) => {

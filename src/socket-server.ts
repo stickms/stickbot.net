@@ -8,7 +8,7 @@ import type {
 	ServerToClientEvents,
 	SocketChatMessage,
 	SocketQueueEntry,
-	SocketUser,
+	SocketUser
 } from './types';
 
 const httpServer = createServer();
@@ -16,8 +16,8 @@ const httpServer = createServer();
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
 	cors: {
 		origin: 'http://localhost:3000',
-		methods: ['GET', 'POST'],
-	},
+		methods: ['GET', 'POST']
+	}
 });
 
 interface Room {
@@ -49,8 +49,8 @@ io.on('connection', (socket) => {
 				where: { id: roomId },
 				include: {
 					messages: { include: { owner: true }, orderBy: { timestamp: 'asc' } },
-					queue: { include: { owner: true }, orderBy: { order: 'asc' } },
-				},
+					queue: { include: { owner: true }, orderBy: { order: 'asc' } }
+				}
 			})
 			.then((syncRoom) => {
 				const messages: SocketChatMessage[] =
@@ -58,7 +58,7 @@ io.on('connection', (socket) => {
 						id: message.id,
 						user: message.owner,
 						content: message.content,
-						timestamp: message.timestamp.getMilliseconds(),
+						timestamp: message.timestamp.getMilliseconds()
 					})) ?? [];
 
 				const queue: SocketQueueEntry[] =
@@ -66,18 +66,18 @@ io.on('connection', (socket) => {
 						id: media.id,
 						user: media.owner,
 						url: media.url,
-						title: media.title,
+						title: media.title
 					})) ?? [];
 
 				socket.emit('room-state', {
 					users: Array.from(room.users.values()),
 					messages: messages,
-					queue: queue,
+					queue: queue
 				});
 
 				socket.emit('media-state', {
 					playing: room.playing,
-					curtime: (Date.now() - room.started) / 1000,
+					curtime: (Date.now() - room.started) / 1000
 				});
 			});
 
@@ -126,7 +126,7 @@ io.on('connection', (socket) => {
 
 				return (
 					getContentDispositionFilename(
-						head_res.headers.get('content-disposition'),
+						head_res.headers.get('content-disposition')
 					) ?? 'Unknown Title'
 				);
 			}
@@ -145,7 +145,7 @@ io.on('connection', (socket) => {
 
 				const maxOrder = await prisma.syncMedia.aggregate({
 					where: { roomId },
-					_max: { order: true },
+					_max: { order: true }
 				});
 
 				prisma.syncMedia
@@ -155,15 +155,15 @@ io.on('connection', (socket) => {
 							roomId: roomId,
 							url: url,
 							title: title,
-							order: (maxOrder._max.order ?? -1) + 1,
-						},
+							order: (maxOrder._max.order ?? -1) + 1
+						}
 					})
 					.then((media) => {
 						io.to(roomId).emit('queue-media', {
 							id: media.id,
 							title: title,
 							url: url,
-							user: user,
+							user: user
 						});
 					});
 			})
@@ -182,7 +182,7 @@ io.on('connection', (socket) => {
 	socket.on('order-media', async (roomId, from, to) => {
 		const room = await prisma.syncRoom.findUnique({
 			where: { id: roomId },
-			include: { queue: { orderBy: { order: 'asc' } } },
+			include: { queue: { orderBy: { order: 'asc' } } }
 		});
 
 		if (!room) {
@@ -196,9 +196,9 @@ io.on('connection', (socket) => {
 			queue.map((media, index) =>
 				prisma.syncMedia.update({
 					where: { id: media.id },
-					data: { order: index },
-				}),
-			),
+					data: { order: index }
+				})
+			)
 		);
 
 		io.to(roomId).emit('order-media', from, to);
@@ -217,15 +217,15 @@ io.on('connection', (socket) => {
 				data: {
 					ownerId: user.id,
 					roomId: roomId,
-					content: content,
-				},
+					content: content
+				}
 			})
 			.then((message) => {
 				io.to(roomId).emit('chat-message', {
 					id: message.id,
 					user: user,
 					content,
-					timestamp: Date.now(),
+					timestamp: Date.now()
 				});
 			})
 			.catch(console.error);
@@ -249,7 +249,7 @@ io.on('connection', (socket) => {
 
 		io.to(roomId).emit('media-state', {
 			playing: room.playing,
-			curtime: (Date.now() - room.started) / 1000,
+			curtime: (Date.now() - room.started) / 1000
 		});
 	});
 });

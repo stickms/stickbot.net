@@ -14,10 +14,10 @@ export const useUserStore = create<UserStore>()(
 			id: null,
 			username: null,
 			setId: (_id) => set({ id: _id }),
-			setUsername: (_username) => set({ username: _username }),
+			setUsername: (_username) => set({ username: _username })
 		}),
 		{
-			name: 'sync-user',
-		},
-	),
+			name: 'sync-user'
+		}
+	)
 );

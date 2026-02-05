@@ -7,28 +7,34 @@ export async function validateJson<T>(request: Request, schema: ZodType<T>) {
 	try {
 		json = await request.json();
 	} catch (_error) {
-		throw Response.json({ error: 'Please supply a JSON body' }, {
-			status: 400,
-			headers: { 'Content-Type': 'application/json' }
-		});
+		throw Response.json(
+			{ error: 'Please supply a JSON body' },
+			{
+				status: 400,
+				headers: { 'Content-Type': 'application/json' }
+			}
+		);
 	}
-	
+
 	const result = schema.safeParse(json);
-	
+
 	if (!result.success) {
-		throw Response.json({ error: z.prettifyError(result.error) }, {
-			status: 400,
-			headers: { 'Content-Type': 'application/json' }
-		});
+		throw Response.json(
+			{ error: z.prettifyError(result.error) },
+			{
+				status: 400,
+				headers: { 'Content-Type': 'application/json' }
+			}
+		);
 	}
-	
+
 	return result.data;
 }
 
 const callSteamApiSchema = z.object({
 	endpoint: z.string().nonempty(),
 	params: z.record(z.string(), z.string()),
-	api: z.string().default('ISteamUser'),
+	api: z.string().default('ISteamUser')
 });
 
 export const callSteamApi = createServerFn()
@@ -39,7 +45,7 @@ export const callSteamApi = createServerFn()
 		const url = new URL(`https://api.steampowered.com/${api}/${endpoint}`);
 		url.search = new URLSearchParams({
 			...params,
-			key: process.env.STEAM_API_KEY,
+			key: process.env.STEAM_API_KEY
 		}).toString();
 
 		const resp = await fetch(url);

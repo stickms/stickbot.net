@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useEffect } from 'react';
 
 export const Route = createFileRoute('/open-profile/$steamid')({
-	component: RouteComponent,
+	component: RouteComponent
 });
 
 function RouteComponent() {

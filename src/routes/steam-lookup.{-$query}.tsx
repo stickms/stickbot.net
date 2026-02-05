@@ -8,7 +8,7 @@ import { Button } from '~/components/ui/button';
 import { authClient } from '~/lib/auth-client';
 
 export const Route = createFileRoute('/steam-lookup/{-$query}')({
-	component: RouteComponent,
+	component: RouteComponent
 });
 
 function RouteComponent() {
@@ -30,7 +30,7 @@ function RouteComponent() {
 					onSubmit={() => {
 						navigate({
 							to: '/steam-lookup/{-$query}',
-							params: { query: inputRef.current?.value },
+							params: { query: inputRef.current?.value }
 						});
 					}}
 				/>
@@ -46,7 +46,7 @@ function RouteComponent() {
 							authClient.signIn.social({
 								provider: 'discord',
 								callbackURL: location.href,
-								errorCallbackURL: location.href,
+								errorCallbackURL: location.href
 							})
 						}
 					>

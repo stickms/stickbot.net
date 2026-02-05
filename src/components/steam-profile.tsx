@@ -15,8 +15,9 @@ import '~/styles/steam-profile.css';
 const getBotTags = createServerFn()
 	.inputValidator((data: { steamId: string; guildId: string }) => data)
 	.handler(async ({ data }) => {
-		const player = await (await playersDB()).findOne({
-			_id: data.steamId,
+		const players = await playersDB();
+		const player = await players.findOne({
+			_id: data.steamId
 		});
 
 		if (!player) {
@@ -24,7 +25,7 @@ const getBotTags = createServerFn()
 		}
 
 		return {
-			tags: player.tags[data.guildId] ?? {},
+			tags: player.tags[data.guildId] ?? {}
 		};
 	});
 
@@ -40,7 +41,7 @@ function IDList({ summary }: { summary: SteamProfileSummary }) {
 	const idlist = [
 		summary.steamid,
 		`[U:1:${accountid}]`,
-		`STEAM_1:${accountid & 1}:${Math.floor(accountid / 2)}`,
+		`STEAM_1:${accountid & 1}:${Math.floor(accountid / 2)}`
 	];
 
 	// Include vanity URL if present
@@ -72,7 +73,7 @@ function IDList({ summary }: { summary: SteamProfileSummary }) {
 
 function AlertList({
 	summary,
-	guildId,
+	guildId
 }: {
 	summary: SteamProfileSummary;
 	guildId?: string;
@@ -100,7 +101,7 @@ function AlertList({
 		cheater: 'Cheater',
 		suspicious: 'Suspicious',
 		popular: 'Content Creator',
-		banwatch: 'Ban Watch',
+		banwatch: 'Ban Watch'
 	};
 
 	if (!tags) {
@@ -117,20 +118,20 @@ function AlertList({
 	const alerts: JSX.Element[] = [
 		{
 			label: `${plural(summary.NumberOfVACBans, 'VAC Ban')}`,
-			show: summary.NumberOfVACBans > 0,
+			show: summary.NumberOfVACBans > 0
 		},
 		{
 			label: `${plural(summary.NumberOfGameBans, 'Game Ban')}`,
-			show: summary.NumberOfGameBans > 0,
+			show: summary.NumberOfGameBans > 0
 		},
 		{
 			label: 'Community Ban',
-			show: summary.CommunityBanned,
+			show: summary.CommunityBanned
 		},
 		{
 			label: 'Trade Ban',
-			show: summary.EconomyBan === 'banned',
-		},
+			show: summary.EconomyBan === 'banned'
+		}
 	]
 		.filter((alert) => alert.show)
 		.map((alert) => (
@@ -146,7 +147,7 @@ function AlertList({
 				>
 					{tagLabel[tag]}
 				</Badge>
-			)),
+			))
 		);
 
 	return (
@@ -167,7 +168,7 @@ function LinksList({ summary }: { summary: SteamProfileSummary }) {
 		'SteamID.uk': 'https://steamid.uk/profile/',
 		SteamDB: 'https://steamdb.info/calculator/',
 		'Backpack.tf': 'https://backpack.tf/profiles/',
-		'Open in Client': '/open-profile/',
+		'Open in Client': '/open-profile/'
 	};
 
 	return (
@@ -192,14 +193,14 @@ function Sourcebans({ summary }: { summary: SteamProfileSummary }) {
 	const { data: sourcebans, isLoading } = useQuery({
 		queryKey: ['sourcebans', summary.steamid],
 		queryFn: () => getSourcebans({ data: { steamId: summary.steamid } }),
-		staleTime: 5 * 60 * 1000,
+		staleTime: 5 * 60 * 1000
 	});
 
 	if (isLoading) {
 		return (
-			<div className='flex flex-col items-start gap-1 w-full'>
+			<div className="flex flex-col items-start gap-1 w-full">
 				<h3 className="font-medium">Sourcebans</h3>
-				<span className='flex gap-2'>
+				<span className="flex gap-2">
 					<LoaderCircle className="animate-spin" /> Loading...
 				</span>
 			</div>
@@ -207,7 +208,7 @@ function Sourcebans({ summary }: { summary: SteamProfileSummary }) {
 	}
 
 	return (
-		<div className='flex flex-col items-start gap-1 w-full'>
+		<div className="flex flex-col items-start gap-1 w-full">
 			<h3 className="font-medium">Sourcebans</h3>
 			{sourcebans?.length ? (
 				sourcebans.map((ban) => (
@@ -230,7 +231,7 @@ function Sourcebans({ summary }: { summary: SteamProfileSummary }) {
 
 function ProfileSummary({
 	summary,
-	guildId,
+	guildId
 }: {
 	summary: SteamProfileSummary;
 	guildId?: string;
@@ -272,7 +273,7 @@ function ProfileSummary({
 
 export function SteamProfile({
 	query,
-	guildId,
+	guildId
 }: {
 	query: string;
 	guildId?: string;

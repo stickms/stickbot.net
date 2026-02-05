@@ -9,7 +9,7 @@ import {
 	InputGroup,
 	InputGroupAddon,
 	InputGroupButton,
-	InputGroupInput,
+	InputGroupInput
 } from '~/components/ui/input-group';
 import {
 	Select,
@@ -17,12 +17,12 @@ import {
 	SelectGroup,
 	SelectItem,
 	SelectTrigger,
-	SelectValue,
+	SelectValue
 } from '~/components/ui/select';
 import { Skeleton } from '~/components/ui/skeleton';
 
 export const Route = createFileRoute('/qr-code-generator')({
-	component: RouteComponent,
+	component: RouteComponent
 });
 
 function OptionsNumeric({
@@ -30,7 +30,7 @@ function OptionsNumeric({
 	value,
 	onChange,
 	min,
-	max,
+	max
 }: {
 	label: string;
 	value: number;
@@ -69,7 +69,7 @@ function OptionDropdown<T extends string>({
 	label,
 	value,
 	onChange,
-	items,
+	items
 }: {
 	label: string;
 	value: T;
@@ -90,7 +90,7 @@ function OptionDropdown<T extends string>({
 								<SelectItem key={itemvalue} value={itemvalue}>
 									{itemlabel}
 								</SelectItem>
-							),
+							)
 						)}
 					</SelectGroup>
 				</SelectContent>
@@ -107,7 +107,7 @@ function RouteComponent() {
 	const [size, setSize] = useState<number>(1024);
 	const [margin, setMargin] = useState<number>(1);
 	const [errorCorrection, setErrorCorrection] = useState<'L' | 'M' | 'Q' | 'H'>(
-		'M',
+		'M'
 	);
 	const [filetype, setFiletype] = useState<QRCodeDataURLType>('image/png');
 
@@ -118,7 +118,7 @@ function RouteComponent() {
 			width: size,
 			margin: margin,
 			type: filetype,
-			errorCorrectionLevel: errorCorrection,
+			errorCorrectionLevel: errorCorrection
 		})
 			.then((src) => {
 				if (!imageRef.current) {
@@ -152,7 +152,7 @@ function RouteComponent() {
 						style={{
 							width: '100%',
 							height: '100%',
-							display: ready ? undefined : 'none',
+							display: ready ? undefined : 'none'
 						}}
 					/>
 				</div>
@@ -183,7 +183,7 @@ function RouteComponent() {
 						items={{
 							'image/png': 'PNG',
 							'image/jpeg': 'JPG',
-							'image/webp': 'WEBP',
+							'image/webp': 'WEBP'
 						}}
 					/>
 				</div>

@@ -10,7 +10,7 @@ import {
 	InputGroup,
 	InputGroupAddon,
 	InputGroupButton,
-	InputGroupInput,
+	InputGroupInput
 } from '~/components/ui/input-group';
 import { Label } from '~/components/ui/label';
 import {
@@ -19,7 +19,7 @@ import {
 	PopoverDescription,
 	PopoverHeader,
 	PopoverTitle,
-	PopoverTrigger,
+	PopoverTrigger
 } from '~/components/ui/popover';
 import { ScrollArea } from '~/components/ui/scroll-area';
 import {
@@ -28,7 +28,7 @@ import {
 	SelectGroup,
 	SelectItem,
 	SelectTrigger,
-	SelectValue,
+	SelectValue
 } from '~/components/ui/select';
 import { Separator } from '~/components/ui/separator';
 import type { SDRConfigResult } from '~/types';
@@ -43,19 +43,19 @@ const getSDRData = createServerFn({ method: 'GET' })
 			data: {
 				endpoint: 'GetSDRConfig/v1/',
 				params: { appid },
-				api: 'ISteamApps',
-			},
+				api: 'ISteamApps'
+			}
 		})) as SDRConfigResult;
 	});
 
 export const Route = createFileRoute('/region-selector')({
-	component: RouteComponent,
+	component: RouteComponent
 });
 
 function PopoverButton({
 	label,
 	code,
-	disabled,
+	disabled
 }: {
 	label: string;
 	code: string;
@@ -93,7 +93,7 @@ function PopoverButton({
 function ServerList({
 	sdrData,
 	servers,
-	setServers,
+	setServers
 }: {
 	sdrData?: SDRConfigResult | null;
 	servers: string[];
@@ -191,7 +191,7 @@ function RouteComponent() {
 	const apps = {
 		'440': 'Team Fortress 2',
 		'730': 'Counter-Strike 2',
-		'570': 'DOTA 2',
+		'570': 'DOTA 2'
 	};
 
 	return (

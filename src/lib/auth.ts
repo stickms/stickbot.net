@@ -5,7 +5,7 @@ import { prisma } from './prisma';
 
 export const auth = betterAuth({
 	database: prismaAdapter(prisma, {
-		provider: 'postgresql',
+		provider: 'postgresql'
 	}),
 	plugins: [tanstackStartCookies()],
 	user: {
@@ -13,20 +13,20 @@ export const auth = betterAuth({
 			botToken: {
 				type: 'string',
 				required: false,
-				input: false,
+				input: false
 			},
 			botGuild: {
 				type: 'string',
 				required: false,
-				input: false,
-			},
-		},
+				input: false
+			}
+		}
 	},
 	socialProviders: {
 		discord: {
 			clientId: process.env.DISCORD_CLIENT_ID,
 			clientSecret: process.env.DISCORD_CLIENT_SECRET,
-			scope: ['identify', 'guilds'],
-		},
-	},
+			scope: ['identify', 'guilds']
+		}
+	}
 });

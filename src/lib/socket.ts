@@ -7,7 +7,7 @@ import type {
 	SocketChatMessage,
 	SocketMediaState,
 	SocketQueueEntry,
-	SocketUser,
+	SocketUser
 } from '~/types';
 
 const SOCKET_URL = 'http://localhost:3001';
@@ -48,7 +48,7 @@ export function useSocket() {
 export function useRoom(
 	roomId: string,
 	userId: string | null,
-	username: string | null,
+	username: string | null
 ) {
 	const { socket, isConnected } = useSocket();
 	const [users, setUsers] = useState<SocketUser[]>([]);
@@ -152,6 +152,6 @@ export function useRoom(
 		dequeueMedia,
 		orderMedia,
 		sendMediaState,
-		isConnected,
+		isConnected
 	};
 }

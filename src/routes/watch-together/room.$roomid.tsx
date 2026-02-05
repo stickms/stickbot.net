@@ -6,17 +6,17 @@ import {
 	TouchSensor,
 	useDroppable,
 	useSensor,
-	useSensors,
+	useSensors
 } from '@dnd-kit/core';
 import {
 	restrictToParentElement,
-	restrictToVerticalAxis,
+	restrictToVerticalAxis
 } from '@dnd-kit/modifiers';
 import {
 	arrayMove,
 	SortableContext,
 	useSortable,
-	verticalListSortingStrategy,
+	verticalListSortingStrategy
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
@@ -53,12 +53,12 @@ const getRoomData = createServerFn({ method: 'GET' })
 export const Route = createFileRoute('/watch-together/room/$roomid')({
 	component: RouteComponent,
 	loader: ({ params }) => getRoomData({ data: { roomid: params.roomid } }),
-	ssr: false,
+	ssr: false
 });
 
 function ChatBox({
 	room,
-	user,
+	user
 }: {
 	room: { id: string; ownerId: string };
 	user: UserStore;
@@ -69,7 +69,7 @@ function ChatBox({
 	const { users, messages, sendMessage } = useRoom(
 		room.id,
 		user.id,
-		user.username,
+		user.username
 	);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: scroll when messages change
@@ -94,15 +94,14 @@ function ChatBox({
 						{/* Only show unique users (people can open other tabs, etc.) */}
 						{users
 							.filter(
-								(u, index, arr) =>
-									index === arr.findIndex((e) => e.id === u.id),
+								(u, index, arr) => index === arr.findIndex((e) => e.id === u.id)
 							)
 							.map(({ id, username }) => (
 								<span
 									key={id}
 									style={{
 										color:
-											room.ownerId === id ? 'var(--color-primary)' : undefined,
+											room.ownerId === id ? 'var(--color-primary)' : undefined
 									}}
 								>
 									{username}
@@ -123,7 +122,7 @@ function ChatBox({
 										color:
 											room.ownerId === user.id
 												? 'var(--color-primary)'
-												: undefined,
+												: undefined
 									}}
 								>
 									{user.username}
@@ -149,7 +148,7 @@ function ChatBox({
 
 function QueueEntry({
 	media,
-	dequeue,
+	dequeue
 }: {
 	media: SocketQueueEntry;
 	dequeue: (id: string) => void;
@@ -160,12 +159,12 @@ function QueueEntry({
 		listeners,
 		setNodeRef,
 		transform,
-		transition,
+		transition
 	} = useSortable({ id: media.id });
 
 	const style = {
 		transform: CSS.Transform.toString(transform),
-		transition,
+		transition
 	};
 
 	return (
@@ -207,22 +206,22 @@ function MediaQueue({ roomId, user }: { roomId: string; user: UserStore }) {
 		useRoom(roomId, user.id, user.username);
 
 	const { setNodeRef } = useDroppable({
-		id: 'droppable',
+		id: 'droppable'
 	});
 
 	const [internalQueue, setInternalQueue] = useState<SocketQueueEntry[]>([]);
 
 	const mouseSensor = useSensor(MouseSensor, {
 		activationConstraint: {
-			distance: 10,
-		},
+			distance: 10
+		}
 	});
 
 	const touchSensor = useSensor(TouchSensor, {
 		activationConstraint: {
 			delay: 250,
-			tolerance: 5,
-		},
+			tolerance: 5
+		}
 	});
 	const sensors = useSensors(mouseSensor, touchSensor);
 
@@ -315,7 +314,7 @@ function MediaPlayer({ roomId, user }: { roomId: string; user: UserStore }) {
 	const { queue, mediaState, dequeueMedia, sendMediaState } = useRoom(
 		roomId,
 		user.id,
-		user.username,
+		user.username
 	);
 	const [ready, setReady] = useState<boolean>(false);
 
@@ -374,7 +373,7 @@ function MediaPlayer({ roomId, user }: { roomId: string; user: UserStore }) {
 						ready &&
 						sendMediaState(
 							playerRef.current?.seeking ? undefined : false,
-							playerRef.current?.currentTime,
+							playerRef.current?.currentTime
 						)
 					}
 				/>

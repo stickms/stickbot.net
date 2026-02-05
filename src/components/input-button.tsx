@@ -3,7 +3,7 @@ import {
 	InputGroup,
 	InputGroupAddon,
 	InputGroupButton,
-	InputGroupInput,
+	InputGroupInput
 } from '~/components/ui/input-group';
 
 export function InputButton({
@@ -16,7 +16,7 @@ export function InputButton({
 	invalid,
 	readOnly,
 	onChange,
-	onSubmit,
+	onSubmit
 }: {
 	icon: JSX.Element;
 	className?: string;

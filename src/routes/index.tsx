@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { Link } from '~/components/link';
 
 export const Route = createFileRoute('/')({
-	component: Home,
+	component: Home
 });
 
 function Home() {

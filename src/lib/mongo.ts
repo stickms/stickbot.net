@@ -1,27 +1,21 @@
-import { MongoClient } from 'mongodb';
+import { type Collection, MongoClient } from 'mongodb';
 import type { DatabasePlayerEntry } from '~/types';
 
 const uri = process.env.MONGO_API_URL;
 
-let connected = false;
-let client: MongoClient;
+let collection: Promise<Collection<DatabasePlayerEntry>>;
 
-export async function playersDB() {
-	if (!uri) {
-		throw new Error('MONGODB_URI is not defined in environment variables');
-	}
-
-	if (!connected) {
-		try {
-			client = new MongoClient(uri);
-			await client.connect();
-			connected = true;
-		} catch (error) {
-			throw new Error(
-				`Failed to connect to database: ${error instanceof Error ? error.message : 'Unknown error'}`,
-			);
+export function playersDB() {
+	if (!collection) {
+		if (!uri) {
+			throw new Error('MONGODB_URI is not defined in environment variables');
 		}
+		const client = new MongoClient(uri);
+		collection = client
+			.connect()
+			.then(() =>
+				client.db('stickbot').collection<DatabasePlayerEntry>('players')
+			);
 	}
-
-	return client.db('stickbot').collection<DatabasePlayerEntry>('players');
+	return collection;
 }
