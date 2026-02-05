@@ -8,7 +8,8 @@
     "dev": "run-p dev:socket dev:web",
     "dev:web": "vite dev",
     "dev:socket": "tsx watch src/socket-server.ts",
-    "build": "vite build",
+    "build:web": "vite build",
+    "build:socket": "tsc -p tsconfig.socket.json",
     "biome": "biome format --write"
   },
   "keywords": [],
