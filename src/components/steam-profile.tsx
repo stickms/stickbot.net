@@ -1,14 +1,16 @@
-import { type JSX, useEffect, useState } from 'react';
-import type { SteamProfileSummary } from '~/types';
-import '~/styles/steam-profile.css';
+import { useQuery } from '@tanstack/react-query';
 import { notFound } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 import { Clipboard, LoaderCircle } from 'lucide-react';
+import { type JSX, useEffect, useState } from 'react';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { playersDB } from '~/lib/mongo';
-import { getSourcebans, type SourcebanResult } from '~/routes/api/-sourcebans';
+import { getSourcebans as getSourcebansInternal } from '~/routes/api/-sourcebans';
+import type { SteamProfileSummary } from '~/types';
 import { Card } from './card';
+
+import '~/styles/steam-profile.css';
 
 const getBotTags = createServerFn()
 	.inputValidator((data: { steamId: string; guildId: string }) => data)
@@ -26,12 +28,10 @@ const getBotTags = createServerFn()
 		};
 	});
 
-const getSourcebansInternal = createServerFn()
+const getSourcebans = createServerFn()
 	.inputValidator((data: { steamId: string }) => data)
 	.handler(async ({ data }) => {
-		const { steamId } = data;
-		const sourcebans = await getSourcebans(steamId);
-		return sourcebans;
+		return await getSourcebansInternal(data.steamId);
 	});
 
 function IDList({ summary }: { summary: SteamProfileSummary }) {
@@ -189,17 +189,13 @@ function LinksList({ summary }: { summary: SteamProfileSummary }) {
 }
 
 function Sourcebans({ summary }: { summary: SteamProfileSummary }) {
-	const [sourcebans, setSourcebans] = useState<SourcebanResult[]>();
+	const { data: sourcebans, isLoading } = useQuery({
+		queryKey: ['sourcebans', summary.steamid],
+		queryFn: () => getSourcebans({ data: { steamId: summary.steamid } }),
+		staleTime: 5 * 60 * 1000,
+	});
 
-	useEffect(() => {
-		setSourcebans(undefined);
-
-		getSourcebansInternal({ data: { steamId: summary.steamid } })
-			.then(setSourcebans)
-			.catch(() => setSourcebans([]));
-	}, [summary.steamid]);
-
-	if (!sourcebans) {
+	if (isLoading) {
 		return (
 			<div className='flex flex-col items-start gap-1 w-full'>
 				<h3 className="font-medium">Sourcebans</h3>
@@ -213,7 +209,7 @@ function Sourcebans({ summary }: { summary: SteamProfileSummary }) {
 	return (
 		<div className='flex flex-col items-start gap-1 w-full'>
 			<h3 className="font-medium">Sourcebans</h3>
-			{sourcebans.length ? (
+			{sourcebans?.length ? (
 				sourcebans.map((ban) => (
 					<a
 						key={ban.url}
