@@ -1,4 +1,5 @@
 import { randomBytes } from 'node:crypto';
+import { SiDiscord } from '@icons-pack/react-simple-icons';
 import { createFileRoute } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 import { getRequestHeaders } from '@tanstack/react-start/server';
@@ -73,7 +74,7 @@ function TokenGeneration() {
 						})
 					}
 				>
-					Login
+					<SiDiscord /> Login
 				</Button>
 			</div>
 		);

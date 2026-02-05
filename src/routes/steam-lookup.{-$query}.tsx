@@ -1,3 +1,4 @@
+import { SiDiscord } from '@icons-pack/react-simple-icons';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { SearchIcon } from 'lucide-react';
 import { useRef, useState } from 'react';
@@ -50,7 +51,7 @@ function RouteComponent() {
 							})
 						}
 					>
-						Login
+						<SiDiscord /> Login
 					</Button>
 				)}
 			</div>
