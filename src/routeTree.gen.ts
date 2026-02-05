@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RegionSelectorRouteImport } from './routes/region-selector'
 import { Route as QrCodeGeneratorRouteImport } from './routes/qr-code-generator'
+import { Route as ApiReferenceRouteImport } from './routes/api-reference'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WatchTogetherIndexRouteImport } from './routes/watch-together/index'
 import { Route as SteamLookupChar123QueryChar125RouteImport } from './routes/steam-lookup.{-$query}'
@@ -18,6 +19,7 @@ import { Route as OpenProfileSteamidRouteImport } from './routes/open-profile.$s
 import { Route as WatchTogetherRoomRoomidRouteImport } from './routes/watch-together/room.$roomid'
 import { Route as ApiResolveQueryRouteImport } from './routes/api/resolve.$query'
 import { Route as ApiLookupSteamidRouteImport } from './routes/api/lookup.$steamid'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth.$'
 
 const RegionSelectorRoute = RegionSelectorRouteImport.update({
   id: '/region-selector',
@@ -27,6 +29,11 @@ const RegionSelectorRoute = RegionSelectorRouteImport.update({
 const QrCodeGeneratorRoute = QrCodeGeneratorRouteImport.update({
   id: '/qr-code-generator',
   path: '/qr-code-generator',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiReferenceRoute = ApiReferenceRouteImport.update({
+  id: '/api-reference',
+  path: '/api-reference',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -65,25 +72,34 @@ const ApiLookupSteamidRoute = ApiLookupSteamidRouteImport.update({
   path: '/api/lookup/$steamid',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api-reference': typeof ApiReferenceRoute
   '/qr-code-generator': typeof QrCodeGeneratorRoute
   '/region-selector': typeof RegionSelectorRoute
   '/open-profile/$steamid': typeof OpenProfileSteamidRoute
   '/steam-lookup/{-$query}': typeof SteamLookupChar123QueryChar125Route
   '/watch-together/': typeof WatchTogetherIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/lookup/$steamid': typeof ApiLookupSteamidRoute
   '/api/resolve/$query': typeof ApiResolveQueryRoute
   '/watch-together/room/$roomid': typeof WatchTogetherRoomRoomidRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api-reference': typeof ApiReferenceRoute
   '/qr-code-generator': typeof QrCodeGeneratorRoute
   '/region-selector': typeof RegionSelectorRoute
   '/open-profile/$steamid': typeof OpenProfileSteamidRoute
   '/steam-lookup/{-$query}': typeof SteamLookupChar123QueryChar125Route
   '/watch-together': typeof WatchTogetherIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/lookup/$steamid': typeof ApiLookupSteamidRoute
   '/api/resolve/$query': typeof ApiResolveQueryRoute
   '/watch-together/room/$roomid': typeof WatchTogetherRoomRoomidRoute
@@ -91,11 +107,13 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api-reference': typeof ApiReferenceRoute
   '/qr-code-generator': typeof QrCodeGeneratorRoute
   '/region-selector': typeof RegionSelectorRoute
   '/open-profile/$steamid': typeof OpenProfileSteamidRoute
   '/steam-lookup/{-$query}': typeof SteamLookupChar123QueryChar125Route
   '/watch-together/': typeof WatchTogetherIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/lookup/$steamid': typeof ApiLookupSteamidRoute
   '/api/resolve/$query': typeof ApiResolveQueryRoute
   '/watch-together/room/$roomid': typeof WatchTogetherRoomRoomidRoute
@@ -104,33 +122,39 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/api-reference'
     | '/qr-code-generator'
     | '/region-selector'
     | '/open-profile/$steamid'
     | '/steam-lookup/{-$query}'
     | '/watch-together/'
+    | '/api/auth/$'
     | '/api/lookup/$steamid'
     | '/api/resolve/$query'
     | '/watch-together/room/$roomid'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/api-reference'
     | '/qr-code-generator'
     | '/region-selector'
     | '/open-profile/$steamid'
     | '/steam-lookup/{-$query}'
     | '/watch-together'
+    | '/api/auth/$'
     | '/api/lookup/$steamid'
     | '/api/resolve/$query'
     | '/watch-together/room/$roomid'
   id:
     | '__root__'
     | '/'
+    | '/api-reference'
     | '/qr-code-generator'
     | '/region-selector'
     | '/open-profile/$steamid'
     | '/steam-lookup/{-$query}'
     | '/watch-together/'
+    | '/api/auth/$'
     | '/api/lookup/$steamid'
     | '/api/resolve/$query'
     | '/watch-together/room/$roomid'
@@ -138,11 +162,13 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiReferenceRoute: typeof ApiReferenceRoute
   QrCodeGeneratorRoute: typeof QrCodeGeneratorRoute
   RegionSelectorRoute: typeof RegionSelectorRoute
   OpenProfileSteamidRoute: typeof OpenProfileSteamidRoute
   SteamLookupChar123QueryChar125Route: typeof SteamLookupChar123QueryChar125Route
   WatchTogetherIndexRoute: typeof WatchTogetherIndexRoute
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiLookupSteamidRoute: typeof ApiLookupSteamidRoute
   ApiResolveQueryRoute: typeof ApiResolveQueryRoute
   WatchTogetherRoomRoomidRoute: typeof WatchTogetherRoomRoomidRoute
@@ -162,6 +188,13 @@ declare module '@tanstack/react-router' {
       path: '/qr-code-generator'
       fullPath: '/qr-code-generator'
       preLoaderRoute: typeof QrCodeGeneratorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api-reference': {
+      id: '/api-reference'
+      path: '/api-reference'
+      fullPath: '/api-reference'
+      preLoaderRoute: typeof ApiReferenceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -213,16 +246,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiLookupSteamidRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiReferenceRoute: ApiReferenceRoute,
   QrCodeGeneratorRoute: QrCodeGeneratorRoute,
   RegionSelectorRoute: RegionSelectorRoute,
   OpenProfileSteamidRoute: OpenProfileSteamidRoute,
   SteamLookupChar123QueryChar125Route: SteamLookupChar123QueryChar125Route,
   WatchTogetherIndexRoute: WatchTogetherIndexRoute,
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiLookupSteamidRoute: ApiLookupSteamidRoute,
   ApiResolveQueryRoute: ApiResolveQueryRoute,
   WatchTogetherRoomRoomidRoute: WatchTogetherRoomRoomidRoute,

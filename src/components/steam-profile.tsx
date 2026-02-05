@@ -10,10 +10,10 @@ import { playersDB } from '~/lib/mongo';
 import { Card } from './card';
 
 const getBotTags = createServerFn({ method: 'GET' })
-	.inputValidator((data: { steamid: string; guildid: string }) => data)
+	.inputValidator((data: { steamId: string; guildId: string }) => data)
 	.handler(async ({ data }) => {
 		const player = await (await playersDB()).findOne({
-			_id: data.steamid,
+			_id: data.steamId,
 		});
 
 		if (!player) {
@@ -21,7 +21,7 @@ const getBotTags = createServerFn({ method: 'GET' })
 		}
 
 		return {
-			tags: player.tags[data.guildid] ?? {},
+			tags: player.tags[data.guildId] ?? {},
 		};
 	});
 
@@ -61,44 +61,77 @@ function IDList({ summary }: { summary: SteamProfileSummary }) {
 	);
 }
 
-function AlertList({ summary }: { summary: SteamProfileSummary }) {
-	const alerts: JSX.Element[] = [];
+function AlertList({ summary, guildId }: { summary: SteamProfileSummary, guildId?: string }) {
+	const [tags, setTags] = useState<string[]>();
+
+	useEffect(() => {
+		setTags(undefined);
+
+		if (!guildId) {
+			setTags([]);
+			return;
+		}
+
+		getBotTags({ data: { steamId: summary.steamid, guildId: guildId } })
+			.then((res) => setTags(Object.keys(res.tags)))
+			.catch(() => setTags([]));
+	}, [summary.steamid, guildId]);
 
 	const plural = (num: number, label: string) => {
 		return `${num} ${label}${num === 1 ? '' : 's'}`;
 	};
 
-	alerts.concat(
-		[
-			{
-				label: `${plural(summary.NumberOfVACBans, 'VAC Ban')}`,
-				show: summary.NumberOfVACBans > 0,
-			},
-			{
-				label: `${plural(summary.NumberOfGameBans, 'Game Ban')}`,
-				show: summary.NumberOfGameBans > 0,
-			},
-			{
-				label: 'Community Ban',
-				show: summary.CommunityBanned,
-			},
-			{
-				label: 'Trade Ban',
-				show: summary.EconomyBan === 'banned',
-			},
-		]
-			.filter((alert) => alert.show)
-			.map((alert) => (
-				<Badge key={alert.label} className="bg-red-800">
-					{alert.label}
-				</Badge>
-			)),
-	);
+	const tagLabel = {
+		'cheater': 'Cheater',
+		'suspicious': 'Suspicious',
+		'popular': 'Content Creator',
+		'banwatch': 'Ban Watch'
+	}
+
+	if (!tags) {
+		return (
+			<div className="flex flex-col items-start gap-1 min-w-36">
+				<h3 className="font-medium">Alerts</h3>
+				<span className="flex gap-2">
+					<LoaderCircle className="animate-spin" /> Loading...
+				</span>
+			</div>
+		)
+	}
+
+	const alerts: JSX.Element[] = [
+		{
+			label: `${plural(summary.NumberOfVACBans, 'VAC Ban')}`,
+			show: summary.NumberOfVACBans > 0,
+		},
+		{
+			label: `${plural(summary.NumberOfGameBans, 'Game Ban')}`,
+			show: summary.NumberOfGameBans > 0,
+		},
+		{
+			label: 'Community Ban',
+			show: summary.CommunityBanned,
+		},
+		{
+			label: 'Trade Ban',
+			show: summary.EconomyBan === 'banned',
+		},
+	].filter((alert) => alert.show)
+		.map((alert) => (
+			<Badge key={alert.label} className="bg-red-800">
+				{alert.label}
+			</Badge>
+		)
+	).concat(tags.map((tag) => (
+		<Badge key={tag} className={tag === 'banwatch' ? "bg-blue-700" : "bg-yellow-600"}>
+			{tagLabel[tag]}
+		</Badge>
+	)));
 
 	return (
 		<div className="flex flex-col items-start gap-1 min-w-36">
 			<h3 className="font-medium">Alerts</h3>
-			{alerts.length > 0 ? (
+			{alerts.length ? (
 				alerts.map((badge) => badge)
 			) : (
 				<Badge className="bg-green-700">None</Badge>
@@ -134,7 +167,7 @@ function LinksList({ summary }: { summary: SteamProfileSummary }) {
 	);
 }
 
-function ProfileSummary({ summary }: { summary: SteamProfileSummary }) {
+function ProfileSummary({ summary, guildId }: { summary: SteamProfileSummary; guildId?: string }) {
 	return (
 		<>
 			<div className="steam-profile-avatar">
@@ -161,7 +194,7 @@ function ProfileSummary({ summary }: { summary: SteamProfileSummary }) {
 				{/* Rest of the summary */}
 				<div className="flex w-full justify-between gap-4 flex-wrap">
 					<IDList summary={summary} />
-					<AlertList summary={summary} />
+					<AlertList summary={summary} guildId={guildId} />
 					<LinksList summary={summary} />
 				</div>
 			</div>
@@ -169,7 +202,7 @@ function ProfileSummary({ summary }: { summary: SteamProfileSummary }) {
 	);
 }
 
-export function SteamProfile({ query }: { query: string }) {
+export function SteamProfile({ query, guildId }: { query: string, guildId?: string }) {
 	const [summary, setSummary] = useState<SteamProfileSummary | null>();
 	const [error, setError] = useState<string>();
 
@@ -212,7 +245,7 @@ export function SteamProfile({ query }: { query: string }) {
 				</Badge>
 			)}
 
-			{summary && <ProfileSummary summary={summary} />}
+			{summary && <ProfileSummary summary={summary} guildId={guildId} />}
 		</Card>
 	);
 }

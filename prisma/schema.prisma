@@ -7,40 +7,103 @@ datasource db {
   provider = "postgresql"
 }
 
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
 model SyncUser {
-  id          String @id @unique @default(uuid())
-  username    String
-  ownedRooms  SyncRoom[]
-  messages    SyncMessage[]
-  media       SyncMedia[]
+  id         String        @id @unique @default(uuid())
+  username   String
+  ownedRooms SyncRoom[]
+  messages   SyncMessage[]
+  media      SyncMedia[]
 }
 
 model SyncRoom {
-  id          String @id @unique
-  name        String
-  owner       SyncUser @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  ownerId     String
-  queue       SyncMedia[]
-  messages    SyncMessage[]
+  id       String        @id @unique
+  name     String
+  owner    SyncUser      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId  String
+  queue    SyncMedia[]
+  messages SyncMessage[]
 }
 
 model SyncMessage {
-  id          String @id @unique @default(uuid())
-  content     String
-  timestamp   DateTime @default(now())
-  room        SyncRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  roomId      String
-  owner       SyncUser @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  ownerId     String   
+  id        String   @id @unique @default(uuid())
+  content   String
+  timestamp DateTime @default(now())
+  room      SyncRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  roomId    String
+  owner     SyncUser @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId   String
 }
 
 model SyncMedia {
-  id          String @id @unique @default(uuid())
-  url         String
-  title       String
-  order       Int
-  owner       SyncUser @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  ownerId     String
-  syncRoom    SyncRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  roomId      String
+  id       String   @id @unique @default(uuid())
+  url      String
+  title    String
+  order    Int
+  owner    SyncUser @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId  String
+  syncRoom SyncRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  roomId   String
 }

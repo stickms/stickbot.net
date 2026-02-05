@@ -77,8 +77,6 @@ function PopoverButton({
 					<InputGroupInput value={code} readOnly />
 					<InputGroupAddon align="inline-end">
 						<InputGroupButton
-							aria-label="Copy to Clipboard"
-							title="Copy to Clipboard"
 							size="icon-xs"
 							variant="secondary"
 							onClick={() => navigator.clipboard.writeText(code)}

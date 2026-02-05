@@ -22,6 +22,9 @@ function Home() {
 				<li>
 					<Link to="/qr-code-generator">qr code generator</Link>
 				</li>
+				<li>
+					<Link to="/api-reference">api & reference</Link>
+				</li>
 			</ul>
 		</div>
 	);
