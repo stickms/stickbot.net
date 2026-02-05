@@ -233,19 +233,12 @@ export function SteamProfile({
 	useEffect(() => {
 		const getProfileSummary = async () => {
 			try {
-				const resolve_resp = await fetch(`/api/resolve/${query}`);
-				if (!resolve_resp.ok) {
-					throw new Error('Could not resolve SteamID or VanityURL');
-				}
-
-				const { steamid } = await resolve_resp.json();
-
-				const summary_resp = await fetch(`/api/lookup/${steamid}`);
-				if (!summary_resp.ok) {
+				const res = await fetch(`/api/steam/lookup/${query}`);
+				if (!res.ok) {
 					throw new Error('Could not load profile summary');
 				}
 
-				setSummary(await summary_resp.json());
+				setSummary(await res.json());
 			} catch (error) {
 				setSummary(null);
 				setError(error);

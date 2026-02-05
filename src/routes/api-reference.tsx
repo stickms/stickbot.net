@@ -4,6 +4,7 @@ import { createServerFn } from '@tanstack/react-start';
 import { getRequestHeaders } from '@tanstack/react-start/server';
 import { ClipboardIcon } from 'lucide-react';
 import { useState } from 'react';
+import { ApiRoute } from '~/components/api-route';
 import { GuildSelect } from '~/components/guild-select';
 import { InputButton } from '~/components/input-button';
 import { Button } from '~/components/ui/button';
@@ -127,9 +128,22 @@ function TokenGeneration() {
 
 function RouteComponent() {
 	return (
-		<div className="w-full flex flex-col items-center justify-center mt-40 mb-16 gap-8 text-center">
+		<div className="w-full flex flex-col items-center justify-center mt-40 mb-16 gap-16 text-center">
 			<h1 className="font-header text-6xl">api & reference</h1>
+			<span className='font-mono'>{`${location.protocol}//`}{location.host}/api/</span>
 			<TokenGeneration />
+			<ApiRoute
+				endpoint='/bot/lookup'
+				method='POST'
+				fields={[
+					{
+						key: 'token',
+						type: 'string',
+						description: 'Stickbot API token',
+						example: 'abcdef1234567890'
+					}
+				]}
+			/>
 		</div>
 	);
 }

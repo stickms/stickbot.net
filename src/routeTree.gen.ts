@@ -17,9 +17,9 @@ import { Route as WatchTogetherIndexRouteImport } from './routes/watch-together/
 import { Route as SteamLookupChar123QueryChar125RouteImport } from './routes/steam-lookup.{-$query}'
 import { Route as OpenProfileSteamidRouteImport } from './routes/open-profile.$steamid'
 import { Route as WatchTogetherRoomRoomidRouteImport } from './routes/watch-together/room.$roomid'
-import { Route as ApiResolveQueryRouteImport } from './routes/api/resolve.$query'
-import { Route as ApiLookupSteamidRouteImport } from './routes/api/lookup.$steamid'
+import { Route as ApiBotLookupRouteImport } from './routes/api/bot/lookup'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth.$'
+import { Route as ApiSteamLookupSteamidRouteImport } from './routes/api/steam/lookup.$steamid'
 
 const RegionSelectorRoute = RegionSelectorRouteImport.update({
   id: '/region-selector',
@@ -62,19 +62,19 @@ const WatchTogetherRoomRoomidRoute = WatchTogetherRoomRoomidRouteImport.update({
   path: '/watch-together/room/$roomid',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiResolveQueryRoute = ApiResolveQueryRouteImport.update({
-  id: '/api/resolve/$query',
-  path: '/api/resolve/$query',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiLookupSteamidRoute = ApiLookupSteamidRouteImport.update({
-  id: '/api/lookup/$steamid',
-  path: '/api/lookup/$steamid',
+const ApiBotLookupRoute = ApiBotLookupRouteImport.update({
+  id: '/api/bot/lookup',
+  path: '/api/bot/lookup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSteamLookupSteamidRoute = ApiSteamLookupSteamidRouteImport.update({
+  id: '/api/steam/lookup/$steamid',
+  path: '/api/steam/lookup/$steamid',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -87,9 +87,9 @@ export interface FileRoutesByFullPath {
   '/steam-lookup/{-$query}': typeof SteamLookupChar123QueryChar125Route
   '/watch-together/': typeof WatchTogetherIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/lookup/$steamid': typeof ApiLookupSteamidRoute
-  '/api/resolve/$query': typeof ApiResolveQueryRoute
+  '/api/bot/lookup': typeof ApiBotLookupRoute
   '/watch-together/room/$roomid': typeof WatchTogetherRoomRoomidRoute
+  '/api/steam/lookup/$steamid': typeof ApiSteamLookupSteamidRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -100,9 +100,9 @@ export interface FileRoutesByTo {
   '/steam-lookup/{-$query}': typeof SteamLookupChar123QueryChar125Route
   '/watch-together': typeof WatchTogetherIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/lookup/$steamid': typeof ApiLookupSteamidRoute
-  '/api/resolve/$query': typeof ApiResolveQueryRoute
+  '/api/bot/lookup': typeof ApiBotLookupRoute
   '/watch-together/room/$roomid': typeof WatchTogetherRoomRoomidRoute
+  '/api/steam/lookup/$steamid': typeof ApiSteamLookupSteamidRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -114,9 +114,9 @@ export interface FileRoutesById {
   '/steam-lookup/{-$query}': typeof SteamLookupChar123QueryChar125Route
   '/watch-together/': typeof WatchTogetherIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/lookup/$steamid': typeof ApiLookupSteamidRoute
-  '/api/resolve/$query': typeof ApiResolveQueryRoute
+  '/api/bot/lookup': typeof ApiBotLookupRoute
   '/watch-together/room/$roomid': typeof WatchTogetherRoomRoomidRoute
+  '/api/steam/lookup/$steamid': typeof ApiSteamLookupSteamidRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -129,9 +129,9 @@ export interface FileRouteTypes {
     | '/steam-lookup/{-$query}'
     | '/watch-together/'
     | '/api/auth/$'
-    | '/api/lookup/$steamid'
-    | '/api/resolve/$query'
+    | '/api/bot/lookup'
     | '/watch-together/room/$roomid'
+    | '/api/steam/lookup/$steamid'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -142,9 +142,9 @@ export interface FileRouteTypes {
     | '/steam-lookup/{-$query}'
     | '/watch-together'
     | '/api/auth/$'
-    | '/api/lookup/$steamid'
-    | '/api/resolve/$query'
+    | '/api/bot/lookup'
     | '/watch-together/room/$roomid'
+    | '/api/steam/lookup/$steamid'
   id:
     | '__root__'
     | '/'
@@ -155,9 +155,9 @@ export interface FileRouteTypes {
     | '/steam-lookup/{-$query}'
     | '/watch-together/'
     | '/api/auth/$'
-    | '/api/lookup/$steamid'
-    | '/api/resolve/$query'
+    | '/api/bot/lookup'
     | '/watch-together/room/$roomid'
+    | '/api/steam/lookup/$steamid'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -169,9 +169,9 @@ export interface RootRouteChildren {
   SteamLookupChar123QueryChar125Route: typeof SteamLookupChar123QueryChar125Route
   WatchTogetherIndexRoute: typeof WatchTogetherIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
-  ApiLookupSteamidRoute: typeof ApiLookupSteamidRoute
-  ApiResolveQueryRoute: typeof ApiResolveQueryRoute
+  ApiBotLookupRoute: typeof ApiBotLookupRoute
   WatchTogetherRoomRoomidRoute: typeof WatchTogetherRoomRoomidRoute
+  ApiSteamLookupSteamidRoute: typeof ApiSteamLookupSteamidRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -232,18 +232,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WatchTogetherRoomRoomidRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/resolve/$query': {
-      id: '/api/resolve/$query'
-      path: '/api/resolve/$query'
-      fullPath: '/api/resolve/$query'
-      preLoaderRoute: typeof ApiResolveQueryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/lookup/$steamid': {
-      id: '/api/lookup/$steamid'
-      path: '/api/lookup/$steamid'
-      fullPath: '/api/lookup/$steamid'
-      preLoaderRoute: typeof ApiLookupSteamidRouteImport
+    '/api/bot/lookup': {
+      id: '/api/bot/lookup'
+      path: '/api/bot/lookup'
+      fullPath: '/api/bot/lookup'
+      preLoaderRoute: typeof ApiBotLookupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/auth/$': {
@@ -251,6 +244,13 @@ declare module '@tanstack/react-router' {
       path: '/api/auth/$'
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/steam/lookup/$steamid': {
+      id: '/api/steam/lookup/$steamid'
+      path: '/api/steam/lookup/$steamid'
+      fullPath: '/api/steam/lookup/$steamid'
+      preLoaderRoute: typeof ApiSteamLookupSteamidRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -265,9 +265,9 @@ const rootRouteChildren: RootRouteChildren = {
   SteamLookupChar123QueryChar125Route: SteamLookupChar123QueryChar125Route,
   WatchTogetherIndexRoute: WatchTogetherIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
-  ApiLookupSteamidRoute: ApiLookupSteamidRoute,
-  ApiResolveQueryRoute: ApiResolveQueryRoute,
+  ApiBotLookupRoute: ApiBotLookupRoute,
   WatchTogetherRoomRoomidRoute: WatchTogetherRoomRoomidRoute,
+  ApiSteamLookupSteamidRoute: ApiSteamLookupSteamidRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -18,8 +18,8 @@ model User {
   sessions      Session[]
   accounts      Account[]
 
-  botToken String?
-  botGuild String?
+  botToken      String?   @unique
+  botGuild      String?
 
   @@unique([email])
   @@map("user")
