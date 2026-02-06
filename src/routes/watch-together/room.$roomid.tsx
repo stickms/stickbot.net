@@ -35,6 +35,17 @@ import type { SocketQueueEntry } from '~/types';
 
 import '~/styles/chat-box.css';
 
+function formatTimestamp(timestamp: number | string | Date) {
+	const date = new Date(timestamp);
+	const now = new Date();
+
+	if (date.toDateString() === now.toDateString()) {
+		return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+	}
+
+	return date.toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: '2-digit' });
+}
+
 const getRoomData = createServerFn({ method: 'GET' })
 	.inputValidator((data: { roomid: string }) => data)
 	.handler(async ({ data }) => {
@@ -115,8 +126,11 @@ function ChatBox({
 					type="always"
 				>
 					<div className="flex flex-col w-full text-left gap-2">
-						{messages.map(({ id, user, content }) => (
-							<div key={id}>
+						{messages.map(({ id, user, content, timestamp }) => (
+							<div key={id} className='text-sm'>
+								<span className='text-xs text-muted-foreground pr-1'>
+									{formatTimestamp(timestamp)}
+								</span>
 								<span
 									style={{
 										color:
@@ -280,7 +294,7 @@ function MediaQueue({ roomId, user }: { roomId: string; user: UserStore }) {
 			/>
 
 			{/* Queue List */}
-			<DndContext
+			{!!internalQueue.length && <DndContext
 				collisionDetection={rectIntersection}
 				modifiers={[restrictToParentElement, restrictToVerticalAxis]}
 				sensors={sensors}
@@ -291,20 +305,16 @@ function MediaQueue({ roomId, user }: { roomId: string; user: UserStore }) {
 					strategy={verticalListSortingStrategy}
 				>
 					<Card ref={setNodeRef} className="flex flex-col gap-2">
-						{internalQueue.length ? (
-							internalQueue.map((media) => (
-								<QueueEntry
-									key={media.id}
-									media={media}
-									dequeue={dequeueSyncMedia}
-								/>
-							))
-						) : (
-							<span>Queue a video to get started!</span>
-						)}
+						{internalQueue.map((media) => (
+							<QueueEntry
+								key={media.id}
+								media={media}
+								dequeue={dequeueSyncMedia}
+							/>
+						))}
 					</Card>
 				</SortableContext>
-			</DndContext>
+			</DndContext>}
 		</div>
 	);
 }
@@ -393,7 +403,7 @@ function RouteComponent() {
 	}
 
 	return (
-		<div className="w-full flex flex-col items-center justify-center mt-24 mb-16 gap-8 text-center">
+		<div className="w-full flex flex-col items-center justify-center mt-16 mb-16 gap-8 text-center">
 			<h1 className="font-header text-5xl">{room.name}</h1>
 
 			<div className="grid grid-cols-1 min-[850px]:grid-cols-[40fr_60fr] gap-4 w-full max-w-[95vw]">

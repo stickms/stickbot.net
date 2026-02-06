@@ -58,7 +58,7 @@ io.on('connection', (socket) => {
 						id: message.id,
 						user: message.owner,
 						content: message.content,
-						timestamp: message.timestamp.getMilliseconds()
+						timestamp: message.timestamp.getTime()
 					})) ?? [];
 
 				const queue: SocketQueueEntry[] =
