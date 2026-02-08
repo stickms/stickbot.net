@@ -12,8 +12,8 @@
     "dev:socket": "tsx watch src/socket-server.ts",
     "build:web": "vite build",
     "build:socket": "esbuild src/socket-server.ts --bundle --platform=node --format=esm --outfile=dist/socket-server.js --packages=external --tsconfig=tsconfig.socket.json",
-    "start:web": "node .output/server/index.mjs",
-    "start:socket": "node dist/socket-server.js",
+    "start:web": "node --env-file=.env .output/server/index.mjs",
+    "start:socket": "node --env-file=.env dist/socket-server.js",
     "biome": "biome format --write"
   },
   "keywords": [],
