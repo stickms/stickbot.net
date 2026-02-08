@@ -10,7 +10,7 @@ import type {
 	SocketUser
 } from '~/types';
 
-const SOCKET_URL = 'http://localhost:3001';
+const SOCKET_URL = process.env.VITE_SOCKET_URL ?? 'http://localhost:3001';
 
 // Singleton socket instance
 let socketInstance: Socket<ServerToClientEvents, ClientToServerEvents> | null =

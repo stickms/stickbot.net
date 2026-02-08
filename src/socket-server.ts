@@ -15,7 +15,7 @@ const httpServer = createServer();
 
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
 	cors: {
-		origin: 'http://localhost:3000',
+		origin: [ 'http://localhost:3000', 'https://stickbot.net' ],
 		methods: ['GET', 'POST']
 	}
 });
