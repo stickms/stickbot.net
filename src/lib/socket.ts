@@ -18,7 +18,10 @@ let socketInstance: Socket<ServerToClientEvents, ClientToServerEvents> | null =
 
 function getSocket() {
 	if (!socketInstance) {
-		socketInstance = io(SOCKET_URL);
+		const url = new URL(SOCKET_URL);
+		socketInstance = io(url.origin, {
+			path: `${url.pathname.replace(/\/$/, '')}/socket.io/`
+		});
 	}
 	return socketInstance;
 }
