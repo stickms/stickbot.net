@@ -156,24 +156,6 @@ function RouteComponent() {
 				]}
 			/>
 			<ApiRoute
-				endpoint="/bot/sourcebans"
-				method="POST"
-				fields={[
-					{
-						key: 'token',
-						type: 'string',
-						description: 'Stickbot API token',
-						example: '"abcdef1234567890"'
-					},
-					{
-						key: 'steamid',
-						type: 'string',
-						description: 'SteamID for lookup',
-						example: '"76561197960287930"'
-					}
-				]}
-			/>
-			<ApiRoute
 				endpoint="/bot/addtag"
 				method="POST"
 				fields={[

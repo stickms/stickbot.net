@@ -17,11 +17,11 @@ import { Route as WatchTogetherIndexRouteImport } from './routes/watch-together/
 import { Route as SteamLookupChar123QueryChar125RouteImport } from './routes/steam-lookup.{-$query}'
 import { Route as OpenProfileSteamidRouteImport } from './routes/open-profile.$steamid'
 import { Route as WatchTogetherRoomRoomidRouteImport } from './routes/watch-together/room.$roomid'
-import { Route as ApiBotSourcebansRouteImport } from './routes/api/bot/sourcebans'
 import { Route as ApiBotRemovetagRouteImport } from './routes/api/bot/removetag'
 import { Route as ApiBotLookupRouteImport } from './routes/api/bot/lookup'
 import { Route as ApiBotAddtagRouteImport } from './routes/api/bot/addtag'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth.$'
+import { Route as ApiSteamSourcebansSteamidRouteImport } from './routes/api/steam/sourcebans.$steamid'
 import { Route as ApiSteamLookupSteamidRouteImport } from './routes/api/steam/lookup.$steamid'
 
 const RegionSelectorRoute = RegionSelectorRouteImport.update({
@@ -65,11 +65,6 @@ const WatchTogetherRoomRoomidRoute = WatchTogetherRoomRoomidRouteImport.update({
   path: '/watch-together/room/$roomid',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiBotSourcebansRoute = ApiBotSourcebansRouteImport.update({
-  id: '/api/bot/sourcebans',
-  path: '/api/bot/sourcebans',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiBotRemovetagRoute = ApiBotRemovetagRouteImport.update({
   id: '/api/bot/removetag',
   path: '/api/bot/removetag',
@@ -90,6 +85,12 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiSteamSourcebansSteamidRoute =
+  ApiSteamSourcebansSteamidRouteImport.update({
+    id: '/api/steam/sourcebans/$steamid',
+    path: '/api/steam/sourcebans/$steamid',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiSteamLookupSteamidRoute = ApiSteamLookupSteamidRouteImport.update({
   id: '/api/steam/lookup/$steamid',
   path: '/api/steam/lookup/$steamid',
@@ -108,9 +109,9 @@ export interface FileRoutesByFullPath {
   '/api/bot/addtag': typeof ApiBotAddtagRoute
   '/api/bot/lookup': typeof ApiBotLookupRoute
   '/api/bot/removetag': typeof ApiBotRemovetagRoute
-  '/api/bot/sourcebans': typeof ApiBotSourcebansRoute
   '/watch-together/room/$roomid': typeof WatchTogetherRoomRoomidRoute
   '/api/steam/lookup/$steamid': typeof ApiSteamLookupSteamidRoute
+  '/api/steam/sourcebans/$steamid': typeof ApiSteamSourcebansSteamidRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -124,9 +125,9 @@ export interface FileRoutesByTo {
   '/api/bot/addtag': typeof ApiBotAddtagRoute
   '/api/bot/lookup': typeof ApiBotLookupRoute
   '/api/bot/removetag': typeof ApiBotRemovetagRoute
-  '/api/bot/sourcebans': typeof ApiBotSourcebansRoute
   '/watch-together/room/$roomid': typeof WatchTogetherRoomRoomidRoute
   '/api/steam/lookup/$steamid': typeof ApiSteamLookupSteamidRoute
+  '/api/steam/sourcebans/$steamid': typeof ApiSteamSourcebansSteamidRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -141,9 +142,9 @@ export interface FileRoutesById {
   '/api/bot/addtag': typeof ApiBotAddtagRoute
   '/api/bot/lookup': typeof ApiBotLookupRoute
   '/api/bot/removetag': typeof ApiBotRemovetagRoute
-  '/api/bot/sourcebans': typeof ApiBotSourcebansRoute
   '/watch-together/room/$roomid': typeof WatchTogetherRoomRoomidRoute
   '/api/steam/lookup/$steamid': typeof ApiSteamLookupSteamidRoute
+  '/api/steam/sourcebans/$steamid': typeof ApiSteamSourcebansSteamidRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -159,9 +160,9 @@ export interface FileRouteTypes {
     | '/api/bot/addtag'
     | '/api/bot/lookup'
     | '/api/bot/removetag'
-    | '/api/bot/sourcebans'
     | '/watch-together/room/$roomid'
     | '/api/steam/lookup/$steamid'
+    | '/api/steam/sourcebans/$steamid'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -175,9 +176,9 @@ export interface FileRouteTypes {
     | '/api/bot/addtag'
     | '/api/bot/lookup'
     | '/api/bot/removetag'
-    | '/api/bot/sourcebans'
     | '/watch-together/room/$roomid'
     | '/api/steam/lookup/$steamid'
+    | '/api/steam/sourcebans/$steamid'
   id:
     | '__root__'
     | '/'
@@ -191,9 +192,9 @@ export interface FileRouteTypes {
     | '/api/bot/addtag'
     | '/api/bot/lookup'
     | '/api/bot/removetag'
-    | '/api/bot/sourcebans'
     | '/watch-together/room/$roomid'
     | '/api/steam/lookup/$steamid'
+    | '/api/steam/sourcebans/$steamid'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -208,9 +209,9 @@ export interface RootRouteChildren {
   ApiBotAddtagRoute: typeof ApiBotAddtagRoute
   ApiBotLookupRoute: typeof ApiBotLookupRoute
   ApiBotRemovetagRoute: typeof ApiBotRemovetagRoute
-  ApiBotSourcebansRoute: typeof ApiBotSourcebansRoute
   WatchTogetherRoomRoomidRoute: typeof WatchTogetherRoomRoomidRoute
   ApiSteamLookupSteamidRoute: typeof ApiSteamLookupSteamidRoute
+  ApiSteamSourcebansSteamidRoute: typeof ApiSteamSourcebansSteamidRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -271,13 +272,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WatchTogetherRoomRoomidRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/bot/sourcebans': {
-      id: '/api/bot/sourcebans'
-      path: '/api/bot/sourcebans'
-      fullPath: '/api/bot/sourcebans'
-      preLoaderRoute: typeof ApiBotSourcebansRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/bot/removetag': {
       id: '/api/bot/removetag'
       path: '/api/bot/removetag'
@@ -306,6 +300,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/steam/sourcebans/$steamid': {
+      id: '/api/steam/sourcebans/$steamid'
+      path: '/api/steam/sourcebans/$steamid'
+      fullPath: '/api/steam/sourcebans/$steamid'
+      preLoaderRoute: typeof ApiSteamSourcebansSteamidRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/steam/lookup/$steamid': {
       id: '/api/steam/lookup/$steamid'
       path: '/api/steam/lookup/$steamid'
@@ -328,9 +329,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiBotAddtagRoute: ApiBotAddtagRoute,
   ApiBotLookupRoute: ApiBotLookupRoute,
   ApiBotRemovetagRoute: ApiBotRemovetagRoute,
-  ApiBotSourcebansRoute: ApiBotSourcebansRoute,
   WatchTogetherRoomRoomidRoute: WatchTogetherRoomRoomidRoute,
   ApiSteamLookupSteamidRoute: ApiSteamLookupSteamidRoute,
+  ApiSteamSourcebansSteamidRoute: ApiSteamSourcebansSteamidRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
