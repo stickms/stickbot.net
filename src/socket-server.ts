@@ -23,7 +23,16 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
 interface Room {
 	users: Map<string, SocketUser>;
 	playing: boolean;
-	started: number;
+	curtime: number;
+	lastUpdated: number;
+}
+
+function getRoomCurtime(room: Room): number {
+	if (room.playing) {
+		return room.curtime + (Date.now() - room.lastUpdated) / 1000;
+	}
+
+	return room.curtime;
 }
 
 const rooms = new Map<string, Room>();
@@ -35,7 +44,7 @@ io.on('connection', (socket) => {
 		socket.join(roomId);
 
 		if (!rooms.has(roomId)) {
-			rooms.set(roomId, { users: new Map(), playing: false, started: 0 });
+			rooms.set(roomId, { users: new Map(), playing: false, curtime: 0, lastUpdated: Date.now() });
 		}
 
 		// biome-ignore lint/style/noNonNullAssertion: false positive
@@ -77,7 +86,7 @@ io.on('connection', (socket) => {
 
 				socket.emit('media-state', {
 					playing: room.playing,
-					curtime: (Date.now() - room.started) / 1000
+					curtime: getRoomCurtime(room)
 				});
 			});
 
@@ -156,6 +165,13 @@ io.on('connection', (socket) => {
 							url: url,
 							title: title,
 							order: (maxOrder._max.order ?? -1) + 1
+						},
+						include: {
+							syncRoom: {
+								include: {
+									queue: true
+								}
+							}
 						}
 					})
 					.then((media) => {
@@ -165,6 +181,15 @@ io.on('connection', (socket) => {
 							url: url,
 							user: user
 						});
+
+						if (room && media.syncRoom.queue.length === 1) {
+							room.curtime = 0;
+							room.lastUpdated = Date.now();
+							io.to(roomId).emit('media-state', {
+								playing: room.playing,
+								curtime: 0
+							});
+						}
 					});
 			})
 			.catch(console.error);
@@ -239,17 +264,22 @@ io.on('connection', (socket) => {
 			return;
 		}
 
+		// Snapshot current position before changing state
+		room.curtime = getRoomCurtime(room);
+		room.lastUpdated = Date.now();
+
 		if (state.playing !== undefined) {
 			room.playing = state.playing;
 		}
 
 		if (state.curtime !== undefined) {
-			room.started = Date.now() - state.curtime * 1000;
+			room.curtime = state.curtime;
+			room.lastUpdated = Date.now();
 		}
 
-		io.to(roomId).emit('media-state', {
+		socket.to(roomId).emit('media-state', {
 			playing: room.playing,
-			curtime: (Date.now() - room.started) / 1000
+			curtime: room.curtime
 		});
 	});
 });

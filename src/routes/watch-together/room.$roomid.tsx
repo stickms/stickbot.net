@@ -30,8 +30,8 @@ import { Button } from '~/components/ui/button';
 import { ScrollArea } from '~/components/ui/scroll-area';
 import { prisma } from '~/lib/prisma';
 import { useRoom } from '~/lib/socket';
-import { type UserStore, useUserStore } from '~/lib/stores';
-import type { SocketQueueEntry } from '~/types';
+import { useUserStore } from '~/lib/stores';
+import type { SocketChatMessage, SocketMediaState, SocketQueueEntry, SocketUser } from '~/types';
 
 import '~/styles/chat-box.css';
 
@@ -69,23 +69,23 @@ export const Route = createFileRoute('/watch-together/room/$roomid')({
 
 function ChatBox({
 	room,
-	user
+	users,
+	messages,
+	sendMessage
 }: {
 	room: { id: string; ownerId: string };
-	user: UserStore;
+	users: SocketUser[];
+	messages: SocketChatMessage[];
+	sendMessage: (content: string) => void;
 }) {
 	const inputRef = useRef<HTMLInputElement>(null);
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 
-	const { users, messages, sendMessage } = useRoom(
-		room.id,
-		user.id,
-		user.username
-	);
-
-	// biome-ignore lint/correctness/useExhaustiveDependencies: scroll when messages change
+	// Scroll messages as they come in
 	useEffect(() => {
-		messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+		if (messages.length) {
+			messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+		}
 	}, [messages.length]);
 
 	const sendSyncMessage = () => {
@@ -213,11 +213,20 @@ function QueueEntry({
 	);
 }
 
-function MediaQueue({ roomId, user }: { roomId: string; user: UserStore }) {
+function MediaQueue({
+	queue,
+	queueMedia,
+	dequeueMedia,
+	orderMedia,
+	sendMediaState
+}: {
+	queue: SocketQueueEntry[];
+	queueMedia: (url: string) => void;
+	dequeueMedia: (mediaId: string) => void;
+	orderMedia: (from: number, to: number) => void;
+	sendMediaState: (playing?: boolean, curtime?: number) => void;
+}) {
 	const inputRef = useRef<HTMLInputElement>(null);
-
-	const { queue, queueMedia, dequeueMedia, orderMedia, sendMediaState } =
-		useRoom(roomId, user.id, user.username);
 
 	const { setNodeRef } = useDroppable({
 		id: 'droppable'
@@ -237,6 +246,7 @@ function MediaQueue({ roomId, user }: { roomId: string; user: UserStore }) {
 			tolerance: 5
 		}
 	});
+
 	const sensors = useSensors(mouseSensor, touchSensor);
 
 	useEffect(() => {
@@ -319,13 +329,18 @@ function MediaQueue({ roomId, user }: { roomId: string; user: UserStore }) {
 	);
 }
 
-function MediaPlayer({ roomId, user }: { roomId: string; user: UserStore }) {
+function MediaPlayer({
+	queue,
+	mediaState,
+	dequeueMedia,
+	sendMediaState
+}: {
+	queue: SocketQueueEntry[];
+	mediaState: SocketMediaState | undefined;
+	dequeueMedia: (mediaId: string) => void;
+	sendMediaState: (playing?: boolean, curtime?: number) => void;
+}) {
 	const playerRef = useRef<HTMLVideoElement>(null);
-	const { queue, mediaState, dequeueMedia, sendMediaState } = useRoom(
-		roomId,
-		user.id,
-		user.username
-	);
 	const [ready, setReady] = useState<boolean>(false);
 
 	const onReady = () => {
@@ -333,11 +348,16 @@ function MediaPlayer({ roomId, user }: { roomId: string; user: UserStore }) {
 			return;
 		}
 
+		playerRef.current.muted = true;
 		playerRef.current.currentTime = mediaState.curtime;
+
 		if (mediaState.playing) {
-			playerRef.current.play();
+			playerRef.current.play().then(() => {
+				if (playerRef.current) playerRef.current.muted = false;
+			});
 		} else {
 			playerRef.current.pause();
+			playerRef.current.muted = false;
 		}
 
 		setReady(true);
@@ -367,11 +387,10 @@ function MediaPlayer({ roomId, user }: { roomId: string; user: UserStore }) {
 					src={queue[0].url}
 					style={{ width: '100%', height: '100%' }}
 					controls
-					autoPlay
-					muted
+					playing={mediaState.playing}
 					onReady={onReady}
 					onEnded={() => {
-						if (playerRef.current) {
+						if (ready && playerRef.current) {
 							sendMediaState(undefined, 0);
 							dequeueMedia(queue[0].id);
 						}
@@ -397,6 +416,18 @@ function RouteComponent() {
 	const room = Route.useLoaderData();
 	const user = useUserStore();
 
+	const {
+		users,
+		messages,
+		queue,
+		mediaState,
+		sendMessage,
+		queueMedia,
+		dequeueMedia,
+		orderMedia,
+		sendMediaState
+	} = useRoom(room.id, user.id, user.username);
+
 	if (!user.id) {
 		navigate({ to: '/watch-together' });
 		return null;
@@ -408,13 +439,29 @@ function RouteComponent() {
 
 			<div className="grid grid-cols-1 min-[850px]:grid-cols-[40fr_60fr] gap-4 w-full max-w-[95vw]">
 				{/* Media Player */}
-				<MediaPlayer roomId={room.id} user={user} />
+				<MediaPlayer
+					queue={queue}
+					mediaState={mediaState}
+					dequeueMedia={dequeueMedia}
+					sendMediaState={sendMediaState}
+				/>
 
 				{/* Queue */}
-				<MediaQueue roomId={room.id} user={user} />
+				<MediaQueue
+					queue={queue}
+					queueMedia={queueMedia}
+					dequeueMedia={dequeueMedia}
+					orderMedia={orderMedia}
+					sendMediaState={sendMediaState}
+				/>
 
 				{/* Chat message box */}
-				<ChatBox room={room} user={user} />
+				<ChatBox
+					room={room}
+					users={users}
+					messages={messages}
+					sendMessage={sendMessage}
+				/>
 			</div>
 		</div>
 	);

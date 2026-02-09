@@ -82,7 +82,7 @@ export function useRoom(
 			// Delete first instance (just in case a user joins multiple times)
 			setUsers((prev) => {
 				const index = prev.findIndex((u) => u.id === user.id);
-				return index !== -1 ? prev.slice(index) : prev;
+				return index !== -1 ? [...prev.slice(0, index), ...prev.slice(index + 1)] : prev;
 			});
 		});
 
