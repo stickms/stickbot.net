@@ -1,4 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
+import { createServerFn } from '@tanstack/react-start';
+import { getRequestHeaders } from '@tanstack/react-start/server';
 import { useState } from 'react';
 import {
 	Select,
@@ -8,7 +10,9 @@ import {
 	SelectTrigger,
 	SelectValue
 } from '~/components/ui/select';
+import { auth } from '~/lib/auth';
 import { authClient } from '~/lib/auth-client';
+import { prisma } from '~/lib/prisma';
 
 export interface DiscordGuild {
 	id: string;
@@ -18,22 +22,33 @@ export interface DiscordGuild {
 	permissions: string;
 }
 
-async function fetchGuilds(): Promise<DiscordGuild[]> {
-	const tokenData = await authClient.getAccessToken({ providerId: 'discord' });
-	if (!tokenData.data?.accessToken) {
-		throw new Error('No access token');
-	}
+const fetchGuilds = createServerFn()
+	.handler(async () => {
+		const headers = getRequestHeaders();
+		const session = await auth.api.getSession({ headers });
 
-	const res = await fetch('https://discord.com/api/v10/users/@me/guilds', {
-		headers: { Authorization: `Bearer ${tokenData.data.accessToken}` }
+		if (!session?.user) {
+			throw new Error('Unauthorized');
+		}
+
+		const account = await prisma.account.findFirst({
+			where: { userId: session.user.id, providerId: 'discord' }
+		});
+
+		if (!account?.accessToken) {
+			throw new Error('No Discord access token');
+		}
+
+		const res = await fetch('https://discord.com/api/v10/users/@me/guilds', {
+			headers: { Authorization: `Bearer ${account.accessToken}` }
+		});
+
+		if (!res.ok) {
+			throw new Error('Failed to fetch guilds');
+		}
+
+		return (await res.json()) as DiscordGuild[];
 	});
-
-	if (!res.ok) {
-		throw new Error('Failed to fetch guilds');
-	}
-
-	return res.json();
-}
 
 export function GuildSelect({
 	value,
