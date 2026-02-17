@@ -15,7 +15,7 @@ const httpServer = createServer();
 
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
 	cors: {
-		origin: [ 'http://localhost:3000', 'https://stickbot.net' ],
+		origin: ['http://localhost:3000', 'https://stickbot.net'],
 		methods: ['GET', 'POST']
 	}
 });
@@ -44,7 +44,12 @@ io.on('connection', (socket) => {
 		socket.join(roomId);
 
 		if (!rooms.has(roomId)) {
-			rooms.set(roomId, { users: new Map(), playing: false, curtime: 0, lastUpdated: Date.now() });
+			rooms.set(roomId, {
+				users: new Map(),
+				playing: false,
+				curtime: 0,
+				lastUpdated: Date.now()
+			});
 		}
 
 		// biome-ignore lint/style/noNonNullAssertion: false positive

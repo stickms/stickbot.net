@@ -31,7 +31,12 @@ import { ScrollArea } from '~/components/ui/scroll-area';
 import { prisma } from '~/lib/prisma';
 import { useRoom } from '~/lib/socket';
 import { useUserStore } from '~/lib/stores';
-import type { SocketChatMessage, SocketMediaState, SocketQueueEntry, SocketUser } from '~/types';
+import type {
+	SocketChatMessage,
+	SocketMediaState,
+	SocketQueueEntry,
+	SocketUser
+} from '~/types';
 
 import '~/styles/chat-box.css';
 
@@ -40,10 +45,18 @@ function formatTimestamp(timestamp: number | string | Date) {
 	const now = new Date();
 
 	if (date.toDateString() === now.toDateString()) {
-		return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+		return date.toLocaleTimeString('en-US', {
+			hour: 'numeric',
+			minute: '2-digit',
+			hour12: true
+		});
 	}
 
-	return date.toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: '2-digit' });
+	return date.toLocaleDateString('en-US', {
+		day: '2-digit',
+		month: '2-digit',
+		year: '2-digit'
+	});
 }
 
 const getRoomData = createServerFn({ method: 'GET' })
@@ -127,8 +140,8 @@ function ChatBox({
 				>
 					<div className="flex flex-col w-full text-left gap-2">
 						{messages.map(({ id, user, content, timestamp }) => (
-							<div key={id} className='text-sm'>
-								<span className='text-xs text-muted-foreground pr-1'>
+							<div key={id} className="text-sm">
+								<span className="text-xs text-muted-foreground pr-1">
 									{formatTimestamp(timestamp)}
 								</span>
 								<span
@@ -304,27 +317,29 @@ function MediaQueue({
 			/>
 
 			{/* Queue List */}
-			{!!internalQueue.length && <DndContext
-				collisionDetection={rectIntersection}
-				modifiers={[restrictToParentElement, restrictToVerticalAxis]}
-				sensors={sensors}
-				onDragEnd={onDragEnd}
-			>
-				<SortableContext
-					items={internalQueue}
-					strategy={verticalListSortingStrategy}
+			{!!internalQueue.length && (
+				<DndContext
+					collisionDetection={rectIntersection}
+					modifiers={[restrictToParentElement, restrictToVerticalAxis]}
+					sensors={sensors}
+					onDragEnd={onDragEnd}
 				>
-					<Card ref={setNodeRef} className="flex flex-col gap-2">
-						{internalQueue.map((media) => (
-							<QueueEntry
-								key={media.id}
-								media={media}
-								dequeue={dequeueSyncMedia}
-							/>
-						))}
-					</Card>
-				</SortableContext>
-			</DndContext>}
+					<SortableContext
+						items={internalQueue}
+						strategy={verticalListSortingStrategy}
+					>
+						<Card ref={setNodeRef} className="flex flex-col gap-2">
+							{internalQueue.map((media) => (
+								<QueueEntry
+									key={media.id}
+									media={media}
+									dequeue={dequeueSyncMedia}
+								/>
+							))}
+						</Card>
+					</SortableContext>
+				</DndContext>
+			)}
 		</div>
 	);
 }

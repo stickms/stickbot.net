@@ -22,33 +22,32 @@ export interface DiscordGuild {
 	permissions: string;
 }
 
-const fetchGuilds = createServerFn()
-	.handler(async () => {
-		const headers = getRequestHeaders();
-		const session = await auth.api.getSession({ headers });
+const fetchGuilds = createServerFn().handler(async () => {
+	const headers = getRequestHeaders();
+	const session = await auth.api.getSession({ headers });
 
-		if (!session?.user) {
-			throw new Error('Unauthorized');
-		}
+	if (!session?.user) {
+		throw new Error('Unauthorized');
+	}
 
-		const account = await prisma.account.findFirst({
-			where: { userId: session.user.id, providerId: 'discord' }
-		});
-
-		if (!account?.accessToken) {
-			throw new Error('No Discord access token');
-		}
-
-		const res = await fetch('https://discord.com/api/v10/users/@me/guilds', {
-			headers: { Authorization: `Bearer ${account.accessToken}` }
-		});
-
-		if (!res.ok) {
-			throw new Error('Failed to fetch guilds');
-		}
-
-		return (await res.json()) as DiscordGuild[];
+	const account = await prisma.account.findFirst({
+		where: { userId: session.user.id, providerId: 'discord' }
 	});
+
+	if (!account?.accessToken) {
+		throw new Error('No Discord access token');
+	}
+
+	const res = await fetch('https://discord.com/api/v10/users/@me/guilds', {
+		headers: { Authorization: `Bearer ${account.accessToken}` }
+	});
+
+	if (!res.ok) {
+		throw new Error('Failed to fetch guilds');
+	}
+
+	return (await res.json()) as DiscordGuild[];
+});
 
 export function GuildSelect({
 	value,

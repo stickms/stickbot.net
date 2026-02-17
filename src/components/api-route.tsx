@@ -33,9 +33,9 @@ export function ApiRoute({
 				</Badge>
 				{endpoint}
 			</span>
-			<Card className="flex flex-col gap-1">
+			<Card className="flex flex-col gap-1 max-w-[90vw]">
 				<span className="text-muted-foreground text-sm">JSON request body</span>
-				<Table className="w-200 max-w-[90vw]">
+				<Table className="w-200">
 					<TableHeader>
 						<TableRow>
 							<TableHead>Key</TableHead>

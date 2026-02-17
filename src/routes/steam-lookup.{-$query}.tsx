@@ -23,8 +23,9 @@ function RouteComponent() {
 	return (
 		<div className="w-full flex flex-col items-center justify-center mt-40 mb-16 gap-8 text-center">
 			<h1 className="font-header text-6xl">steam profile lookup</h1>
-			<div className="flex gap-2 w-150 max-w-[90vw]">
+			<div className="flex gap-2 max-w-[90vw] flex-wrap items-center justify-center">
 				<InputButton
+					className='w-150 grow'
 					ref={inputRef}
 					placeholder="Lookup a Steam Profile..."
 					icon={<SearchIcon />}
@@ -37,7 +38,7 @@ function RouteComponent() {
 				/>
 				{data ? (
 					<GuildSelect
-						className="min-w-48 w-48"
+						className="w-48 grow"
 						value={guildId}
 						onValueChange={setGuildId}
 					/>

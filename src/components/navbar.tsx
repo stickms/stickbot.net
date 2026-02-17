@@ -46,12 +46,10 @@ function UserProfile() {
 				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end">
-				<DropdownMenuLabel>
-					{data.user.name}
-				</DropdownMenuLabel>
+				<DropdownMenuLabel>{data.user.name}</DropdownMenuLabel>
 				<Separator />
 				<DropdownMenuItem
-					variant='destructive'
+					variant="destructive"
 					onClick={() => authClient.signOut()}
 				>
 					Logout
