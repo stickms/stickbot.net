@@ -53,7 +53,7 @@ http.createServer((req, res) => {
     const child = spawn('bash', [DEPLOY_SCRIPT], {
       detached: true,
       stdio: ['ignore', fs.openSync(LOG_FILE, 'a'), fs.openSync(LOG_FILE, 'a')],
-      env: { ...process.env, PATH: '/home/rmhstudios/.nvm/versions/node/v25.7.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' }
+      env: { ...process.env, PATH: '/home/stickbot/.nvm/versions/node/v25.7.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' }
     });
     child.unref();
   });

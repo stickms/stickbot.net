@@ -16,12 +16,12 @@ log() {
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
 }
 
-export PATH="/home/rmhstudios/.nvm/versions/node/v25.7.0/bin:$PATH"
+export PATH="/home/stickbot/.nvm/versions/node/v25.7.0/bin:$PATH"
 
 GIT_BIN=$(which git 2>/dev/null)   ; GIT_BIN=${GIT_BIN:-/usr/bin/git}
-PNPM_BIN=$(which pnpm 2>/dev/null) ; PNPM_BIN=${PNPM_BIN:-/home/rmhstudios/.nvm/versions/node/v25.7.0/bin/pnpm}
-PM2_BIN=$(which pm2 2>/dev/null)   ; PM2_BIN=${PM2_BIN:-/home/rmhstudios/.nvm/versions/node/v25.7.0/bin/pm2}
-NODE_BIN=$(which node 2>/dev/null) ; NODE_BIN=${NODE_BIN:-/home/rmhstudios/.nvm/versions/node/v25.7.0/bin/node}
+PNPM_BIN=$(which pnpm 2>/dev/null) ; PNPM_BIN=${PNPM_BIN:-/home/stickbot/.nvm/versions/node/v25.7.0/bin/pnpm}
+PM2_BIN=$(which pm2 2>/dev/null)   ; PM2_BIN=${PM2_BIN:-/home/stickbot/.nvm/versions/node/v25.7.0/bin/pm2}
+NODE_BIN=$(which node 2>/dev/null) ; NODE_BIN=${NODE_BIN:-/home/stickbot/.nvm/versions/node/v25.7.0/bin/node}
 
 cleanup() { [ -f "$LOCKFILE" ] && rm -f "$LOCKFILE"; }
 trap cleanup EXIT
