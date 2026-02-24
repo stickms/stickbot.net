@@ -200,7 +200,7 @@ function RoomList() {
 					key={room.id}
 					className="w-64 min-h-56 flex flex-col items-start justify-between gap-4"
 				>
-					<div className="flex flex-col text-left gap-2">
+					<div className="flex flex-col text-left gap-2 text-wrap">
 						<span>{room.name}</span>
 						<span className="text-muted-foreground">
 							by: {room.owner.username}

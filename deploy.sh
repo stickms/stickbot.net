@@ -46,13 +46,18 @@ stop_apps() {
 }
 
 start_apps() {
+    log "Loading environment variables..."
+    set -a
+    source "$REPO_DIR/.env"
+    set +a
+
     log "Starting TanStack web server on port $PORT_WEB..."
     "$PM2_BIN" start "$NODE_BIN" \
         --name "$APP_WEB" \
         --cwd "$REPO_DIR" \
         --restart-delay=3000 \
         --max-restarts=5 \
-        -- --env-file=.env .output/server/index.mjs
+        -- .output/server/index.mjs
 
     log "Starting Socket.IO server on port $PORT_SOCKET..."
     "$PM2_BIN" start "$NODE_BIN" \
@@ -60,7 +65,7 @@ start_apps() {
         --cwd "$REPO_DIR" \
         --restart-delay=3000 \
         --max-restarts=5 \
-        -- --env-file=.env dist/socket-server.js
+        -- dist/socket-server.js
 
     "$PM2_BIN" save
 }
