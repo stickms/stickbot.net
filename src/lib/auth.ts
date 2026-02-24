@@ -26,7 +26,8 @@ export const auth = betterAuth({
 		discord: {
 			clientId: process.env.DISCORD_CLIENT_ID,
 			clientSecret: process.env.DISCORD_CLIENT_SECRET,
-			scope: ['identify', 'guilds']
+			scope: ['identify', 'guilds'],
+			overrideUserInfoOnSignIn: true
 		}
 	}
 });
