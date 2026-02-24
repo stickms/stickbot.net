@@ -38,20 +38,20 @@ check_port() {
 }
 
 stop_apps() {
-    log "Stopping PM2 processes..."
-    "$PM2_BIN" stop   "$APP_WEB"    2>/dev/null || true
-    "$PM2_BIN" stop   "$APP_SOCKET" 2>/dev/null || true
-    "$PM2_BIN" delete "$APP_WEB"    2>/dev/null || true
-    "$PM2_BIN" delete "$APP_SOCKET" 2>/dev/null || true
+    log "Killing PM2 daemon..."
+    "$PM2_BIN" kill 2>/dev/null || true
 }
 
 start_apps() {
+    set -a
+    source "$REPO_DIR/.env"
+    set +a
+
     log "Starting TanStack web server on port $PORT_WEB..."
     "$PM2_BIN" start .output/server/index.mjs \
         --name "$APP_WEB" \
         --cwd "$REPO_DIR" \
         --interpreter "$NODE_BIN" \
-        --node-args="--env-file=$REPO_DIR/.env" \
         --restart-delay=3000 \
         --max-restarts=5
 
@@ -60,7 +60,6 @@ start_apps() {
         --name "$APP_SOCKET" \
         --cwd "$REPO_DIR" \
         --interpreter "$NODE_BIN" \
-        --node-args="--env-file=$REPO_DIR/.env" \
         --restart-delay=3000 \
         --max-restarts=5
 

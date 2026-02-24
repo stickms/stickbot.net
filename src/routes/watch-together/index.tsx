@@ -80,7 +80,7 @@ function LogIn() {
 	const inputRef = useRef<HTMLInputElement>(null);
 
 	const login = () => {
-		if (!inputRef.current?.value) {
+		if (!inputRef.current?.value || inputRef.current.value.length > 32) {
 			return;
 		}
 
@@ -140,13 +140,13 @@ function RoomCreation() {
 
 	return (
 		<Field className="w-96 max-w-[90vw]">
-			<FieldLabel>Create a room</FieldLabel>
+			<FieldLabel htmlFor='room'>Create a room</FieldLabel>
 			<InputGroup aria-invalid={!!createError}>
 				<InputGroupInput
-					id="username"
+					id="room"
 					ref={inputRef}
 					aria-invalid={!!createError}
-					maxLength={64}
+					maxLength={32}
 					onKeyDown={(e) => {
 						if (e.key === 'Enter') {
 							create();
@@ -198,9 +198,9 @@ function RoomList() {
 			{rooms.map((room) => (
 				<Card
 					key={room.id}
-					className="w-64 min-h-56 flex flex-col items-start justify-between gap-4"
+					className="w-64 min-h-56 flex flex-col items-start justify-between gap-4 overflow-hidden"
 				>
-					<div className="flex flex-col text-left gap-2 text-wrap">
+					<div className="flex flex-col text-left gap-2">
 						<span>{room.name}</span>
 						<span className="text-muted-foreground">
 							by: {room.owner.username}
