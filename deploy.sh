@@ -43,26 +43,8 @@ stop_apps() {
 }
 
 start_apps() {
-    set -a
-    source "$REPO_DIR/.env"
-    set +a
-
-    log "Starting TanStack web server on port $PORT_WEB..."
-    "$PM2_BIN" start .output/server/index.mjs \
-        --name "$APP_WEB" \
-        --cwd "$REPO_DIR" \
-        --interpreter "$NODE_BIN" \
-        --restart-delay=3000 \
-        --max-restarts=5
-
-    log "Starting Socket.IO server on port $PORT_SOCKET..."
-    "$PM2_BIN" start dist/socket-server.js \
-        --name "$APP_SOCKET" \
-        --cwd "$REPO_DIR" \
-        --interpreter "$NODE_BIN" \
-        --restart-delay=3000 \
-        --max-restarts=5
-
+    log "Starting apps via ecosystem config..."
+    "$PM2_BIN" start "$REPO_DIR/ecosystem.config.cjs"
     "$PM2_BIN" save
 }
 
