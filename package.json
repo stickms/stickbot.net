@@ -14,7 +14,8 @@
     "build:socket": "esbuild src/socket-server.ts --bundle --platform=node --format=esm --outfile=dist/socket-server.js --packages=external --tsconfig=tsconfig.socket.json",
     "start:web": "node --env-file=.env .output/server/index.mjs",
     "start:socket": "node --env-file=.env dist/socket-server.js",
-    "biome": "biome format --write"
+    "biome": "biome format --write",
+    "postinstall": "prisma generate"
   },
   "keywords": [],
   "author": "",
