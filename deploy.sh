@@ -43,8 +43,18 @@ stop_apps() {
 }
 
 start_apps() {
-    log "Starting apps via ecosystem config..."
-    "$PM2_BIN" start "$REPO_DIR/ecosystem.config.cjs"
+    log "Starting TanStack web server on port $PORT_WEB..."
+    "$PM2_BIN" start "$PNPM_BIN" \
+        --name "$APP_WEB" \
+        --cwd "$REPO_DIR" \
+        -- run start:web
+
+    log "Starting Socket.IO server on port $PORT_SOCKET..."
+    "$PM2_BIN" start "$PNPM_BIN" \
+        --name "$APP_SOCKET" \
+        --cwd "$REPO_DIR" \
+        -- run start:socket
+
     "$PM2_BIN" save
 }
 
